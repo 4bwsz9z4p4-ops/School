@@ -1,0 +1,363 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Princip vstřikovacího lisu</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#EEF1F5; --panel:#FFFFFF; --soft:#F5F7FA; --stage:#EAF0F6; --ink:#18202B; --muted:#566273;
+  --rule:#D5DCE5; --rule-strong:#9FACBD; --steel:#8793A6; --load:#2F6FDB; --hot:#E0692B; --cool:#2F78C4; --pin:#B83A2E; --mach:#6E7B8F; --mach2:#9AA7B8; --dark:#232B36; --f:#D4571A; --ok:#12795C; --loss:#C23B32;
+  --on-ink:#FFFFFF; --focus:#2B59C9; --hi:#E0A100;
+  --font-display:'Archivo','Arial Narrow',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F141B; --panel:#171E28; --soft:#1C2531; --stage:#121921; --ink:#E7ECF2; --muted:#9AA7B8;
+    --rule:#2A3441; --rule-strong:#4A5A72; --steel:#8E9BB0; --load:#6FA0FF; --hot:#FF9055; --cool:#6DB2F0; --pin:#FF7B72; --mach:#7C8AA0; --mach2:#A8B4C6; --dark:#0B1016; --f:#FF9055; --ok:#5ED6B0; --loss:#FF7B72;
+    --on-ink:#0F141B; --focus:#7DA2FF; --hi:#FFC933; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --panel:#171E28; --soft:#1C2531; --stage:#121921; --ink:#E7ECF2; --muted:#9AA7B8;
+  --rule:#2A3441; --rule-strong:#4A5A72; --steel:#8E9BB0; --load:#6FA0FF; --hot:#FF9055; --cool:#6DB2F0; --pin:#FF7B72; --mach:#7C8AA0; --mach2:#A8B4C6; --dark:#0B1016; --f:#FF9055; --ok:#5ED6B0; --loss:#FF7B72;
+  --on-ink:#0F141B; --focus:#7DA2FF; --hi:#FFC933; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.wrap{max-width:1200px;margin-inline:auto}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(26px,4.4vw,40px);line-height:1.1;letter-spacing:-.01em;margin:0 0 8px;text-wrap:balance}
+.lead{margin:0 0 18px;color:var(--muted);max-width:72ch}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:14px;min-width:0}
+.panel h2{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+.stage{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:grid;gap:10px;border-color:var(--rule-strong)}
+canvas{display:block;width:100%;border-radius:8px;background:var(--stage)}
+canvas#cv{aspect-ratio:520/440}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:14px;padding:8px 14px;min-height:40px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--ink)} .btn.primary{background:var(--ink);color:var(--on-ink);border-color:var(--ink);font-weight:600}
+.btn:focus-visible,input:focus-visible,.step:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.live{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:8px}
+.live div{background:var(--soft);border-radius:8px;padding:6px 10px}
+.live span{display:block;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.live b{font-family:var(--font-mono);font-weight:500;font-size:16px}
+.bar{display:flex;height:26px;border-radius:6px;overflow:hidden;background:var(--soft);border:1px solid var(--rule-strong)}
+.bar i{display:block;height:100%;transition:width .08s}
+.bar .e{background:var(--ok)} .bar .l{background:var(--loss)}
+.barl{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:4px}
+.barl .e{color:var(--ok)} .barl .l{color:var(--loss)}
+.rng{display:grid;gap:2px;margin-top:10px}
+.rng label{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.rng output{font-family:var(--font-mono);font-weight:500}
+input[type=range]{width:100%;accent-color:var(--ink);min-height:28px}
+.inputs{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.step{border:1px solid var(--rule);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--panel);cursor:pointer;display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px}
+.step.cur{border:2px solid var(--ink);padding:11px}
+.step .no{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--rule-strong);display:grid;place-items:center;font:600 13px var(--font-mono)}
+.step.cur .no{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.step h3{margin:0 0 4px;font-size:15px}
+.step p{margin:0 0 6px;font-size:14px;color:var(--muted)} .step p:last-child{margin-bottom:0}
+.eq{font-family:var(--font-mono);font-size:15px;padding:8px 10px;background:var(--soft);border-radius:8px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:6px 0;overflow-x:auto}
+.eq b{font-weight:600}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25}
+.fr>span:first-child{padding:0 4px 2px;border-bottom:1.5px solid var(--ink)} .fr>span:last-child{padding:2px 4px 0}
+.hl{color:var(--f);font-weight:600} .ok{color:var(--ok)} .ls{color:var(--loss)}
+.res{font-family:var(--font-mono);font-size:22px;font-weight:600;color:var(--f)}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{padding:6px 8px;border-bottom:1px solid var(--rule);text-align:left} th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.n{font-family:var(--font-mono);text-align:right}
+.chk{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chk input[type=number]{font:inherit;font-family:var(--font-mono);width:110px;padding:8px;border:1.5px solid var(--rule-strong);border-radius:8px;background:var(--panel);color:var(--ink)}
+.fb{margin:8px 0 0;font-size:14px;min-height:1.5em}
+.note{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.right{display:grid;gap:14px;min-width:0}
+@media (max-width:920px){.layout{display:block}.stage{position:static}.right{margin-top:14px}}
+@media (max-width:520px){.inputs{grid-template-columns:1fr}}
+
+.layout{display:flex;flex-direction:column;gap:14px;align-items:stretch}
+canvas#cv{aspect-ratio:900/440;cursor:default}
+.bar2{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.bar2 label{display:flex;gap:8px;align-items:center;font-size:14px}
+.bar2 input[type=range]{width:140px}
+.scrub{flex:1 1 260px;min-width:200px}.scrub input{width:100%}
+.phs{display:flex;flex-wrap:wrap;gap:6px}
+.ph{font:inherit;font-size:13.5px;border:1.5px solid var(--rule-strong);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;min-height:36px}
+.ph b{font-family:var(--font-mono);margin-right:6px}
+.ph[aria-current="step"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:860px){.two{grid-template-columns:minmax(0,1fr)}}
+.big{font-family:var(--font-display);font-size:22px;margin:0 0 6px}
+.why{border-left:3px solid var(--ink);background:var(--soft);padding:8px 12px;margin:8px 0 0;font-size:14px}
+.pg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:12px}
+.pg div{background:var(--soft);border-radius:8px;padding:6px 10px}
+.pg span{display:block;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.pg b{font-family:var(--font-mono);font-weight:500;font-size:17px}
+.lgd{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.lg{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;width:100%;text-align:left;font:inherit;background:none;border:1px solid transparent;border-radius:8px;padding:6px;cursor:pointer;color:var(--ink)}
+.lg:hover,.lg.on{background:var(--soft);border-color:var(--rule-strong)}
+.lg b{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font:600 12px var(--font-mono)}
+.lg.on b{background:var(--hi);color:#18202B}
+.lg span{font-size:13.5px;color:var(--muted)} .lg strong{color:var(--ink);font-weight:600}
+canvas#gr{aspect-ratio:16/8}
+.key{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted);margin-top:6px}
+.key i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px}
+</style>
+<div class="wrap">
+<header>
+ <h1>Princip vstřikovacího lisu</h1>
+ <p class="lead">Řez strojem pro vstřikování plastů. Sledujte jeden celý cyklus: forma se zavře, šnek vstříkne taveninu do dutiny, díl chladne a mezitím se připravuje další dávka, pak se forma otevře a díl vypadne. Číslované části můžete kliknutím zvýraznit.</p>
+</header>
+<div class="layout">
+ <section class="panel" aria-label="Schéma vstřikovacího lisu">
+  <canvas id="cv" role="img" aria-label="Schematický řez vstřikovacím lisem: násypka, šnek, topná pásma, tryska, forma a uzavírací jednotka"></canvas>
+  <div class="bar2" style="margin-top:10px">
+   <button class="btn primary" id="play" type="button">❚❚ Pauza</button>
+   <button class="btn" id="rst" type="button">Výchozí nastavení</button>
+   <label>Rychlost <input type="range" id="spd" min="1" max="6" value="3"><output id="oSpd"></output></label>
+   <div class="scrub"><input type="range" id="scr" min="0" max="1000" value="0" aria-label="Poloha v cyklu"></div>
+  </div>
+  <div class="phs" id="phs" role="group" aria-label="Fáze cyklu" style="margin-top:10px"></div>
+ </section>
+ <div class="two">
+  <section class="panel">
+   <h2>Co se právě děje</h2>
+   <p class="big" id="pT"></p><p id="pD" style="margin:0"></p><p class="why" id="pW"></p>
+   <div class="pg">
+    <div><span>Čas v cyklu</span><b id="gT"></b></div><div><span>Tlak v dutině</span><b id="gP"></b></div>
+    <div><span>Teplota dílu</span><b id="gC"></b></div><div><span>Uzavírací síla</span><b id="gF"></b></div>
+   </div>
+   <p class="note">Hodnoty jsou ilustrační. Skutečný cyklus trvá podle dílu od několika sekund po minuty.</p>
+  </section>
+  <section class="panel">
+   <h2>Průběh jednoho cyklu</h2>
+   <canvas id="gr" role="img" aria-label="Graf tlaku, teploty dílu, polohy šneku a formy v průběhu cyklu"></canvas>
+   <div class="key"><span><i style="background:var(--hot)"></i>tlak v dutině</span><span><i style="background:var(--cool)"></i>teplota dílu</span><span><i style="background:var(--ok)"></i>poloha šneku</span><span><i style="background:var(--muted)"></i>otevření formy</span></div>
+  </section>
+ </div>
+ <section class="panel">
+  <h2>Části stroje (klikněte pro zvýraznění)</h2>
+  <ul class="lgd" id="lgd"></ul>
+ </section>
+</div>
+</div>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function ease(u){u=clamp(u,0,1);return u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;}
+function fx(x,d){return (+x).toFixed(d).replace(".",",");}
+function lerp(a,b,t){return a+(b-a)*t;}
+var TAU=Math.PI*2,reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var CYC=30; /* illustrative seconds per cycle */
+var PH=[
+ {n:"Zavření formy",s:"Zavření",a:0,b:.08,d:"Hydraulická uzavírací jednotka posune pohyblivou desku s polovinou formy k pevné polovině. Jádro vjede do dutiny a mezi oběma polovinami vznikne prostor ve tvaru dílu (zde kelímek).",w:"Dutina je zatím prázdná. Tryska je přitlačená k vtokové vložce formy."},
+ {n:"Upnutí formy",s:"Upnutí",a:.08,b:.13,d:"Uzavírací jednotka vyvine velkou sílu, která drží formu zavřenou. Šipky ukazují uzavírací sílu.",w:"Tavenina bude tlačit na stěny dutiny velkým tlakem. Uzavírací síla musí být větší než tlak krát průmětná plocha dílu, jinak by se forma rozevřela a vznikly by otřepy."},
+ {n:"Vstřikování",s:"Vstřikování",a:.13,b:.28,d:"Šnek se neotáčí a posouvá se vpřed jako píst. Tavenina nahromaděná před jeho čelem proudí tryskou, vtokem a vtokovým ústím do dutiny a vyplní ji od dna kelímku k okraji.",w:"Tlak rychle roste, protože tavenina naráží na odpor studených stěn formy. Před čelem šnek zůstane malý polštář taveniny."},
+ {n:"Dotlak",s:"Dotlak",a:.28,b:.40,d:"Dutina je plná, ale tavenina při chladnutí zmenšuje objem. Šnek proto ještě tlačí nižším tlakem a doplňuje materiál, dokud vtokové ústí nezatuhne.",w:"Bez dotlaku by v dílu vznikly propadliny nebo dutiny. Jakmile ústí zatuhne (zešedne), tavenina už nemůže zpět ani dál a dotlak končí."},
+ {n:"Chlazení a dávkování",s:"Chlazení",a:.40,b:.78,d:"Díl chladne od stěn formy, ve kterých proudí voda. Současně se šnek otáčí: z násypky nabírá granulát, žene ho vpřed, ohřívá ho topnými pásy a hnětením ho taví. Tavenina se hromadí před čelem a odtlačuje šnek dozadu.",w:"Dávkování probíhá při chlazení, aby se nezdržoval cyklus. Barva v kanálu ukazuje, jak se z pevných granulí (šedé) stává tavenina (oranžová)."},
+ {n:"Otevření formy",s:"Otevření",a:.78,b:.88,d:"Díl je dostatečně ztuhlý. Uzavírací síla se uvolní a pohyblivá polovina formy odjede.",w:"Plast se při chladnutí smrští a stáhne se na jádro, proto díl zůstane v pohyblivé polovině."},
+ {n:"Vyhození dílu",s:"Vyhození",a:.88,b:1,d:"Vyhazovače vysunou díl z jádra a ten padá do přepravky. Vyhazovače se vrátí a forma se zavře, cyklus začíná znovu.",w:"Další dávka taveniny před šnekem je už připravena, proto může další vstřik začít hned po zavření formy."}
+];
+var PARTS=[
+ ["Násypka","Zásobník s granulátem (drobné kuličky plastu). Granulát padá do válce vlastní tíhou."],
+ ["Šnek","Otáčením dopravuje, stlačuje a hněte materiál. Při vstřikování se pohybuje vpřed jako píst a při dávkování se odtlačuje dozadu."],
+ ["Topná pásma","Elektrické pásy na válci. Teplota roste od násypky k trysce, aby se granulát postupně roztavil."],
+ ["Tryska","Konec válce. Je přitlačená k formě a tavenina jí proudí do vtoku."],
+ ["Pevná polovina formy","Obsahuje dutinu (negativ vnějšího tvaru dílu) a vtok, kterým tavenina vstupuje."],
+ ["Pohyblivá polovina formy","Nese jádro, které tvoří vnitřní tvar dílu, a otevírá a zavírá se s pohyblivou deskou."],
+ ["Chladicí kanály","Proudí v nich voda, která odvádí teplo z taveniny, aby díl rychle ztuhl."],
+ ["Vyhazovače","Kolíky, které po otevření formy vysunou díl z jádra."],
+ ["Uzavírací jednotka","Hydraulický válec s deskami a vodicími sloupky. Zavírá formu a drží ji zavřenou proti tlaku taveniny."],
+ ["Pohon šneku","Hydromotor nebo elektromotor, který šnek otáčí při dávkování."]
+];
+/* ---------- cycle functions of t in [0,1) ---------- */
+function moldOpen(t){return t<.08?90*(1-ease(t/.08)):t<.78?0:t<.88?90*ease((t-.78)/.10):90;}
+function clampF(t){return t<.08?0:t<.13?ease((t-.08)/.05):t<.78?1:t<.80?1-ease((t-.78)/.02):0;}
+function fill(t){return t<.13?0:t<.28?ease((t-.13)/.15):1;}
+function screwX(t){return t<.13?390:t<.28?390+50*ease((t-.13)/.15):t<.40?440:t<.70?440-50*((t-.40)/.30):390;}
+function rotTurns(t){return t<.40?0:t<.70?8*(t-.40)/.30:8;}
+function ejec(t){return t<.88?0:t<.94?40*ease((t-.88)/.06):t<.99?40*(1-ease((t-.94)/.05)):0;}
+function pressure(t){
+ if(t<.13||t>=.80)return 0;
+ if(t<.26)return 90*Math.pow((t-.13)/.13,1.4);
+ if(t<.28)return 90;
+ if(t<.40)return lerp(50,44,(t-.28)/.12);
+ if(t<.44)return lerp(44,8,(t-.40)/.04);
+ if(t<.78)return lerp(8,2,(t-.44)/.34);
+ return lerp(2,0,(t-.78)/.02);
+}
+function partT(t){if(t<.13)return null;return t<.20?235:60+175*Math.exp(-(t-.20)/.18);}
+var TREL=(function(){for(var t=.88;t<1;t+=.0005){if(ejec(t)>=34&&t<.94)return t;}return .93;})();
+function partOn(t){return t>=.13;}
+function fall(t){return t<TREL?0:Math.pow((t-TREL)/.05,2)*60;}
+function phaseOf(t){for(var i=0;i<PH.length;i++)if(t>=PH[i].a&&t<PH[i].b)return i;return PH.length-1;}
+/* ---------- state ---------- */
+var S={t:0,play:!reduce,spd:3,sel:-1,clock:0};
+var SPEEDS=[.25,.5,1,1.5,2,3];
+/* ---------- drawing ---------- */
+var cv=$("cv"),ctx=cv.getContext("2d"),K=1;
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue("--"+n).trim();}
+function size(cn,w,h){var r=cn.getBoundingClientRect(),d=window.devicePixelRatio||1,cw=Math.max(80,r.width),ch=cw*h/w;cn.width=Math.round(cw*d);cn.height=Math.round(ch*d);return [cw,d];}
+var gr=$("gr"),gctx=gr.getContext("2d"),GW=0,GH=0;
+function resize(){var a=size(cv,900,440);K=a[0]/900;ctx.setTransform(a[1]*K,0,0,a[1]*K,0,0);var b=size(gr,16,8);gctx.setTransform(b[1],0,0,b[1],0,0);GW=b[0];GH=b[0]/2;draw();}
+function mix(a,b,t){return [Math.round(lerp(a[0],b[0],t)),Math.round(lerp(a[1],b[1],t)),Math.round(lerp(a[2],b[2],t))];}
+function rgb(c){return "rgb("+c[0]+","+c[1]+","+c[2]+")";}
+function tcol(T){return rgb(mix([120,150,190],[240,115,35],clamp((T-60)/175,0,1)));}
+function R(x,y,w,h,f,s,lw){ctx.beginPath();ctx.rect(x,y,w,h);if(f){ctx.fillStyle=f;ctx.fill();}if(s){ctx.strokeStyle=s;ctx.lineWidth=lw||1.4;ctx.stroke();}}
+function halo(t,x,y,col,font,al){ctx.font=font||'600 12px "IBM Plex Sans",system-ui,sans-serif';ctx.textAlign=al||"center";ctx.textBaseline="middle";ctx.lineWidth=4;ctx.strokeStyle=css("stage");ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);}
+function arrow(x0,y0,x1,y1,col,w){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||3;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();var a=Math.atan2(y1-y0,x1-x0);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-9*Math.cos(a-.4),y1-9*Math.sin(a-.4));ctx.lineTo(x1-9*Math.cos(a+.4),y1-9*Math.sin(a+.4));ctx.closePath();ctx.fill();}
+var seeds=[];for(var i0=0;i0<90;i0++)seeds.push([Math.random(),Math.random()]);
+var hopSeeds=[];for(i0=0;i0<46;i0++)hopSeeds.push([Math.random(),Math.random()]);
+var LABELS=[[150,92,150,112],[240,340,240,262],[368,176,368,206],[497,186,497,238],[540,126,540,166],[610,126,610,166],[545,372,545,322],[606,386,606,296],[800,186,800,214],[56,340,56,292]];
+function rc(u){return u>=-130?22:u>=-230?lerp(10,22,(u+230)/100):10;}
+function draw(){
+ if(!GW)return;
+ var t=S.t,d=moldOpen(t),fp=fill(t),xt=screwX(t),ph=rotTurns(t),ej=ejec(t),Fc=clampF(t),Tp=partT(t),Pp=pressure(t);
+ var ink=css("ink"),mut=css("muted"),mach=css("mach"),mach2=css("mach2"),dark=css("dark"),hot=css("hot"),cool=css("cool"),pin=css("pin"),hi=css("hi");
+ ctx.clearRect(0,0,900,440);ctx.lineJoin="round";
+ /* bed */
+ R(10,400,880,18,mach2,ink);
+ /* tie bars */
+ R(495,162,385,7,mach2,ink,1);R(495,331,385,7,mach2,ink,1);
+ /* injection unit: motor */
+ R(20,212,72,76,dark,ink);
+ var gAng=ph*TAU;ctx.save();ctx.translate(56,250);ctx.rotate(gAng);ctx.strokeStyle=mach2;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,22,0,TAU);ctx.stroke();for(var k=0;k<4;k++){ctx.rotate(Math.PI/2);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(22,0);ctx.stroke();}ctx.restore();
+ /* barrel outer and bore */
+ R(100,212,380,76,mach2,ink);
+ var gradX0=xt-230,gradX1=xt-110;var g=ctx.createLinearGradient(gradX0,0,gradX1,0);g.addColorStop(0,"rgb(176,186,198)");g.addColorStop(1,"rgb(240,130,40)");
+ R(100,222,380,56,g,ink,1);
+ /* screw: core and flights */
+ var pitch=22,phf=ph%1;
+ ctx.beginPath();ctx.moveTo(100,250-10);
+ var x;for(x=100;x<=xt;x+=5)ctx.lineTo(x,250-rc(x-xt));
+ ctx.lineTo(xt,228);ctx.lineTo(xt+16,242);ctx.lineTo(xt+16,258);ctx.lineTo(xt,272);
+ for(x=xt;x>=100;x-=5)ctx.lineTo(x,250+rc(x-xt));
+ ctx.closePath();ctx.fillStyle=mach;ctx.fill();ctx.strokeStyle=ink;ctx.lineWidth=1.4;ctx.stroke();
+ ctx.strokeStyle=ink;ctx.lineWidth=3;
+ for(var j=0;j<24;j++){
+  var fxp=xt-6-j*pitch+phf*pitch;if(fxp<108||fxp>xt-4)continue;
+  var r1=rc(fxp-xt);ctx.beginPath();ctx.moveTo(fxp,250-r1);ctx.lineTo(fxp+9,222);ctx.stroke();
+  var fx2=fxp+pitch/2;if(fx2<xt-4&&fx2>108){var r2=rc(fx2-xt);ctx.beginPath();ctx.moveTo(fx2,250+r2);ctx.lineTo(fx2+9,278);ctx.stroke();}
+ }
+ R(92,242,12,16,mach,ink,1.2);
+ /* granules moving in the feed zone */
+ for(j=0;j<seeds.length;j++){
+  var s0=seeds[j],sp=(s0[0]+ph*.16)%1,gx=112+sp*(xt-112-30),u=gx-xt;if(u>-120)continue;
+  var core=rc(u),band=s0[1]<.5,gy=band?lerp(224,250-core-2,s0[1]*2):lerp(250+core+2,276,(s0[1]-.5)*2);
+  var m2=clamp((u+230)/110,0,1);ctx.fillStyle=rgb(mix([232,236,240],[250,160,70],m2));ctx.beginPath();ctx.arc(gx,gy,2.4,0,TAU);ctx.fill();
+ }
+ /* heater bands */
+ var temps=[190,210,230,245];
+ for(j=0;j<4;j++){var bx=294+j*50,hc=mix([110,120,135],[255,105,35],(temps[j]-170)/90);R(bx,208,26,84,rgb(hc),ink,1.4);}
+ halo("190 °C",307,306,mut,'500 11px "IBM Plex Mono",monospace');halo("245 °C",457,306,mut,'500 11px "IBM Plex Mono",monospace');
+ /* hopper */
+ ctx.beginPath();ctx.moveTo(108,104);ctx.lineTo(192,104);ctx.lineTo(172,222);ctx.lineTo(128,222);ctx.closePath();ctx.fillStyle="rgb(226,231,238)";ctx.fill();ctx.strokeStyle=ink;ctx.lineWidth=1.6;ctx.stroke();
+ for(j=0;j<hopSeeds.length;j++){var hs=hopSeeds[j],hy=lerp(112,216,(hs[1]+(S.play&&ph>0?S.clock*.05:0))%1),wd=lerp(90,40,(hy-104)/118),hx=150+(hs[0]-.5)*(wd-8);ctx.fillStyle=rgb(mix([176,186,198],[205,214,224],hs[0]));ctx.beginPath();ctx.arc(hx,hy,3,0,TAU);ctx.fill();}
+ /* nozzle */
+ ctx.beginPath();ctx.moveTo(480,212);ctx.lineTo(480,288);ctx.lineTo(510,260);ctx.lineTo(510,240);ctx.closePath();ctx.fillStyle=mach2;ctx.fill();ctx.strokeStyle=ink;ctx.stroke();
+ ctx.beginPath();ctx.moveTo(480,222);ctx.lineTo(480,278);ctx.lineTo(510,253);ctx.lineTo(510,247);ctx.closePath();ctx.fillStyle="rgb(240,130,40)";ctx.fill();
+ /* fixed platen and mold half */
+ R(495,150,20,200,mach,ink);R(515,170,50,160,mach2,ink);
+ R(525,205,40,90,dark);
+ /* sprue and gate */
+ var frozen=t>=.40&&t<.78?clamp((t-.38)/.06,0,1):t>=.78?1:0,gc=fp>0&&t<.80?rgb(mix([240,115,35],[150,165,185],frozen)):dark;
+ R(510,247,15,6,fp>0?gc:dark);
+ /* part */
+ var pOn=partOn(t)&&fall(t)<80&&(t<.98);
+ var pcol=Tp?tcol(Tp):"rgb(150,165,185)";
+ if(pOn){
+  var xo=d-ej,yo=fall(t),al=t>TREL?clamp(1-(yo-30)/50,0,1):1;ctx.save();ctx.globalAlpha=al;
+  var hb=90*Math.min(1,fp/.25),L=30*clamp((fp-.25)/.75,0,1);
+  ctx.fillStyle=pcol;ctx.strokeStyle=ink;ctx.lineWidth=1;
+  ctx.fillRect(525+xo,250-hb/2+yo,10,hb);ctx.fillRect(535+xo,205+yo,L,15);ctx.fillRect(535+xo,280+yo,L,15);
+  ctx.restore();
+ }
+ /* moving half with the core */
+ R(565+d,170,60,160,mach2,ink);R(535+d,220,30,60,mach2,ink);
+ /* cooling channels */
+ var off=-S.clock*18;ctx.strokeStyle=cool;ctx.lineWidth=3;ctx.setLineDash([7,5]);ctx.lineDashOffset=off;
+ [[518,563,186],[518,563,314],[568+d,620+d,186],[568+d,620+d,314]].forEach(function(c){ctx.beginPath();ctx.moveTo(c[0],c[2]);ctx.lineTo(c[1],c[2]);ctx.stroke();});
+ ctx.setLineDash([]);
+ /* ejector pins */
+ [212,288].forEach(function(y){R(565+d-ej,y-2.5,ej+36,5,pin,ink,1);});
+ /* moving platen, rod, clamp cylinder */
+ R(625+d,150,25,200,mach,ink);R(650+d,243,125,14,mach2,ink);
+ R(770,214,110,72,"rgb(226,231,238)",ink);R(775+d,218,12,64,mach,ink);R(880,150,14,200,mach,ink);
+ /* injection pressure arrow and clamp arrows */
+ if(Fc>.05){var al2=Fc;ctx.globalAlpha=al2;arrow(675,196,646,196,hi,4);arrow(675,304,646,304,hi,4);halo("Fu",690,250,ink,'700 14px "IBM Plex Mono",monospace');ctx.globalAlpha=1;}
+ if(t>=.13&&t<.40){var scl=Pp/90;arrow(xt-26,250,xt-26+20*scl+8,250,pin,4);}
+ /* bin */
+ ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(574,352);ctx.lineTo(580,394);ctx.lineTo(650,394);ctx.lineTo(656,352);ctx.stroke();
+ /* pressure and phase labels */
+ halo("p = "+fx(Pp,0)+" MPa",595+d/2,104,Pp>1?pin:mut,'600 13px "IBM Plex Mono",monospace');
+ halo("trysk. válec",100+190,196,mut,'500 11px "IBM Plex Sans",system-ui,sans-serif');
+ halo("forma",595+d/2,358,mut,'500 11px "IBM Plex Sans",system-ui,sans-serif');
+ /* numbered labels */
+ for(j=0;j<LABELS.length;j++){
+  var lb=LABELS[j],lx=lb[0],ly=lb[1],tx=lb[2],ty=lb[3];
+  if(j===5||j===7){lx+=d;tx+=d;}
+  if(j===8){lx=800;tx=800;}
+  var on=S.sel===j;
+  ctx.strokeStyle=ink;ctx.globalAlpha=.7;ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(tx,ty);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+  ctx.beginPath();ctx.arc(lx,ly,11,0,TAU);ctx.fillStyle=on?hi:css("panel");ctx.fill();ctx.strokeStyle=ink;ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle=on?"#18202B":ink;ctx.font='600 12px "IBM Plex Mono",monospace';ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(String(j+1),lx,ly+.5);
+ }
+ /* highlight */
+ if(S.sel>=0){
+  var rects={0:[[118,100,84,124]],1:[[100,222,xt-100+16,56]],2:[[290,206,170,86]],3:[[478,210,34,80]],4:[[495,150,70,200]],5:[[535+d,170,90,160]],6:[[518,178,46,16],[518,306,46,16],[568+d,178,52,16],[568+d,306,52,16]],7:[[565+d-ej-2,206,ej+38,12],[565+d-ej-2,282,ej+38,12]],8:[[625+d,150,270-d,200]],9:[[20,212,72,76]]}[S.sel];
+  ctx.globalAlpha=.3;ctx.fillStyle=hi;rects.forEach(function(r){ctx.fillRect(r[0],r[1],r[2],r[3]);});ctx.globalAlpha=1;ctx.strokeStyle=hi;ctx.lineWidth=2.5;rects.forEach(function(r){ctx.strokeRect(r[0],r[1],r[2],r[3]);});
+ }
+ /* readouts */
+ var pi=phaseOf(t);
+ $("pT").textContent=(pi+1)+". "+PH[pi].n;$("pD").textContent=PH[pi].d;$("pW").textContent=PH[pi].w;
+ $("gT").textContent=fx(t*CYC,1)+" s";$("gP").textContent=fx(Pp,0)+" MPa";$("gC").textContent=Tp&&t<.98&&fall(t)<80?fx(Tp,0)+" °C":"–";$("gF").textContent=Fc>.02?fx(Fc*800,0)+" kN":"0 kN";
+ var pills=$("phs").children;for(j=0;j<pills.length;j++){if(j===pi)pills[j].setAttribute("aria-current","step");else pills[j].removeAttribute("aria-current");}
+ drawGraph(t);
+}
+function drawGraph(t){
+ var m={l:8,r:8,t:22,b:20},w=GW-m.l-m.r,h=GH-m.t-m.b,rule=css("rule"),mut=css("muted"),ink=css("ink");
+ gctx.clearRect(0,0,GW,GH);gctx.font='11px "IBM Plex Mono",monospace';
+ PH.forEach(function(p,i){gctx.fillStyle=i%2?"rgba(130,140,155,.10)":"rgba(130,140,155,.04)";gctx.fillRect(m.l+p.a*w,m.t,(p.b-p.a)*w,h);gctx.fillStyle=mut;gctx.textAlign="center";gctx.textBaseline="middle";gctx.fillText(String(i+1),m.l+(p.a+p.b)/2*w,m.t-10);});
+ gctx.strokeStyle=rule;gctx.lineWidth=1;gctx.strokeRect(m.l,m.t,w,h);
+ function curve(fn,col,dash){gctx.strokeStyle=col;gctx.lineWidth=2.2;gctx.setLineDash(dash||[]);gctx.beginPath();var f=true;for(var i=0;i<=300;i++){var tt=i/300*.9999,v=fn(tt);if(v===null){f=true;continue;}var x=m.l+i/300*w,y=m.t+h-clamp(v,0,1)*h;if(f){gctx.moveTo(x,y);f=false;}else gctx.lineTo(x,y);}gctx.stroke();gctx.setLineDash([]);}
+ curve(function(x){return pressure(x)/95;},css("hot"));
+ curve(function(x){var T=partT(x);return T===null||x>.96?null:(T-40)/220;},css("cool"));
+ curve(function(x){return (screwX(x)-390)/50*.9+.03;},css("ok"));
+ curve(function(x){return moldOpen(x)/90*.9+.03;},mut,[4,3]);
+ gctx.strokeStyle=ink;gctx.lineWidth=2;gctx.beginPath();gctx.moveTo(m.l+t*w,m.t);gctx.lineTo(m.l+t*w,m.t+h);gctx.stroke();
+ gctx.fillStyle=mut;gctx.textAlign="left";gctx.fillText("čísla nahoře = fáze cyklu 1 až 7",m.l,GH-6);
+}
+/* ---------- UI ---------- */
+var phs=$("phs");PH.forEach(function(p,i){var b=document.createElement("button");b.type="button";b.className="ph";b.innerHTML="<b>"+(i+1)+"</b>"+p.s;b.addEventListener("click",function(){S.t=p.a+.001;S.play=false;ui();draw();});phs.appendChild(b);});
+var lgd=$("lgd");PARTS.forEach(function(p,i){var li=document.createElement("li"),b=document.createElement("button");b.type="button";b.className="lg";b.innerHTML="<b>"+(i+1)+"</b><span><strong>"+p[0]+".</strong> "+p[1]+"</span>";
+ b.addEventListener("click",function(){S.sel=S.sel===i?-1:i;ui();draw();});li.appendChild(b);lgd.appendChild(li);});
+function ui(){
+ $("play").textContent=S.play?"❚❚ Pauza":"▶ Přehrát";$("oSpd").textContent="×"+fx(SPEEDS[S.spd-1],2).replace(",00","").replace(/0$/,"");
+ $("scr").value=S.t*1000;
+ Array.prototype.forEach.call(lgd.querySelectorAll(".lg"),function(b,i){b.classList.toggle("on",i===S.sel);});
+}
+$("play").addEventListener("click",function(){S.play=!S.play;ui();});
+$("rst").addEventListener("click",function(){S.t=0;S.spd=3;S.sel=-1;S.play=!reduce;$("spd").value=3;ui();draw();});
+$("spd").addEventListener("input",function(){S.spd=+this.value;ui();});
+$("scr").addEventListener("input",function(){S.t=this.value/1000;S.play=false;ui();draw();});
+cv.addEventListener("click",function(e){
+ var r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*900,y=(e.clientY-r.top)/r.height*440,d=moldOpen(S.t),hit=-1;
+ LABELS.forEach(function(l,j){var lx=l[0]+((j===5||j===7)?d:0);if(j===8)lx=800;if(Math.hypot(x-lx,y-l[1])<14)hit=j;});
+ if(hit>=0){S.sel=S.sel===hit?-1:hit;ui();draw();}
+});
+var last=performance.now();
+function loop(now){
+ var dt=Math.min(.05,(now-last)/1000);last=now;S.clock+=dt;
+ if(S.play){S.t+=dt*SPEEDS[S.spd-1]/20;if(S.t>=1)S.t-=1;$("scr").value=S.t*1000;}
+ draw();requestAnimationFrame(loop);
+}
+if(window.ResizeObserver)new ResizeObserver(resize).observe(cv);window.addEventListener("resize",resize);
+ui();resize();requestAnimationFrame(loop);
+window.__t=function(t){S.play=false;S.t=t;ui();draw();};
+})();
+</script>
+
+</body></html>

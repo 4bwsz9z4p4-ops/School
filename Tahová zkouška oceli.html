@@ -1,0 +1,772 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Tahová zkouška oceli</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column, sticky chapter bar, one hands-on demo per chapter.
+   Palette: drafting-paper neutrals. The five zones of the tensile diagram keep one colour everywhere:
+   pružná blue, tečení orange, zpevňování green, krčení violet, lom red. */
+:root{
+  --bg:#EEF1F5; --panel:#FFFFFF; --soft:#F5F7FA; --ink:#18202B; --muted:#566273;
+  --rule:#D5DCE5; --rule-strong:#9FACBD;
+  --z1:#2B59C9; --z2:#C2570F; --z3:#12795C; --z4:#7A3FB0; --z5:#B3261E; --ok:#12795C; --bad:#B3261E;
+  --on-ink:#FFFFFF; --focus:#2B59C9;
+  --font-display:'Archivo','Arial Narrow',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F141B; --panel:#171E28; --soft:#1C2531; --ink:#E7ECF2; --muted:#9AA7B8;
+    --rule:#2A3441; --rule-strong:#4A5A72;
+    --z1:#7DA2FF; --z2:#FF9B5E; --z3:#5ED6B0; --z4:#C79BFF; --z5:#FF7B72; --ok:#5ED6B0; --bad:#FF7B72;
+    --on-ink:#0F141B; --focus:#7DA2FF; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --panel:#171E28; --soft:#1C2531; --ink:#E7ECF2; --muted:#9AA7B8;
+  --rule:#2A3441; --rule-strong:#4A5A72;
+  --z1:#7DA2FF; --z2:#FF9B5E; --z3:#5ED6B0; --z4:#C79BFF; --z5:#FF7B72; --ok:#5ED6B0; --bad:#FF7B72;
+  --on-ink:#0F141B; --focus:#7DA2FF; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.6;
+  padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.wrap{max-width:940px;margin-inline:auto}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(28px,5vw,44px);line-height:1.08;letter-spacing:-.01em;margin:0 0 10px;text-wrap:balance}
+.lead{margin:0 0 6px;color:var(--muted);max-width:66ch}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);margin:14px 0 6px;padding:8px 0;border-bottom:1px solid var(--rule);display:flex;gap:6px;overflow-x:auto}
+.nav button{flex:0 0 auto;font:inherit;font-size:14px;padding:6px 12px;min-height:36px;border-radius:999px;border:1px solid var(--rule-strong);background:var(--panel);color:var(--ink);cursor:pointer;white-space:nowrap}
+.nav button:hover{border-color:var(--ink)}
+.nav button:focus-visible,.btn:focus-visible,.opt:focus-visible,.zc:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.sec{margin-top:44px;scroll-margin-top:64px}
+.sec h2{display:flex;align-items:baseline;gap:12px;font-family:var(--font-display);font-size:clamp(22px,3.4vw,30px);line-height:1.15;margin:0 0 14px;text-wrap:balance}
+.sec h2 .no{font-family:var(--font-mono);font-weight:500;font-size:.6em;color:var(--muted);border:1.5px solid var(--rule-strong);border-radius:6px;padding:1px 8px}
+.sec p{margin:0 0 12px;max-width:68ch}
+.sec h3{font-size:17px;margin:22px 0 8px}
+.formulas{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 14px}
+.formula{display:inline-block;font-family:var(--font-mono);font-size:15px;background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--ink);border-radius:6px;padding:8px 14px;max-width:100%;overflow-x:auto}
+.remember{border:1.5px solid var(--ink);border-radius:10px;padding:12px 16px;margin:16px 0;background:var(--panel);max-width:68ch}
+.remember b{display:block;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.remember p{margin:0}
+ul.tight,ol.tight{margin:0 0 12px;padding-left:22px;max-width:68ch}ul.tight li,ol.tight li{margin-bottom:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:12px 0 16px}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px;min-width:0}
+.card h4{margin:0 0 6px;font-size:15px}
+.card p{font-size:14.5px;margin:0 0 6px}
+.card ul{margin:0;padding-left:18px;font-size:14.5px}.card li{margin-bottom:3px}
+.card svg{width:100%;height:auto;display:block;margin-bottom:8px}
+.demo{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:16px;margin:20px 0;display:flex;flex-direction:column;gap:14px;min-width:0}
+.demo-h{font-family:var(--font-display);font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.ctls{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px 22px}
+.ctl{display:grid;grid-template-columns:1fr auto;gap:0 8px;align-items:baseline;min-width:0}
+.ctl label{font-size:14px}.ctl output{font-family:var(--font-mono);font-size:13px}
+.ctl input[type=range]{grid-column:1/-1;width:100%;margin:4px 0 0;accent-color:var(--ink);min-height:24px}
+.ctl select,.ctl input[type=number]{grid-column:1/-1;font:inherit;font-size:14px;padding:7px 8px;min-height:38px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--panel);color:var(--ink);margin-top:4px;width:100%}
+.chk{display:flex;align-items:center;gap:10px;font-size:14px;min-height:32px;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--ink);margin:0}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-size:14px;padding:8px 14px;min-height:40px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--ink);color:var(--on-ink);border-color:var(--ink);font-weight:600}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.ro{background:var(--soft);border-radius:8px;padding:8px 12px;min-width:0}
+.ro small{display:block;font-size:12px;color:var(--muted);line-height:1.3}
+.ro b{font-family:var(--font-mono);font-weight:500;font-size:18px;font-variant-numeric:tabular-nums}
+.ro.good b{color:var(--ok)}.ro.bad b{color:var(--bad)}
+canvas{display:block;width:100%;border-radius:8px;background:var(--soft)}
+.duo{display:grid;grid-template-columns:260px minmax(0,1fr);gap:12px}
+.note{font-size:13.5px;color:var(--muted);margin:0;max-width:none}
+.zbar{display:flex;flex-wrap:wrap;gap:6px}
+.zc{font:inherit;font-size:13px;padding:5px 11px;min-height:34px;border-radius:999px;border:1.5px solid var(--zc);color:var(--zc);background:var(--panel);cursor:pointer}
+.zc[aria-pressed="true"]{background:var(--zc);color:var(--on-ink);font-weight:600}
+.tabwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:480px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule)}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.sym{font-family:var(--font-mono);white-space:nowrap}td.val{font-family:var(--font-mono);white-space:nowrap;text-align:right}
+.qq{padding:14px 0;border-top:1px solid var(--rule)}.qq:first-child{border-top:0;padding-top:0}
+.qq p{margin:0 0 8px;font-weight:600;max-width:none}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{font:inherit;font-size:14.5px;text-align:left;padding:9px 12px;min-height:40px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--panel);color:var(--ink);cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--panel))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--panel))}
+.opt:disabled{cursor:default;color:var(--ink)}
+.expl{font-size:14px;color:var(--muted);margin-top:8px;display:none}
+.score{font-weight:600;margin-top:14px}
+@media (max-width:720px){.duo{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Tahová zkouška oceli</h1>
+  <p class="lead">Studijní materiál ke zkoušce, při které se ocelová tyč táhne až do přetržení. Projdete celý postup od vzorku po vyhodnocení diagramu. Na každé téma je krátký výklad a ukázka, kterou můžete sami ovládat.</p>
+</header>
+
+<nav class="nav" id="nav" aria-label="Kapitoly">
+  <button type="button" data-t="s1">1 Zkouška</button>
+  <button type="button" data-t="s2">2 Zkušební tyč</button>
+  <button type="button" data-t="s3">3 Tahový diagram</button>
+  <button type="button" data-t="s4">4 Charakteristiky</button>
+  <button type="button" data-t="s5">5 Počítání</button>
+  <button type="button" data-t="s6">6 Typy lomu</button>
+  <button type="button" data-t="s7">Test</button>
+</nav>
+
+<section class="sec" id="s1">
+  <h2><span class="no">1</span>K čemu je tahová zkouška</h2>
+  <p>Při tahové zkoušce se zkušební tyč upne do trhacího stroje a plynule se táhne, dokud se nepřetrhne. Stroj přitom zaznamenává sílu F a prodloužení tyče ΔL. Postup a označení stanovuje norma ČSN EN ISO 6892-1.</p>
+  <p>Ze záznamu zjistíme, jak velkou sílu materiál unese, kdy se začne trvale přetvářet, jak moc se před přetržením prodlouží a jak je tuhý. Tyto údaje jsou v materiálových listech a podle nich konstruktér volí ocel pro hřídele, šrouby i nosníky.</p>
+  <h3>Postup zkoušky</h3>
+  <ol class="tight">
+    <li>Změříme průměr d₀ a vyznačíme na tyči rysky, jejichž vzdálenost je počáteční měřená délka L₀.</li>
+    <li>Tyč upneme do čelistí. Horní čelist je pevná a spodní se pohybuje.</li>
+    <li>Tyč plynule zatěžujeme. Siloměr měří sílu F a extenzometr prodloužení ΔL.</li>
+    <li>Stroj kreslí diagram, dokud se tyč nepřetrhne.</li>
+    <li>Přetržené části složíme k sobě a změříme konečnou délku L<sub>u</sub> a nejmenší průměr v místě lomu d<sub>u</sub>.</li>
+  </ol>
+  <div class="formulas">
+    <span class="formula">σ = F / S₀  [MPa = N/mm²]</span>
+    <span class="formula">ε = ΔL / L₀  [bez jednotky, v %]</span>
+  </div>
+  <p>Napětí σ je síla vztažená na původní průřez S₀. Poměrné prodloužení ε je prodloužení vztažené na původní délku L₀. Díky nim se výsledek nezávisí na tom, jak tlustou nebo dlouhou tyč jsme zkoušeli.</p>
+</section>
+
+<section class="sec" id="s2">
+  <h2><span class="no">2</span>Zkušební tyč</h2>
+  <p>Zkušební tyč má dvě upínací hlavy a mezi nimi válcovou zkušební část. Hlavy jsou širší, aby se tyč přetrhla ve zkušební části, ne v čelistech. Měřená délka L₀ se u poměrné tyče odvozuje od průřezu:</p>
+  <div class="formulas">
+    <span class="formula">L₀ = 5,65 · √S₀ = 5 · d₀   (krátká tyč)</span>
+    <span class="formula">L₀ = 11,3 · √S₀ = 10 · d₀   (dlouhá tyč)</span>
+  </div>
+  <div class="demo" id="d1">
+    <div class="demo-h">Vyzkoušejte: rozměry tyče a potřebná síla</div>
+    <div class="ctls" id="d1c"></div>
+    <canvas id="d1v" style="height:190px" role="img" aria-label="Výkres zkušební tyče s kótami d0, L0 a Lc"></canvas>
+    <div class="readouts" id="d1o"></div>
+    <p class="note">Zkušební část má délku Lc ≥ L₀ + d₀/2. Potřebnou sílu stroje spočítáme z Fm = Rm · S₀.</p>
+  </div>
+  <div class="remember"><b>Pamatujte</b><p>Při dvojnásobném průměru je průřez čtyřnásobný, a proto i potřebná síla je čtyřnásobná. Stroj musí na tlustší tyč mít dostatečnou kapacitu.</p></div>
+</section>
+
+<section class="sec" id="s3">
+  <h2><span class="no">3</span>Tahový diagram</h2>
+  <p>Diagram ukazuje, jak závisí napětí σ na poměrném prodloužení ε. Má pět oblastí, které se na obrázku vyznačují barvami. Posuvník je rozdělený podle oblastí, takže každou z nich projdete stejně dlouhým pohybem, i když v diagramu je pružná část velmi úzká.</p>
+  <ul class="tight">
+    <li><b style="color:var(--z1)">1 Pružná oblast.</b> Napětí roste přímo úměrně s prodloužením (Hookův zákon σ = E · ε). Po odlehčení se tyč vrátí do původní délky.</li>
+    <li><b style="color:var(--z2)">2 Tečení (mez kluzu).</b> Materiál se trvale přetváří při téměř stejném napětí. Mají ji jen měkké oceli.</li>
+    <li><b style="color:var(--z3)">3 Zpevňování.</b> Pro další prodloužení je potřeba větší síla. Tyč se prodlužuje po celé délce rovnoměrně a zužuje se.</li>
+    <li><b style="color:var(--z4)">4 Krčení (kontrakce).</b> Od největší síly se deformace soustředí do jednoho místa, kde se tyč zužuje, a potřebná síla klesá.</li>
+    <li><b style="color:var(--z5)">5 Lom.</b> Tyč se přetrhne.</li>
+  </ul>
+
+  <div class="demo" id="d2">
+    <div class="demo-h">Vyzkoušejte: zkouška krok za krokem</div>
+    <div class="ctls" id="d2c"></div>
+    <div class="zbar" id="d2z" role="group" aria-label="Přeskočit na oblast diagramu"></div>
+    <div class="duo">
+      <canvas id="d2m" style="height:420px" role="img" aria-label="Trhací stroj se zkušební tyčí, která se při zkoušce prodlužuje a přetrhne"></canvas>
+      <canvas id="d2g" style="height:420px" role="img" aria-label="Tahový diagram napětí a prodloužení"></canvas>
+    </div>
+    <div class="readouts" id="d2o"></div>
+    <div class="ctls" id="d2x"></div>
+    <p class="note" id="d2n"></p>
+  </div>
+  <div class="remember"><b>Pamatujte</b><p>Diagram síla–prodloužení má stejný tvar jako diagram napětí–prodloužení. Liší se jen měřítko os: F = σ · S₀ a ΔL = ε · L₀. Dvě odlišně tlusté tyče z téhož materiálu mají v σ–ε diagramu stejnou křivku.</p></div>
+</section>
+
+<section class="sec" id="s4">
+  <h2><span class="no">4</span>Charakteristiky z diagramu</h2>
+  <p>Z diagramu a z přetržené tyče se zjišťují hodnoty, které se zapisují do materiálových listů. Tabulka níže se mění podle oceli vybrané v diagramu výše.</p>
+  <div class="tabwrap"><table id="tab" aria-label="Mechanické vlastnosti vybrané oceli"></table></div>
+  <div class="grid">
+    <div class="card"><h4>Mez kluzu Re</h4><p>Napětí, při kterém se materiál začne trvale deformovat. Horní mez ReH je vrchol před poklesem a dolní mez ReL je napětí na plošině.</p><p class="mono">Re = Fe / S₀</p></div>
+    <div class="card"><h4>Smluvní mez kluzu Rp0,2</h4><p>Používá se tam, kde výrazná mez kluzu chybí, například u zušlechtěných ocelí. Je to napětí, při kterém zůstane po odlehčení trvalá deformace 0,2 %.</p></div>
+    <div class="card"><h4>Mez pevnosti Rm</h4><p>Největší napětí v diagramu. Počítá se z největší síly, ne ze síly při přetržení.</p><p class="mono">Rm = Fm / S₀</p></div>
+    <div class="card"><h4>Tažnost A</h4><p>O kolik procent se zkušební část prodlouží po přetržení. Udává, jak je materiál tvárný.</p><p class="mono">A = (Lu − L₀) / L₀ · 100 %</p></div>
+    <div class="card"><h4>Kontrakce Z</h4><p>O kolik procent se zmenší průřez v místě lomu.</p><p class="mono">Z = (S₀ − Su) / S₀ · 100 %</p></div>
+    <div class="card"><h4>Modul pružnosti E</h4><p>Sklon pružné části diagramu. Pro všechny oceli je přibližně stejný, 210 GPa. Pevnější ocel není tužší, jen snese větší napětí.</p><p class="mono">E = σ / ε</p></div>
+  </div>
+</section>
+
+<section class="sec" id="s5">
+  <h2><span class="no">5</span>Počítání z naměřených hodnot</h2>
+  <p>Do kalkulačky zadejte hodnoty z protokolu o zkoušce. Předvyplněné číslo odpovídá měkké konstrukční oceli.</p>
+  <div class="demo" id="d5">
+    <div class="demo-h">Vyzkoušejte: vyhodnocení protokolu</div>
+    <div class="ctls" id="d5c"></div>
+    <div class="readouts" id="d5o"></div>
+    <p class="note">Postup: S₀ = π · d₀² / 4. Pak Re = Fe / S₀, Rm = Fm / S₀, A = (Lu − L₀) / L₀ a Z = (S₀ − Su) / S₀. Síly zadávejte v kN a pro výpočet napětí v MPa je převeďte na newtony.</p>
+  </div>
+</section>
+
+<section class="sec" id="s6">
+  <h2><span class="no">6</span>Typy lomu</h2>
+  <p>Tvar lomu na přetržené tyči prozradí, jak se materiál choval.</p>
+  <div class="grid">
+    <div class="card">
+      <svg viewBox="0 0 200 58" aria-hidden="true"><path d="M6 8H56C68 8 76 15 84 19L78 26L85 32L80 41C74 46 66 50 56 50H6Z" fill="color-mix(in srgb,var(--z4) 18%,var(--panel))" stroke="var(--z4)" stroke-width="2"/><path d="M194 8H144C132 8 124 15 116 19L122 26L115 32L120 41C126 46 134 50 144 50H194Z" fill="color-mix(in srgb,var(--z4) 18%,var(--panel))" stroke="var(--z4)" stroke-width="2"/></svg>
+      <h4>Houževnatý (tvárný) lom</h4>
+      <ul><li>před přetržením krčení</li><li>povrch lomu je matný a vláknitý</li><li>tvar „pohár a kužel“</li><li>velká tažnost A a kontrakce Z</li><li>dává varování, protože se materiál nejdřív znatelně deformuje</li></ul>
+      <p style="margin-top:6px">Typické pro měkké a houževnaté oceli.</p>
+    </div>
+    <div class="card">
+      <svg viewBox="0 0 200 58" aria-hidden="true"><path d="M6 8H96V50H6Z" fill="color-mix(in srgb,var(--z5) 14%,var(--panel))" stroke="var(--z5)" stroke-width="2"/><path d="M104 8H194V50H104Z" fill="color-mix(in srgb,var(--z5) 14%,var(--panel))" stroke="var(--z5)" stroke-width="2"/></svg>
+      <h4>Křehký lom</h4>
+      <ul><li>bez krčení, lom je rovný a kolmý na osu</li><li>povrch lomu je lesklý a zrnitý</li><li>malá tažnost A a kontrakce Z</li><li>nastává náhle bez varování, proto je nebezpečný</li></ul>
+      <p style="margin-top:6px">Typické pro šedou litinu, kalenou ocel nebo ocel za velmi nízké teploty.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="s7">
+  <h2><span class="no">?</span>Zkušební test</h2>
+  <p>Deset otázek k ověření. Po odpovědi se ukáže vysvětlení.</p>
+  <div class="demo"><div id="q"></div></div>
+</section>
+</div>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function fx(x,d){return (+x).toFixed(d===undefined?1:d).replace(".",",");}
+function css(){
+  var cs=getComputedStyle(document.documentElement),o={};
+  ["ink","muted","rule","rule-strong","soft","panel","z1","z2","z3","z4","z5","ok","bad"].forEach(function(k){o[k]=cs.getPropertyValue("--"+k).trim();});
+  return o;
+}
+function rgba(hex,a){
+  hex=hex.trim();if(hex.charAt(0)!=="#"||hex.length<7) return hex;
+  var n=parseInt(hex.slice(1,7),16);return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")";
+}
+function prep(cv){
+  var r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1,w=Math.max(10,Math.round(r.width)),h=Math.max(10,Math.round(r.height));
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}
+  var c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
+  return {c:c,w:w,h:h};
+}
+var redraws=[];
+function reg(f){redraws.push(f);f();}
+function redrawAll(){redraws.forEach(function(f){f();});}
+if(window.ResizeObserver){
+  var rso=new ResizeObserver(function(){redrawAll();});
+  ["d1v","d2m","d2g"].forEach(function(id){rso.observe($(id));});
+} else window.addEventListener("resize",redrawAll);
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",redrawAll);
+new MutationObserver(redrawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(redrawAll);
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function slider(host,st,key,label,min,max,step,fmt,onc){
+  var d=document.createElement("div"),id=host.id+"-"+key;d.className="ctl";
+  d.innerHTML='<label for="'+id+'">'+label+'</label><output for="'+id+'"></output><input type="range" id="'+id+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+st[key]+'">';
+  host.appendChild(d);
+  var inp=d.querySelector("input"),out=d.querySelector("output");
+  function show(){out.textContent=fmt(st[key]);}
+  inp.addEventListener("input",function(){st[key]=parseFloat(inp.value);show();onc();});
+  show();
+  return {set:function(v){st[key]=v;inp.value=v;show();},el:inp};
+}
+function select(host,st,key,label,opts,onc){
+  var d=document.createElement("div"),id=host.id+"-"+key;d.className="ctl";
+  d.innerHTML='<label for="'+id+'">'+label+'</label><select id="'+id+'"></select>';
+  opts.forEach(function(o){var e=document.createElement("option");e.value=o[0];e.textContent=o[1];d.querySelector("select").appendChild(e);});
+  host.appendChild(d);
+  var sel=d.querySelector("select");sel.value=st[key];
+  sel.addEventListener("change",function(){st[key]=sel.value;onc();});
+  return {set:function(v){st[key]=v;sel.value=v;}};
+}
+function toggle(host,st,key,label,onc){
+  var l=document.createElement("label");l.className="chk";
+  l.innerHTML='<input type="checkbox"'+(st[key]?" checked":"")+'>'+label;host.appendChild(l);
+  l.querySelector("input").addEventListener("change",function(e){st[key]=e.target.checked;onc();});
+  return l.querySelector("input");
+}
+function rd(label,val,cls){return '<div class="ro '+(cls||"")+'"><small>'+label+'</small><b>'+val+'</b></div>';}
+function niceStep(max,n){
+  var raw=max/n,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;
+  return (m<=1?1:m<=2?2:m<=5?5:10)*p;
+}
+
+/* monotone cubic (PCHIP) through the knots of a measured-looking curve */
+function pchip(P){
+  var n=P.length,x=P.map(function(p){return p[0];}),y=P.map(function(p){return p[1];}),h=[],d=[],m=[],i;
+  for(i=0;i<n-1;i++){h[i]=x[i+1]-x[i];d[i]=(y[i+1]-y[i])/h[i];}
+  for(i=1;i<n-1;i++){
+    if(d[i-1]*d[i]<=0) m[i]=0;
+    else{var w1=2*h[i]+h[i-1],w2=h[i]+2*h[i-1];m[i]=(w1+w2)/(w1/d[i-1]+w2/d[i]);}
+  }
+  function endd(h0,h1,d0,d1){
+    var v=((2*h0+h1)*d0-h0*d1)/(h0+h1);
+    if(v*d0<=0) return 0;
+    if(d0*d1<=0&&Math.abs(v)>3*Math.abs(d0)) return 3*d0;
+    return v;
+  }
+  m[0]=endd(h[0],h[1],d[0],d[1]);m[n-1]=endd(h[n-2],h[n-3],d[n-2],d[n-3]);
+  return function(t){
+    if(t<=x[0]) return y[0];if(t>=x[n-1]) return y[n-1];
+    var k=0;while(t>x[k+1]) k++;
+    var s=(t-x[k])/h[k],s2=s*s,s3=s2*s;
+    return (2*s3-3*s2+1)*y[k]+(s3-2*s2+s)*h[k]*m[k]+(-2*s3+3*s2)*y[k+1]+(s3-s2)*h[k]*m[k+1];
+  };
+}
+
+/* ---------- materials (typical values, E = 210 GPa) ---------- */
+var E=210000,D0=10,L0=50,S0=Math.PI*D0*D0/4;
+function elastic(ey){return [[0,0],[ey*0.5,ey*0.5*E],[ey*0.95,ey*0.95*E],[ey,ey*E]];}
+var ey1=265/E,ey2=375/E;
+var MATS={
+  s235:{name:"S235JR, měkká konstrukční ocel",plateau:true,ReH:265,ReL:245,Rm:410,Ag:0.18,eF:0.27,sF:300,Z:58,eEl:ey1,eL:0.021,
+    pts:elastic(ey1).concat([[ey1+0.0004,245],[0.0045,250],[0.008,243],[0.012,248],[0.016,244],[0.021,246],[0.04,300],[0.08,355],[0.13,392],[0.18,410],[0.23,380],[0.27,300]])},
+  c45:{name:"C45, uhlíková ocel (normalizovaná)",plateau:true,ReH:375,ReL:360,Rm:650,Ag:0.11,eF:0.17,sF:470,Z:45,eEl:ey2,eL:0.011,
+    pts:elastic(ey2).concat([[ey2+0.0004,360],[0.004,365],[0.007,358],[0.011,362],[0.02,440],[0.04,540],[0.07,610],[0.11,650],[0.14,610],[0.17,470]])},
+  zus:{name:"Zušlechtěná ocel, např. 42CrMo4",plateau:false,Rm:1050,Ag:0.07,eF:0.115,sF:800,Z:50,eEl:800/E,eL:800/E,
+    pts:[[0,0],[0.001905,400],[0.0036,756],[0.00381,800],[0.005,870],[0.007,920],[0.012,975],[0.025,1015],[0.045,1040],[0.07,1050],[0.09,1000],[0.115,800]]}
+};
+Object.keys(MATS).forEach(function(k){
+  var M=MATS[k];M.f=pchip(M.pts);
+  M.A=M.eF-M.sF/E;
+  if(!M.plateau){
+    var a=0.002,b=0.02,g=function(e){return M.f(e)-E*(e-0.002);},i;
+    for(i=0;i<60;i++){var mid=(a+b)/2;if(g(mid)>0) a=mid;else b=mid;}
+    M.eP=(a+b)/2;M.Rp=M.f(M.eP);
+  }
+});
+
+/* ---------- 2. test specimen ---------- */
+var d1={d:10,t:"5",rm:410};
+function r1(){
+  var d=d1.d,S=Math.PI*d*d/4,L=parseFloat(d1.t)*d,Lc=L+d/2,F=d1.rm*S/1000;
+  $("d1o").innerHTML=rd("Průřez S₀",fx(S,1)+" mm²")+rd("Měřená délka L₀",fx(L,0)+" mm")+rd("Délka Lc (min.)",fx(Lc,1)+" mm")+rd("Síla při Rm",fx(F,1)+" kN");
+  draw1(d,L,Lc);
+}
+function arrowDim(c,x1,y1,x2,y2,col){
+  c.strokeStyle=col;c.fillStyle=col;c.lineWidth=1.2;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();
+  var a=Math.atan2(y2-y1,x2-x1);
+  [[x1,y1,a+Math.PI],[x2,y2,a]].forEach(function(p){
+    c.beginPath();c.moveTo(p[0],p[1]);c.lineTo(p[0]-8*Math.cos(p[2]-0.4),p[1]-8*Math.sin(p[2]-0.4));c.lineTo(p[0]-8*Math.cos(p[2]+0.4),p[1]-8*Math.sin(p[2]+0.4));c.closePath();c.fill();
+  });
+}
+function draw1(d,L,Lc){
+  var P=prep($("d1v")),c=P.c,w=P.w,h=P.h,C=css();
+  var hd=1.6*d,hl=1.4*d,tl=0.7*d,T=2*(hl+tl)+Lc,sc=Math.min((w-48)/T,64/hd*1.0),x0=(w-T*sc)/2,cy=h/2-4;
+  function X(v){return x0+v*sc;}
+  var xg=hl+tl,pts=[[0,hd/2],[hl,hd/2],[xg,d/2],[xg+Lc,d/2],[xg+Lc+tl,hd/2],[T,hd/2]];
+  c.beginPath();
+  pts.forEach(function(p,i){c.lineTo(X(p[0]),cy-p[1]*sc);});
+  for(var i=pts.length-1;i>=0;i--) c.lineTo(X(pts[i][0]),cy+pts[i][1]*sc);
+  c.closePath();c.fillStyle=C.panel;c.fill();c.strokeStyle=C.ink;c.lineWidth=2;c.stroke();
+  c.strokeStyle=C.muted;c.lineWidth=1;c.setLineDash([12,3,2,3]);c.beginPath();c.moveTo(X(-0.3*d),cy);c.lineTo(X(T+0.3*d),cy);c.stroke();c.setLineDash([]);
+  var a=xg+d/4,b=a+L;
+  c.strokeStyle=C.z3;c.lineWidth=2;
+  [a,b].forEach(function(v){c.beginPath();c.moveTo(X(v),cy-d/2*sc-7);c.lineTo(X(v),cy+d/2*sc+7);c.stroke();});
+  c.font='600 13px "IBM Plex Sans",system-ui,sans-serif';c.textAlign="center";c.textBaseline="middle";
+  var yb=cy+hd/2*sc+24;
+  c.strokeStyle=C.muted;c.lineWidth=1;[a,b].forEach(function(v){c.beginPath();c.moveTo(X(v),cy+d/2*sc+8);c.lineTo(X(v),yb+5);c.stroke();});
+  arrowDim(c,X(a),yb,X(b),yb,C.z3);c.fillStyle=C.z3;c.fillText("L₀ = "+fx(L,0)+" mm",(X(a)+X(b))/2,yb+13);
+  var yt=cy-hd/2*sc-20;
+  c.strokeStyle=C.muted;[xg,xg+Lc].forEach(function(v){c.beginPath();c.moveTo(X(v),cy-d/2*sc-2);c.lineTo(X(v),yt-5);c.stroke();});
+  arrowDim(c,X(xg),yt,X(xg+Lc),yt,C.ink);c.fillStyle=C.ink;c.fillText("Lc ≥ "+fx(Lc,1)+" mm",(X(xg)+X(xg+Lc))/2,yt-11);
+  var xd=X(xg+Lc*0.5);
+  arrowDim(c,xd,cy-d/2*sc,xd,cy+d/2*sc,C.z2);
+  c.fillStyle=C.z2;c.textAlign="left";c.fillText("d₀ = "+fx(d,0)+" mm",xd+8,cy-d/2*sc-9);
+  c.fillStyle=C.muted;c.font='12px "IBM Plex Sans",system-ui,sans-serif';c.textAlign="center";
+  c.fillText("hlava",X(hl/2),cy+hd/2*sc+14);c.fillText("hlava",X(T-hl/2),cy+hd/2*sc+14);
+}
+(function(){
+  var h=$("d1c");
+  slider(h,d1,"d","Průměr d₀",6,25,1,function(v){return fx(v,0)+" mm";},r1);
+  select(h,d1,"t","Typ poměrné tyče",[["5","Krátká, L₀ = 5 · d₀"],["10","Dlouhá, L₀ = 10 · d₀"]],r1);
+  slider(h,d1,"rm","Mez pevnosti materiálu Rm",300,1200,10,function(v){return fx(v,0)+" MPa";},r1);
+  reg(r1);
+})();
+
+/* ---------- 3. tensile test: machine + diagram ---------- */
+var ZN=["Pružná oblast","Tečení","Zpevňování","Krčení","Lom"],ZC=["z1","z2","z3","z4","z5"];
+var ZT=[
+  "Pružná oblast: napětí roste přímo úměrně s prodloužením. Po odlehčení se tyč vrátí do původní délky. Sklon přímky je modul pružnosti E = 210 GPa.",
+  "Tečení: materiál se trvale přetváří při téměř stálém napětí, tedy při dolní mezi kluzu. Tyč se prodlužuje, i když síla neroste. Zkuste odlehčení: zůstane trvalé prodloužení.",
+  "Zpevňování: deformací se materiál zpevňuje, takže pro další prodloužení je potřeba větší síla. Tyč se rovnoměrně prodlužuje a zužuje po celé délce. Zkuste odlehčení: čára jde rovnoběžně s pružnou částí a zůstane trvalá deformace.",
+  "Krčení: od největší síly, tedy od meze pevnosti Rm, se deformace soustředí do jednoho místa a tyč se tam zužuje. Skutečné napětí v krčku roste, ale síla počítaná na původní průřez klesá.",
+  "Lom: tyč se přetrhla. Konec má tvar pohár a kužel, typický pro houževnatý lom. Z přetržené tyče se změří Lu a du, z nich tažnost A a kontrakce Z."
+];
+var S2={mat:"s235",p:0,unl:0,zoom:false,mode:"sig",compare:false,trueS:false,showRp:true,playing:false};
+var geo={l:0,pw:1,xmax:1};
+function MT(){return MATS[S2.mat];}
+function bounds(M){return M.plateau?[0,M.eEl,M.eL,M.Ag,M.eF]:[0,M.eEl,M.Ag,M.eF];}
+function zonesOf(M){return M.plateau?[1,2,3,4]:[1,3,4];}
+function strainAt(M,p){var B=bounds(M),n=B.length-1,u=clamp(p,0,1000)/1000*n,s=Math.min(Math.floor(u),n-1);return B[s]+(B[s+1]-B[s])*(u-s);}
+function invStrain(M,e){
+  var B=bounds(M),n=B.length-1,s=0;
+  if(e>=M.eF) return 1000;
+  while(s<n-1&&e>B[s+1]) s++;
+  return clamp((s+(e-B[s])/(B[s+1]-B[s]))/n*1000,0,1000);
+}
+function zoneAt(M,p){if(p>=1000) return 5;var n=bounds(M).length-1,s=Math.min(Math.floor(p/1000*n),n-1);return zonesOf(M)[s];}
+function state2(){
+  var M=MT(),p=S2.p,z=zoneAt(M,p),e=strainAt(M,p),sg=M.f(e),e0=e,s0=sg;
+  if(S2.unl>0&&(z===2||z===3)){sg=s0*(1-S2.unl);e=e0-(s0-sg)/E;}
+  var dm=D0/Math.sqrt(1+M.Ag),df=D0*Math.sqrt(1-M.Z/100),d;
+  if(e0<=M.Ag) d=D0/Math.sqrt(1+e0);
+  else d=dm-(dm-df)*Math.pow(clamp((e0-M.Ag)/(M.eF-M.Ag),0,1),1.3);
+  return {M:M,z:z,e:e,sg:sg,e0:e0,s0:s0,d:d,dm:dm,df:df,res:z>=2&&z<=3&&S2.unl>0?e0-s0/E:0};
+}
+function zcol(C,z){return C[ZC[z-1]];}
+
+function drawMachine(){
+  var P=prep($("d2m")),c=P.c,w=P.w,h=P.h,C=css(),st=state2(),M=st.M,cx=Math.round(w*0.44),col=zcol(C,st.z);
+  var Lg=150*(1+st.e),shift=Lg-150,hw=26,gy=104;
+  c.font='12px "IBM Plex Sans",system-ui,sans-serif';c.textBaseline="middle";
+  function box(x,y,ww,hh,fill,stroke){c.fillStyle=fill;c.fillRect(x,y,ww,hh);c.strokeStyle=stroke;c.lineWidth=1.5;c.strokeRect(x,y,ww,hh);}
+  /* frame */
+  c.strokeStyle=C["rule-strong"];c.lineWidth=3;
+  [20,w-20].forEach(function(x){c.beginPath();c.moveTo(x,22);c.lineTo(x,h-14);c.stroke();});
+  box(14,h-16,w-28,12,C.rule,C["rule-strong"]);
+  box(20,22,w-40,22,C.soft,C.ink);
+  c.fillStyle=C.ink;c.textAlign="left";c.fillText("pevný příčník se siloměrem",30,33);
+  /* grips */
+  var broken=st.z===5,gap=broken?18:0;
+  function grip(y){box(cx-36,y,72,28,C.rule,C.ink);}
+  grip(44);
+  var yb0=gy+Lg+12+20;
+  grip(yb0+(broken?gap:0));
+  var cb=yb0+28+(broken?gap:0);
+  box(20,cb,w-40,22,C.soft,C.ink);
+  c.fillStyle=C.ink;c.fillText("pohyblivý příčník ↓",30,cb+11);
+  /* specimen outline */
+  var tint=rgba(col,0.28),yc=gy+Lg/2,neck=st.z>=4?st.d/D0*34:0,du=34/Math.sqrt(1+Math.min(st.e0,M.Ag));
+  if(S2.unl>0) du=34/Math.sqrt(1+st.e);
+  function half(y){ /* half width at y */
+    if(y<=72+20) return hw;
+    if(y<gy-12) return hw;
+    if(y<gy) return hw+(du/2-hw)*((y-(gy-12))/12);
+    var base=du/2;
+    if(st.z>=4&&y<gy+Lg){base=du/2-(du/2-neck/2)*Math.exp(-Math.pow((y-yc)/(0.11*Lg),2));}
+    if(y<=gy+Lg) return base;
+    if(y<gy+Lg+12) return du/2+(hw-du/2)*((y-(gy+Lg))/12);
+    return hw;
+  }
+  var top=72,bot=gy+Lg+12+20;
+  function body(y0,y1,endTop,endBot,offy){
+    c.beginPath();
+    var i,N=70;
+    c.moveTo(cx-half(y0),y0+offy);
+    for(i=0;i<=N;i++){var y=y0+(y1-y0)*i/N;c.lineTo(cx-half(y),y+offy);}
+    if(endBot){c.lineTo(cx,y1+offy+7);}
+    for(i=N;i>=0;i--){var y2=y0+(y1-y0)*i/N;c.lineTo(cx+half(y2),y2+offy);}
+    c.closePath();c.fillStyle=tint;c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();
+  }
+  if(!broken) body(top,bot,false,false,0);
+  else{
+    c.save();c.beginPath();c.rect(0,0,w,yc);c.clip();
+    c.beginPath();var j;c.moveTo(cx-half(top),top);for(j=0;j<=60;j++){var yy=top+(yc-top)*j/60;c.lineTo(cx-half(yy),yy);}
+    c.lineTo(cx-half(yc)*0.55,yc);c.lineTo(cx,yc+7);c.lineTo(cx+half(yc)*0.55,yc);
+    for(j=60;j>=0;j--){var y3=top+(yc-top)*j/60;c.lineTo(cx+half(y3),y3);}
+    c.closePath();c.restore();
+    c.fillStyle=tint;c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();
+    /* upper half drawn without clip for stroke accuracy, lower half below */
+    c.beginPath();c.moveTo(cx-half(yc)*0.55,yc+gap);c.lineTo(cx,yc+gap+7);c.lineTo(cx+half(yc)*0.55,yc+gap);
+    for(j=0;j<=60;j++){var y4=yc+(bot-yc)*j/60;c.lineTo(cx+half(y4),y4+gap);}
+    for(j=60;j>=0;j--){var y5=yc+(bot-yc)*j/60;c.lineTo(cx-half(y5),y5+gap);}
+    c.closePath();c.fillStyle=tint;c.fill();c.strokeStyle=col;c.lineWidth=2;c.stroke();
+  }
+  /* gauge marks and extensometer */
+  var ya=gy,yb=gy+Lg+(broken?gap:0);
+  if(!broken){
+    c.strokeStyle=C.z3;c.lineWidth=2;
+    [ya,yb].forEach(function(y){c.beginPath();c.moveTo(cx-du/2-8,y);c.lineTo(cx+du/2+8,y);c.stroke();});
+    c.strokeStyle=C.muted;c.lineWidth=1.4;c.beginPath();c.moveTo(cx+du/2+14,ya);c.lineTo(cx+du/2+14,yb);c.stroke();
+    c.fillStyle=C.muted;[ya,yb].forEach(function(y){c.fillRect(cx+du/2+9,y-3,10,6);});
+    c.fillStyle=C.z3;c.textAlign="right";c.fillText("L = "+fx(L0*(1+st.e),1)+" mm",cx-du/2-14,(ya+yb)/2);
+    c.fillStyle=C.muted;c.textAlign="left";c.fillText("extenzometr",cx+du/2+24,(ya+yb)/2);
+  }else{
+    c.fillStyle=C.z5;c.textAlign="left";c.fillText("přetržená tyč",cx+hw+8,yc+gap/2);
+  }
+  /* force arrows */
+  var sMax=M.Rm,len=st.z===5?0:6+38*clamp(st.sg/sMax,0,1.05);
+  if(len>7){
+    c.strokeStyle=C.ink;c.fillStyle=C.ink;c.lineWidth=2.4;
+    [[cx-hw-18,top+24,-1],[cx-hw-18,bot-24,1]].forEach(function(a){
+      c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(a[0],a[1]+a[2]*len);c.stroke();
+      c.beginPath();c.moveTo(a[0],a[1]+a[2]*(len+7));c.lineTo(a[0]-5,a[1]+a[2]*len);c.lineTo(a[0]+5,a[1]+a[2]*len);c.closePath();c.fill();
+    });
+    c.textAlign="right";c.fillText("F",cx-hw-26,top+24-len/2);
+  }
+  c.fillStyle=C.muted;c.textAlign="left";c.fillText("čelisti",cx+40,58);
+  c.fillText("hlava tyče",cx+hw+6,top+9);
+  c.strokeStyle=C.muted;c.lineWidth=1.2;c.setLineDash([3,3]);c.beginPath();c.moveTo(cx+hw+6,cb+28);c.lineTo(cx+hw+6,cb+28+0);c.stroke();c.setLineDash([]);
+}
+function sampleCurve(M,p1){var a=[],i,n=Math.max(2,Math.round(p1/2));for(i=0;i<=n;i++){var p=p1*i/n,e=strainAt(M,p);a.push([e,M.f(e),p]);}return a;}
+function drawGraph(){
+  var P=prep($("d2g")),c=P.c,w=P.w,h=P.h,C=css(),st=state2(),M=st.M,i;
+  var l=58,r=56,t=36,b=46,pw=w-l-r,ph=h-t-b,all=Object.keys(MATS).map(function(k){return MATS[k];});
+  var xmax,ymax;
+  if(S2.zoom){
+    xmax=M.plateau?M.eL*1.4:M.eP*2.3;
+    var mx=0;for(i=0;i<=100;i++) mx=Math.max(mx,M.f(xmax*i/100));
+    ymax=mx*1.18;
+  }else if(S2.compare){xmax=0.28;ymax=1050*1.1;}
+  else{xmax=M.eF*1.05;ymax=M.Rm*1.14;}
+  geo={l:l,pw:pw,xmax:xmax};
+  var F=S2.mode==="F",
+    pX=F?{u:"ΔL [mm]",to:function(e){return e*L0;},d:function(v){return v<10?1:0;}}:{u:"ε [%]",to:function(e){return e*100;},d:function(v){return v<10?1:0;}},
+    sX=F?{u:"ε [%]",to:function(e){return e*100;}}:{u:"ΔL [mm]",to:function(e){return e*L0;}},
+    pY=F?{u:"F [kN]",to:function(s){return s*S0/1000;}}:{u:"σ [MPa]",to:function(s){return s;}},
+    sY=F?{u:"σ [MPa]",to:function(s){return s;}}:{u:"F [kN]",to:function(s){return s*S0/1000;}};
+  function X(e){return l+pw*e/xmax;}function Y(s){return t+ph*(1-s/ymax);}
+  c.font='12px "IBM Plex Sans",system-ui,sans-serif';
+  /* zone bands */
+  if(!S2.compare){
+    var B=bounds(M),zs=zonesOf(M);
+    for(i=0;i<zs.length;i++){
+      var xa=X(Math.min(B[i],xmax)),xb=X(Math.min(B[i+1],xmax));
+      if(xb<=xa) continue;
+      c.fillStyle=rgba(C[ZC[zs[i]-1]],st.z===zs[i]?0.20:0.08);c.fillRect(xa,t,xb-xa,ph);
+      if(xb-xa>16){c.fillStyle=C[ZC[zs[i]-1]];c.font='700 13px "IBM Plex Sans",system-ui,sans-serif';c.textAlign="center";c.textBaseline="top";c.fillText(zs[i],(xa+xb)/2,t+6);}
+    }
+    c.font='12px "IBM Plex Sans",system-ui,sans-serif';
+  }
+  /* axes with grid (primary) and ticks (secondary) */
+  c.textBaseline="middle";c.strokeStyle=C.rule;c.lineWidth=1;
+  var ymaxP=pY.to(ymax),sy=niceStep(ymaxP,5),v;
+  c.textAlign="right";c.fillStyle=C.ink;
+  for(v=0;v<=ymaxP+1e-9;v+=sy){var sg=F?v*1000/S0:v;c.beginPath();c.moveTo(l,Y(sg));c.lineTo(l+pw,Y(sg));c.stroke();c.fillText(fx(v,sy<1?1:0),l-6,Y(sg));}
+  var ymaxS=sY.to(ymax),ssy=niceStep(ymaxS,5);
+  c.textAlign="left";c.fillStyle=C.muted;
+  for(v=0;v<=ymaxS+1e-9;v+=ssy){var sg2=F?v:v*1000/S0;c.fillText(fx(v,ssy<1?1:0),l+pw+6,Y(sg2));}
+  var xmaxP=pX.to(xmax),sx=niceStep(xmaxP,6);
+  c.textAlign="center";c.textBaseline="top";c.fillStyle=C.ink;
+  for(v=0;v<=xmaxP+1e-9;v+=sx){var ee=F?v/L0:v/100;c.beginPath();c.moveTo(X(ee),t);c.lineTo(X(ee),t+ph);c.stroke();c.fillText(fx(v,sx<1?(sx<0.1?2:1):0),X(ee),t+ph+6);}
+  var xmaxS=sX.to(xmax),ssx=niceStep(xmaxS,6);
+  c.textBaseline="bottom";c.fillStyle=C.muted;
+  for(v=0;v<=xmaxS+1e-9;v+=ssx){var ee2=F?v/100:v/L0;c.fillText(fx(v,ssx<1?(ssx<0.1?2:1):0),X(ee2),t-6);}
+  c.fillStyle=C.ink;c.font='600 13px "IBM Plex Sans",system-ui,sans-serif';c.textBaseline="alphabetic";
+  c.textAlign="center";c.fillText(pX.u,l+pw/2,h-8);
+  c.save();c.translate(14,t+ph/2);c.rotate(-Math.PI/2);c.fillText(pY.u,0,0);c.restore();
+  c.fillStyle=C.muted;c.font='12px "IBM Plex Sans",system-ui,sans-serif';
+  c.fillText(sX.u,l+pw/2,12);
+  c.save();c.translate(w-8,t+ph/2);c.rotate(Math.PI/2);c.fillText(sY.u,0,0);c.restore();
+  c.strokeStyle=C.ink;c.lineWidth=1.6;c.strokeRect(l,t,pw,ph);
+  /* clip curves to plot */
+  c.save();c.beginPath();c.rect(l,t-1,pw,ph+2);c.clip();
+  if(S2.compare){
+    var nm=["S235","C45","zuš."];
+    all.forEach(function(A,k){
+      var sel=A===M,col=sel?C.ink:C.muted;
+      c.strokeStyle=sel?C.ink:rgba(C.muted,0.75);c.lineWidth=sel?2.6:1.8;c.beginPath();
+      sampleCurve(A,1000).forEach(function(q,j){if(j)c.lineTo(X(q[0]),Y(q[1]));else c.moveTo(X(q[0]),Y(q[1]));});c.stroke();
+    });
+    c.restore();
+    c.save();c.font='600 12px "IBM Plex Sans",system-ui,sans-serif';c.textAlign="left";c.textBaseline="bottom";
+    all.forEach(function(A,k){c.fillStyle=A===M?C.ink:C.muted;c.fillText(nm[k],X(A.eF)-30,Y(A.sF)-8);});
+    c.restore();c.save();c.beginPath();c.rect(l,t-1,pw,ph+2);c.clip();
+  }else{
+    c.strokeStyle=rgba(C["rule-strong"],0.9);c.lineWidth=1.6;c.setLineDash([5,4]);c.beginPath();
+    sampleCurve(M,1000).forEach(function(q,j){if(j)c.lineTo(X(q[0]),Y(q[1]));else c.moveTo(X(q[0]),Y(q[1]));});c.stroke();c.setLineDash([]);
+  }
+  /* true stress */
+  if(S2.trueS&&!S2.compare){
+    c.strokeStyle=C.z3;c.lineWidth=1.8;c.setLineDash([2,4]);c.beginPath();
+    var pm=invStrain(M,M.Ag);
+    sampleCurve(M,pm).forEach(function(q,j){var y=Y(q[1]*(1+q[0]));if(j)c.lineTo(X(q[0]),y);else c.moveTo(X(q[0]),y);});c.stroke();c.setLineDash([]);
+  }
+  /* travelled part, coloured by zone */
+  var pc=S2.p,M0=M,zs2=zonesOf(M0),B2=bounds(M0),n2=B2.length-1;
+  if(!S2.compare||true){
+    c.lineWidth=3.2;
+    for(i=0;i<n2;i++){
+      var p0=i*1000/n2,p1=Math.min(pc,(i+1)*1000/n2);if(p1<=p0) continue;
+      c.strokeStyle=C[ZC[zs2[i]-1]];c.beginPath();
+      var seg=sampleCurve(M0,1000).filter(function(q){return q[2]>=p0-1e-9&&q[2]<=p1+1e-9;});
+      seg.forEach(function(q,j){if(j)c.lineTo(X(q[0]),Y(q[1]));else c.moveTo(X(q[0]),Y(q[1]));});
+      c.lineTo(X(strainAt(M0,p1)),Y(M0.f(strainAt(M0,p1))));c.stroke();
+    }
+  }
+  /* key points and Rp0,2 construction */
+  c.font='600 12px "IBM Plex Sans",system-ui,sans-serif';c.textBaseline="middle";
+  function mark(e,s,lab,col,dx,dy,al){
+    c.fillStyle=col;c.beginPath();c.arc(X(e),Y(s),4,0,7);c.fill();
+    c.textAlign=al||"left";c.fillText(lab,X(e)+dx,Y(s)+dy);
+  }
+  if(!S2.compare){
+    if(M.plateau){mark(M.eEl,M.ReH,"ReH",C.ink,8,-10);mark(M.eEl+0.0004,M.ReL,"ReL",C.ink,8,12);}
+    mark(M.Ag,M.Rm,"Rm",C.ink,-8,-12,"right");
+    mark(M.eF,M.sF,"lom",C.z5,-8,-12,"right");
+    if(!M.plateau&&S2.showRp){
+      c.strokeStyle=C.z2;c.lineWidth=1.6;c.setLineDash([6,4]);c.beginPath();
+      c.moveTo(X(0.002),Y(0));c.lineTo(X(M.eP),Y(M.Rp));c.moveTo(X(M.eP),Y(M.Rp));c.lineTo(X(0),Y(M.Rp));c.stroke();c.setLineDash([]);
+      mark(M.eP,M.Rp,"Rp0,2 ≈ "+fx(M.Rp,0)+" MPa",C.z2,10,12);
+      c.fillStyle=C.z2;c.textAlign="center";c.textBaseline="bottom";c.fillText("0,2 %",X(0.002),Y(0)-5);
+    }
+  }
+  /* unloading line */
+  if(S2.unl>0&&st.z>=2&&st.z<=3){
+    c.strokeStyle=C.z1;c.lineWidth=2.4;c.setLineDash([6,4]);c.beginPath();c.moveTo(X(st.e0),Y(st.s0));c.lineTo(X(st.e0-st.s0/E),Y(0));c.stroke();c.setLineDash([]);
+    c.strokeStyle=C.z5;c.lineWidth=3;c.beginPath();c.moveTo(X(0),Y(0)-1);c.lineTo(X(st.e0-st.s0/E),Y(0)-1);c.stroke();
+  }
+  /* current point */
+  if(st.z!==5||true){
+    var cxp=X(st.e),cyp=Y(st.sg);
+    c.strokeStyle=C.muted;c.lineWidth=1;c.setLineDash([3,3]);c.beginPath();c.moveTo(cxp,cyp);c.lineTo(cxp,t+ph);c.moveTo(cxp,cyp);c.lineTo(l,cyp);c.stroke();c.setLineDash([]);
+    c.fillStyle=C.panel;c.beginPath();c.arc(cxp,cyp,8,0,7);c.fill();
+    c.fillStyle=zcol(C,st.z);c.beginPath();c.arc(cxp,cyp,5.5,0,7);c.fill();
+  }
+  c.restore();
+}
+
+/* ---------- controls of the main demo ---------- */
+var ctl2={},ud={u:0};
+function tab(){
+  var M=MT(),Fm=M.Rm*S0/1000,rows=[["Modul pružnosti","E","210 GPa","sklon pružné části diagramu"]];
+  if(M.plateau){rows.push(["Horní mez kluzu","ReH",fx(M.ReH,0)+" MPa","vrchol před poklesem, Fe = "+fx(M.ReH*S0/1000,1)+" kN"]);rows.push(["Dolní mez kluzu","ReL",fx(M.ReL,0)+" MPa","napětí na plošině"]);}
+  else rows.push(["Smluvní mez kluzu","Rp0,2",fx(M.Rp,0)+" MPa","průsečík křivky s přímkou posunutou o 0,2 %"]);
+  rows.push(["Mez pevnosti","Rm",fx(M.Rm,0)+" MPa","největší síla Fm = "+fx(Fm,1)+" kN, dělená S₀"]);
+  rows.push(["Rovnoměrné prodloužení","Ag",fx(M.Ag*100,0)+" %","prodloužení při největší síle"]);
+  rows.push(["Tažnost","A",fx(M.A*100,0)+" %","trvalé prodloužení po přetržení"]);
+  rows.push(["Kontrakce","Z",fx(M.Z,0)+" %","zmenšení průřezu v místě lomu"]);
+  $("tab").innerHTML='<caption style="text-align:left;font-size:13.5px;color:var(--muted);padding-bottom:8px">'+M.name+'. Tyč d₀ = 10 mm, L₀ = 50 mm, S₀ = 78,5 mm².</caption><thead><tr><th>Veličina</th><th>Symbol</th><th style="text-align:right">Hodnota</th><th>Jak se zjistí</th></tr></thead><tbody>'+
+    rows.map(function(r){return '<tr><td>'+r[0]+'</td><td class="sym">'+r[1]+'</td><td class="val">'+r[2]+'</td><td>'+r[3]+'</td></tr>';}).join("")+'</tbody>';
+}
+function buildChips(){
+  var M=MT(),zs=zonesOf(M),h=$("d2z"),n=zs.length;h.innerHTML="";
+  zs.concat([5]).forEach(function(z,i){
+    var b=document.createElement("button");b.type="button";b.className="zc";b.dataset.z=z;b.style.setProperty("--zc","var(--"+ZC[z-1]+")");
+    b.textContent=z+" "+ZN[z-1];
+    b.addEventListener("click",function(){S2.playing=false;S2.unl=0;ud.u=0;S2.p=z===5?1000:i*1000/n+0.01;render();});
+    h.appendChild(b);
+  });
+}
+function ui2(){
+  var st=state2(),M=st.M,col="var(--"+ZC[st.z-1]+")",dL=st.e*L0,Fk=st.sg*S0/1000;
+  var res=st.res>0?rd("Trvalá deformace",fx(st.res*100,2)+" %"):"";
+  $("d2o").innerHTML='<div class="ro"><small>Oblast</small><b style="color:'+col+';font-size:15px">'+(S2.unl>0&&st.z<4?"Odlehčování":ZN[st.z-1])+'</b></div>'+
+    rd("Síla F",fx(Fk,1)+" kN")+rd("Prodloužení ΔL",fx(dL,2)+" mm")+rd("Napětí σ",fx(st.sg,0)+" MPa")+rd("Prodloužení ε",fx(st.e*100,2)+" %")+
+    rd("Průměr v nejužším místě",fx(st.d,2)+" mm")+res;
+  var note=ZT[st.z-1];
+  if(!M.plateau&&st.z===3) note=note.replace("Zpevňování: ","Zpevňování: tato ocel nemá výraznou mez kluzu, proto se používá Rp0,2. ");
+  $("d2n").textContent=note;
+  document.querySelectorAll("#d2z .zc").forEach(function(b){b.setAttribute("aria-pressed",String(+b.dataset.z===st.z));});
+  var can=st.z===2||st.z===3;ctl2.u.el.disabled=!can;
+  if(!can&&S2.unl>0){S2.unl=0;ud.u=0;ctl2.u.set(0);}
+  var out=ctl2.p.el.parentNode.querySelector("output");out.textContent=ZN[st.z-1];
+  ctl2.p.el.value=S2.p;
+}
+function render(){ui2();drawMachine();drawGraph();}
+(function(){
+  var h=$("d2c"),x=$("d2x");
+  ctl2.m=select(h,S2,"mat","Ocel",[["s235","S235JR, měkká konstrukční ocel"],["c45","C45, uhlíková ocel"],["zus","Zušlechtěná ocel (např. 42CrMo4)"]],function(){S2.p=0;S2.unl=0;ud.u=0;ctl2.u.set(0);buildChips();tab();render();});
+  var pst={p:0};
+  ctl2.p=slider(h,pst,"p","Průběh zkoušky",0,1000,1,function(v){return ZN[zoneAt(MT(),v)-1];},function(){S2.playing=false;S2.p=pst.p;S2.unl=0;render();});
+  var br=document.createElement("div");br.className="btnrow";br.style.alignSelf="end";
+  var bp=document.createElement("button");bp.type="button";bp.className="btn primary";bp.textContent=reduce?"Další oblast":"Spustit zkoušku";
+  var bz=document.createElement("button");bz.type="button";bz.className="btn";bz.textContent="Znovu";
+  br.appendChild(bp);br.appendChild(bz);h.appendChild(br);
+  bp.addEventListener("click",function(){
+    if(reduce){var M=MT(),n=bounds(M).length-1,k=Math.floor(S2.p/1000*n+1e-6)+1;S2.p=k>=n?1000:k*1000/n+0.01;S2.unl=0;render();return;}
+    if(S2.playing){S2.playing=false;bp.textContent="Spustit zkoušku";return;}
+    if(S2.p>=1000) S2.p=0;
+    S2.unl=0;S2.playing=true;bp.textContent="Pozastavit";last=performance.now();requestAnimationFrame(play);
+  });
+  bz.addEventListener("click",function(){S2.playing=false;S2.p=0;S2.unl=0;bp.textContent=reduce?"Další oblast":"Spustit zkoušku";render();});
+  var last=0;
+  function play(now){
+    if(!S2.playing) return;
+    S2.p=Math.min(1000,S2.p+(now-last)/1000*62);last=now;
+    if(S2.p>=1000){S2.playing=false;bp.textContent="Spustit zkoušku";}
+    render();if(S2.playing) requestAnimationFrame(play);
+  }
+  toggle(x,S2,"zoom","Lupa na začátek křivky",render);
+  ctl2.mode=select(x,S2,"mode","Hlavní osy diagramu",[["sig","σ–ε, napětí a poměrné prodloužení"],["F","F–ΔL, síla a prodloužení"]],render);
+  toggle(x,S2,"compare","Porovnat všechny tři oceli",render);
+  toggle(x,S2,"trueS","Skutečné napětí (do začátku krčení)",render);
+  toggle(x,S2,"showRp","Konstrukce Rp0,2 u oceli bez meze kluzu",render);
+  ctl2.u=slider(x,ud,"u","Odlehčení tyče",0,100,1,function(v){return fx(v,0)+" %";},function(){S2.playing=false;S2.unl=ud.u/100;render();});
+  /* scrub the diagram by dragging */
+  var cv=$("d2g"),down=false;
+  function scrub(e){
+    var r=cv.getBoundingClientRect(),ee=(e.clientX-r.left-geo.l)/geo.pw*geo.xmax;
+    S2.playing=false;S2.unl=0;S2.p=invStrain(MT(),Math.max(0,ee));render();
+  }
+  cv.style.cursor="ew-resize";cv.style.touchAction="pan-y";
+  cv.addEventListener("pointerdown",function(e){down=true;try{cv.setPointerCapture(e.pointerId);}catch(er){}scrub(e);});
+  cv.addEventListener("pointermove",function(e){if(down) scrub(e);});
+  cv.addEventListener("pointerup",function(){down=false;});cv.addEventListener("pointercancel",function(){down=false;});
+  buildChips();tab();S2.p=60;ui2();reg(function(){drawMachine();drawGraph();});
+})();
+
+/* ---------- 5. calculator ---------- */
+(function(){
+  var st={d:10,L0:50,Fe:19.6,Fm:32,Lu:63,du:6.3},h=$("d5c");
+  var defs=[["d","Průměr d₀ [mm]"],["L0","Měřená délka L₀ [mm]"],["Fe","Síla na mezi kluzu Fe [kN]"],["Fm","Největší síla Fm [kN]"],["Lu","Délka po přetržení Lu [mm]"],["du","Průměr v místě lomu du [mm]"]];
+  defs.forEach(function(d){
+    var w=document.createElement("div"),id="d5c-"+d[0];w.className="ctl";
+    w.innerHTML='<label for="'+id+'">'+d[1]+'</label><input type="number" id="'+id+'" step="any" min="0" value="'+st[d[0]]+'">';
+    h.appendChild(w);
+    w.querySelector("input").addEventListener("input",function(e){st[d[0]]=parseFloat(e.target.value);calc();});
+  });
+  function calc(){
+    var ok=true;for(var k in st) if(!(st[k]>0)) ok=false;
+    if(!ok){$("d5o").innerHTML=rd("Chyba","Vyplňte všechna pole kladným číslem","bad");return;}
+    var S=Math.PI*st.d*st.d/4,Su=Math.PI*st.du*st.du/4,Re=st.Fe*1000/S,Rm=st.Fm*1000/S,A=(st.Lu-st.L0)/st.L0*100,Z=(S-Su)/S*100;
+    var warn=st.Fm<st.Fe?rd("Pozor","Fm musí být větší než Fe","bad"):"";
+    $("d5o").innerHTML=rd("Průřez S₀",fx(S,1)+" mm²")+rd("Mez kluzu Re",fx(Re,0)+" MPa")+rd("Mez pevnosti Rm",fx(Rm,0)+" MPa")+
+      rd("Tažnost A",fx(A,1)+" %",A<0?"bad":"")+rd("Kontrakce Z",fx(Z,1)+" %",Z<0?"bad":"")+warn;
+  }
+  calc();
+})();
+
+/* ---------- test ---------- */
+(function(){
+  var Q=[
+   ["Tyč o průměru 10 mm (S₀ ≈ 78,5 mm²) zatížíme silou 20 kN. Napětí je přibližně:",["255 MPa","25,5 MPa","2 550 MPa","200 MPa"],0,"σ = F / S₀ = 20 000 N / 78,5 mm² ≈ 255 MPa."],
+   ["Mez kluzu Re je napětí, při kterém:",["se materiál začne trvale deformovat","se tyč přetrhne","je síla největší","se vytvoří krček"],0,"Na mezi kluzu přechází pružná deformace v trvalou. Při tečení se tyč prodlužuje při téměř stálé síle."],
+   ["Mez pevnosti Rm se vypočítá z:",["největší síly Fm a původního průřezu S₀","síly při přetržení a původního průřezu","největší síly a průřezu v krčku","síly při mezi kluzu a průřezu po lomu"],0,"Rm = Fm / S₀. Největší síla je na konci rovnoměrného prodloužení, těsně před krčením."],
+   ["Tyč zatížíme do plastické oblasti a pak úplně odlehčíme. Odlehčení probíhá:",["rovnoběžně s pružnou částí, zůstane trvalé prodloužení","zpátky po stejné křivce až do nuly","kolmo dolů, délka se nezmění","tyč se vrátí přesně na původní délku"],0,"Pružná část deformace se vrátí, plastická zůstane. Odlehčovací čára je rovnoběžná s pružnou částí diagramu."],
+   ["Tyč L₀ = 50 mm se po přetržení složí na délku 63 mm. Tažnost A je:",["26 %","13 %","20,6 %","63 %"],0,"A = (Lu − L₀) / L₀ = 13 / 50 = 0,26, tedy 26 %."],
+   ["Kontrakce Z udává:",["procentuální zmenšení průřezu v místě lomu","procentuální prodloužení po lomu","poměr Rm a Re","největší napětí v diagramu"],0,"Z = (S₀ − Su) / S₀ · 100 %."],
+   ["Která veličina je u všech ocelí přibližně stejná, ať je ocel měkká, nebo zušlechtěná?",["modul pružnosti E (asi 210 GPa)","mez pevnosti Rm","tažnost A","mez kluzu Re"],0,"Pružná část všech ocelí má stejný sklon. Pevnější ocel není tužší, jen snese větší napětí."],
+   ["Smluvní mez kluzu Rp0,2 se používá, když materiál:",["nemá výraznou mez kluzu","je velmi měkký","má největší tažnost","se přetrhne v hlavě tyče"],0,"U zušlechtěných ocelí není v diagramu plošina, a proto se určuje napětí s trvalou deformací 0,2 %."],
+   ["Krčení tyče začíná:",["při největší síle, tedy u Rm","na začátku diagramu","při mezi kluzu","až po přetržení"],0,"Od největší síly se deformace soustředí do jednoho místa. Síla počítaná na původní průřez pak klesá."],
+   ["Lom je rovný, lesklý a bez krčení. Jde o:",["křehký lom","houževnatý lom","lom pohár a kužel","lom po zpevnění"],0,"Křehký lom nastává bez předchozí deformace a bez varování."]
+  ];
+  var host=$("q"),done=0,good=0,sc=document.createElement("div");sc.className="score";
+  function upd(){sc.textContent=done<Q.length?"Zodpovězeno "+done+" z "+Q.length+". Správně: "+good+".":"Hotovo. Správně "+good+" z "+Q.length+" ("+Math.round(good/Q.length*100)+" %).";}
+  Q.forEach(function(q,qi){
+    var d=document.createElement("div");d.className="qq";
+    d.innerHTML='<p>'+(qi+1)+'. '+q[0]+'</p><div class="opts"></div><div class="expl"></div>';
+    var o=d.querySelector(".opts"),ex=d.querySelector(".expl"),btns=[];
+    /* rotate the correct answer so it is not always first */
+    var order=q[1].map(function(t,i){return i;}),sh=(qi*3)%order.length;order=order.slice(sh).concat(order.slice(0,sh));
+    order.forEach(function(i){
+      var b=document.createElement("button");b.type="button";b.className="opt";b.textContent=q[1][i];b.dataset.i=i;btns.push(b);
+      b.addEventListener("click",function(){
+        btns.forEach(function(x){x.disabled=true;if(+x.dataset.i===q[2]) x.classList.add("right");});
+        if(i!==q[2]) b.classList.add("wrong"); else good++;
+        ex.textContent=(i===q[2]?"Správně. ":"Ne tak docela. ")+q[3];ex.style.display="block";done++;upd();
+      });
+      o.appendChild(b);
+    });
+    host.appendChild(d);
+  });
+  host.appendChild(sc);upd();
+})();
+
+document.querySelectorAll("#nav button").forEach(function(b){
+  b.addEventListener("click",function(){
+    var e=$(b.getAttribute("data-t"));if(e) e.scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});
+  });
+});
+})();
+</script>
+
+</body></html>

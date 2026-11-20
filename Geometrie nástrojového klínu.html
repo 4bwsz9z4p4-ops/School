@@ -1,0 +1,581 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Geometrie nástrojového klínu</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: výkresový stůl. Nákres klínu vlevo, ovládání vpravo, pod nimi vliv na řezání a výzva, pak teorie. */
+:root{
+  --bg:#eef1f4; --panel:#ffffff; --fg:#1b2430; --muted:#566272; --line:#ccd4dd;
+  --ink:#1b2430;
+  --a:#0a7c84; --b:#bf5410; --g:#4254c5; --d:#6a7480;
+  --steel1:#e3e8ee; --steel2:#a9b5c3; --wp:#f7f8fa; --hatch:#9aa5b2;
+  --chip:#f6d29b; --chipline:#a8681a;
+  --ok:#1b7745; --warn:#a63a1c;
+  --display:'Barlow Semi Condensed','Arial Narrow',system-ui,sans-serif;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1318; --panel:#161d25; --fg:#e7ecf2; --muted:#9aa7b6; --line:#2b3643;
+    --ink:#e7ecf2;
+    --a:#43c6cd; --b:#f28d3f; --g:#93a1ff; --d:#9aa5b2;
+    --steel1:#3b4654; --steel2:#262e39; --wp:#1b232c; --hatch:#46525f;
+    --chip:#6d5128; --chipline:#e3a75a;
+    --ok:#62d392; --warn:#ff9179;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1318; --panel:#161d25; --fg:#e7ecf2; --muted:#9aa7b6; --line:#2b3643;
+  --ink:#e7ecf2;
+  --a:#43c6cd; --b:#f28d3f; --g:#93a1ff; --d:#9aa5b2;
+  --steel1:#3b4654; --steel2:#262e39; --wp:#1b232c; --hatch:#46525f;
+  --chip:#6d5128; --chipline:#e3a75a;
+  --ok:#62d392; --warn:#ff9179;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:400 16px/1.55 var(--sans);
+  padding-block:28px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:32px}
+h1,h2,h3{font-family:var(--display);line-height:1.1;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.1rem,5vw,3.2rem);font-weight:700;letter-spacing:.005em}
+h2{font-size:clamp(1.5rem,3vw,1.9rem);font-weight:700}
+h3{font-size:1.2rem;font-weight:600}
+p{margin:0}
+.eyebrow{font:600 .78rem/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+header{display:grid;gap:12px}
+.lead{max-width:64ch;font-size:1.08rem;color:var(--muted)}
+.greek{font-family:var(--display);font-weight:700}
+.ca{color:var(--a)} .cb{color:var(--b)} .cg{color:var(--g)} .cd{color:var(--d)}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.lab{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);grid-template-areas:"fig ctrl" "cards ctrl";grid-template-rows:auto 1fr;gap:20px;align-items:start}
+.lab>.fig{grid-area:fig}
+.lab>.controls{grid-area:ctrl}
+.lab>.cardsbox{grid-area:cards;display:grid;gap:12px}
+@media (max-width:900px){
+  .lab{grid-template-columns:minmax(0,1fr);grid-template-areas:"fig" "ctrl" "cards";grid-template-rows:none}
+  .lab>.fig{position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+}
+
+/* nákres */
+.fig{padding:8px}
+.fig svg{display:block;width:100%;height:auto}
+.lbl{font:600 19px var(--mono);paint-order:stroke;stroke:var(--panel);stroke-width:6px;stroke-linejoin:round}
+.lbl.a{fill:var(--a)} .lbl.b{fill:var(--b)} .lbl.g{fill:var(--g)} .lbl.d{fill:var(--d)}
+.note{font:500 14px var(--sans);fill:var(--muted);paint-order:stroke;stroke:var(--panel);stroke-width:5px;stroke-linejoin:round}
+.note.caps{font-size:13px;letter-spacing:.1em}
+.dim{font:600 15px var(--mono);fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:5px}
+.fig svg[data-hl] .ang{opacity:.18;transition:opacity .15s}
+.fig svg[data-hl="a"] .ang-a,.fig svg[data-hl="b"] .ang-b,.fig svg[data-hl="g"] .ang-g,.fig svg[data-hl="d"] .ang-d{opacity:1}
+
+/* ovládání */
+.controls{display:grid;gap:16px}
+.controls h2{font-size:1.3rem}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;color:inherit}
+.chip{background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:.88rem;cursor:pointer;color:var(--fg)}
+.chip:hover{border-color:var(--muted)}
+.chip:focus-visible,input:focus-visible,summary:focus-visible,select:focus-visible,.card:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--panel);border-color:var(--fg)}
+.slider{display:grid;gap:4px}
+.slider .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.slider label{font-weight:600}
+.slider output{font:600 1.1rem var(--mono)}
+input[type=range]{width:100%;margin:0;height:28px}
+#sa{accent-color:var(--a)} #s2.mg{accent-color:var(--g)} #s2.mb{accent-color:var(--b)}
+.seg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.9rem}
+.seg span{color:var(--muted)}
+.hint{font-size:.88rem;color:var(--muted)}
+.angles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.angles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:2px;cursor:default}
+.card .row{display:flex;align-items:baseline;gap:8px}
+.card .sym{font:700 1.9rem/1 var(--display)}
+.card .val{font:600 1.45rem/1 var(--mono);margin-left:auto}
+.card .nm{font-size:.84rem;color:var(--muted)}
+.card .tag{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.card[data-k=a] .sym{color:var(--a)} .card[data-k=b] .sym{color:var(--b)} .card[data-k=g] .sym{color:var(--g)} .card[data-k=d] .sym{color:var(--d)}
+.sum{font:500 .95rem var(--mono);color:var(--muted);text-align:center}
+.sum b{color:var(--fg)}
+
+/* vliv */
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px;align-items:start}
+.meters{display:grid;gap:14px;margin-top:12px}
+.meter{display:grid;gap:5px}
+.meter .mh{display:flex;justify-content:space-between;gap:10px;font-size:.92rem;flex-wrap:wrap}
+.meter .mh b{font-weight:600}
+.meter .mh span{color:var(--muted)}
+.track{height:12px;border-radius:3px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.fill{height:100%;width:0;transition:width .2s}
+.fill.a{background:var(--a)} .fill.b{background:var(--b)} .fill.g{background:var(--g)}
+.verdict{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px}
+.verdict li{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:.95rem}
+.ic{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:700 .8rem var(--mono);color:var(--panel)}
+.ic.ok{background:var(--ok)} .ic.warn{background:var(--warn)} .ic.info{background:var(--d)}
+select{font:inherit;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 10px;max-width:100%}
+.check{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:8px}
+.check li{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:.95rem}
+.result{margin-top:12px;font-weight:600}
+.result.ok{color:var(--ok)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+/* teorie */
+.theory{display:grid;gap:28px}
+.prose{max-width:72ch;display:grid;gap:12px}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.def{display:grid;gap:6px;align-content:start}
+.def .hd{display:flex;align-items:baseline;gap:10px}
+.def .sym{font:700 2.2rem/1 var(--display)}
+.def h3{font-size:1.05rem}
+.def p{font-size:.95rem;color:var(--muted)}
+.def .tip{font-size:.9rem;color:var(--fg)}
+.formula{display:grid;gap:6px;font:500 clamp(1.05rem,2.6vw,1.4rem)/1.4 var(--mono);width:fit-content;max-width:100%}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.93rem}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+td:first-child{font:700 1.4rem/1.2 var(--display);white-space:nowrap}
+.rules{margin:0;padding-left:1.2rem;display:grid;gap:8px;max-width:72ch}
+.quiz{display:grid;gap:10px}
+details{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:0}
+summary{cursor:pointer;padding:12px 14px;font-weight:500;list-style:none;display:flex;gap:10px}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";font:600 1rem var(--mono);color:var(--muted);width:1ch}
+details[open] summary::before{content:"–"}
+details .ans{padding:0 14px 14px 36px;color:var(--muted)}
+details .ans b{color:var(--fg)}
+.foot{font-size:.86rem;color:var(--muted);max-width:80ch}
+@media (prefers-reduced-motion:reduce){.fill,.fig svg .ang{transition:none}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Technologie · ruční obrábění</div>
+  <h1>Geometrie nástrojového klínu</h1>
+  <p class="lead">Každý řezný nástroj, od sekáče po vrták, řeže špičkou ve tvaru klínu. Jeho vlastnosti určují čtyři úhly <span class="greek ca">α</span>, <span class="greek cb">β</span>, <span class="greek cg">γ</span> a <span class="greek cd">δ</span>. Tažením posuvníků změníte tvar klínu a uvidíte, jak se mění pevnost břitu, řezná síla i tříska.</p>
+</header>
+
+<!-- ============ POMŮCKA ============ -->
+<section class="lab" aria-labelledby="h-tool">
+  <div class="panel fig">
+    <svg id="svg" viewBox="100 0 660 470" role="img" aria-label="Řez nástrojovým klínem s vyznačenými úhly α, β, γ a δ">
+      <defs>
+        <pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="9" stroke="var(--hatch)" stroke-width="1.3"/>
+        </pattern>
+        <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="var(--steel1)"/><stop offset="1" stop-color="var(--steel2)"/>
+        </linearGradient>
+        <radialGradient id="fadeG" gradientUnits="userSpaceOnUse" cx="380" cy="310" r="300">
+          <stop offset="0" stop-color="#fff"/><stop offset=".66" stop-color="#fff"/><stop offset="1" stop-color="#000"/>
+        </radialGradient>
+        <mask id="fade" maskUnits="userSpaceOnUse" x="0" y="0" width="800" height="480">
+          <rect x="0" y="0" width="800" height="480" fill="url(#fadeG)"/>
+        </mask>
+      </defs>
+      <g id="dyn"></g>
+    </svg>
+  </div>
+
+  <div class="panel controls">
+    <h2 id="h-tool">Nastavte klín</h2>
+    <div>
+      <div class="hint" style="margin-bottom:6px">Hotové nástroje (orientační hodnoty):</div>
+      <div class="presets" id="presets"></div>
+    </div>
+    <div class="slider">
+      <div class="top"><label for="sa">Úhel hřbetu <span class="greek ca">α</span></label><output id="oa" for="sa"></output></div>
+      <input type="range" id="sa" min="0" max="20" step="1" value="8">
+    </div>
+    <div class="slider">
+      <div class="top"><label for="s2" id="l2"></label><output id="o2" for="s2"></output></div>
+      <input type="range" id="s2" class="mg" min="-10" max="50" step="1" value="22">
+    </div>
+    <div class="seg" role="group" aria-label="Který úhel nastavuje druhý posuvník">
+      <span>Druhý posuvník nastavuje:</span>
+      <button class="chip" id="m-g" aria-pressed="true">úhel čela γ</button>
+      <button class="chip" id="m-b" aria-pressed="false">úhel břitu β</button>
+    </div>
+    <p class="hint" id="modehint"></p>
+  </div>
+
+  <div class="panel cardsbox">
+    <div class="angles" id="cards"></div>
+    <div class="sum" id="sum"></div>
+  </div>
+</section>
+
+<section class="row2" aria-label="Vliv úhlů na řezání">
+  <div class="panel">
+    <h2>Co to udělá s řezáním</h2>
+    <div class="meters" aria-live="polite">
+      <div class="meter"><div class="mh"><b>Pevnost břitu <span class="greek cb">β</span></b><span id="t-str"></span></div><div class="track"><div class="fill b" id="f-str"></div></div></div>
+      <div class="meter"><div class="mh"><b>Řezná síla <span class="greek cg">γ</span></b><span id="t-frc"></span></div><div class="track"><div class="fill g" id="f-frc"></div></div></div>
+      <div class="meter"><div class="mh"><b>Tření hřbetu <span class="greek ca">α</span></b><span id="t-fri"></span></div><div class="track"><div class="fill a" id="f-fri"></div></div></div>
+      <div class="meter"><div class="mh"><b>Stlačení třísky <span class="greek cg">γ</span></b><span id="t-chp"></span></div><div class="track"><div class="fill g" id="f-chp"></div></div></div>
+    </div>
+    <ul class="verdict" id="verdict" aria-live="polite"></ul>
+    <p class="hint" style="margin-top:14px">Řezná síla a tloušťka třísky vycházejí ze zjednodušeného Merchantova modelu (úhel tření 30°). Ukazují trend, nejsou to výpočtové hodnoty pro dílnu.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Výzva: navrhněte sekáč</h2>
+    <p class="hint" style="margin:8px 0 10px">Vyberte materiál a pomocí posuvníků nastavte klín tak, aby vyhovoval.</p>
+    <label for="mat" class="hint">Materiál obrobku</label><br>
+    <select id="mat"></select>
+    <ul class="check" id="check" aria-live="polite"></ul>
+    <p class="result" id="result"></p>
+    <div class="actions"><button class="chip" id="solve">Ukázat řešení</button></div>
+  </div>
+</section>
+
+<!-- ============ TEORIE ============ -->
+<section class="theory" aria-labelledby="h-th">
+  <div class="prose">
+    <h2 id="h-th">Teorie na jednu stránku</h2>
+    <p>Klín vnikne do materiálu, oddělí z něj tenkou vrstvu a ta po klínu odchází jako tříska. Dvě plochy klínu a jejich průsečnice mají vlastní názvy:</p>
+    <ul class="rules">
+      <li><b>Čelo</b> je plocha, po které odchází tříska.</li>
+      <li><b>Hřbet</b> je plocha obrácená k právě obrobené ploše.</li>
+      <li><b>Ostří (břit)</b> je hrana, ve které se čelo a hřbet protínají. Ta řeže.</li>
+      <li><b>Řezná rovina</b> prochází ostřím a dotýká se obrobené plochy. V nákresu je to vodorovná čára, kolmice k ní je svislá čárkovaná čára.</li>
+    </ul>
+  </div>
+
+  <div class="defs">
+    <div class="panel def">
+      <div class="hd"><span class="sym ca">α</span><h3>Úhel hřbetu</h3></div>
+      <p>Svírá ho hřbet a řezná rovina.</p>
+      <p class="tip">Chrání hřbet před třením o obrobenou plochu. Obvykle 6–12°.</p>
+    </div>
+    <div class="panel def">
+      <div class="hd"><span class="sym cb">β</span><h3>Úhel břitu</h3></div>
+      <p>Svírá ho čelo a hřbet, je to vlastní úhel klínu.</p>
+      <p class="tip">Rozhoduje o pevnosti břitu. Volí se podle tvrdosti materiálu.</p>
+    </div>
+    <div class="panel def">
+      <div class="hd"><span class="sym cg">γ</span><h3>Úhel čela</h3></div>
+      <p>Svírá ho čelo a kolmice k řezné rovině.</p>
+      <p class="tip">Určuje, jak lehce odchází tříska. Větší γ znamená menší sílu. Může být i záporný.</p>
+    </div>
+    <div class="panel def">
+      <div class="hd"><span class="sym cd">δ</span><h3>Úhel řezu</h3></div>
+      <p>Svírá ho čelo a řezná rovina.</p>
+      <p class="tip">Říká, jak strmě klín útočí na materiál. Větší δ znamená větší sílu.</p>
+    </div>
+  </div>
+
+  <div class="prose">
+    <h3>Vztahy mezi úhly</h3>
+    <div class="panel formula">
+      <span><span class="ca">α</span> + <span class="cb">β</span> + <span class="cg">γ</span> = 90°</span>
+      <span><span class="cd">δ</span> = <span class="ca">α</span> + <span class="cb">β</span> = 90° − <span class="cg">γ</span></span>
+    </div>
+    <p>Z toho plyne, že úhly nejdou měnit nezávisle. Když zvětšíte γ a nechcete změnit α, musí se zmenšit β. Břit se zeslabí. Příklad: sekáč na ocel má α = 8° a β = 60°, takže γ = 90° − 8° − 60° = 22° a δ = 8° + 60° = 68°.</p>
+  </div>
+
+  <div class="prose">
+    <h3>Když se úhel zvětšuje</h3>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Úhel</th><th>Když roste</th><th>Když klesá</th><th>Obvyklá hodnota</th></tr></thead>
+      <tbody>
+        <tr><td class="ca">α</td><td>Méně tření hřbetu, čistší obrobená plocha. Slabší břit.</td><td>Hřbet se tře o materiál, nástroj se hřeje a netáhne. Při nule se nezařízne vůbec.</td><td>6–12°</td></tr>
+        <tr><td class="cb">β</td><td>Pevnější a odolnější břit, lepší odvod tepla. Větší řezná síla, hůř se zařezává.</td><td>Snadné zařezávání, malá síla. Břit se snadno vylomí nebo ohne.</td><td>35° (hliník) až 70° (litina)</td></tr>
+        <tr><td class="cg">γ</td><td>Menší síla, tenčí a snáz odcházející tříska. Při stejném α slabší břit.</td><td>Větší síla a teplo, ale břit je podepřený a snese rázy. Záporné γ má tvrdokov.</td><td>−5° až 30° (u vrtáku i víc)</td></tr>
+        <tr><td class="cd">δ</td><td>Větší síla, tříska se víc stlačuje. Pevný břit. Nad 90° je čelo záporné.</td><td>Lehčí řezání, tenčí klín.</td><td>kolem 60–80°</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="prose">
+    <h3>Jak volit úhly</h3>
+    <ol class="rules">
+      <li>Tvrdý a křehký materiál vyžaduje větší β (a tedy menší γ). Měkký a houževnatý materiál snese menší β a větší γ.</li>
+      <li>Úhel hřbetu α držte kolem 6–12°. Nikdy nulový a nikdy záporný.</li>
+      <li>Při rázech (sekání) volte větší β než při plynulém řezání (soustružnický nůž, vrták).</li>
+      <li>Při broušení měňte úhly jen tolik, kolik je nutné. Každé broušení ubírá z nástroje.</li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h3>Zkuste odpovědět</h3>
+    <div class="quiz">
+      <details><summary>Úhel hřbetu je 8° a úhel břitu 60°. Kolik je γ a δ?</summary><div class="ans"><b>γ = 22°, δ = 68°.</b> γ = 90° − 8° − 60°, δ = α + β = 68° (také 90° − 22°).</div></details>
+      <details><summary>Co se stane s β, když při stejném α zvětšíme γ?</summary><div class="ans"><b>β se zmenší</b>, protože β = 90° − α − γ. Břit je tenčí, snáz řeže, ale hůř odolává.</div></details>
+      <details><summary>Proč nesmí být α rovno nule?</summary><div class="ans"><b>Hřbet by se tlačil na obrobenou plochu.</b> Vzniká tření a teplo a nástroj se nezařezává, spíš se zadírá.</div></details>
+      <details><summary>Který úhel bude u litiny větší než u hliníku, β nebo γ?</summary><div class="ans"><b>β.</b> Litina je tvrdá a křehká, potřebuje pevný břit. Úhel čela γ bude naopak menší.</div></details>
+      <details><summary>Co znamená záporné γ?</summary><div class="ans"><b>Čelo je skloněné dopředu</b>, δ je větší než 90° a β větší. Břit je podepřený, snese rázy a tvrdé materiály (tvrdokov), ale řezná síla a teplo rostou.</div></details>
+    </div>
+  </div>
+
+  <p class="foot">Hodnoty úhlů jsou orientační a platí pro ruční nástroje z nástrojové oceli. Pro konkrétní práci platí tabulky z dílny a pokyny vyučujícího. Nákres je schematický řez kolmo na ostří.</p>
+</section>
+</div>
+
+<script>
+(function(){
+  var OX=380, OY=310, LAM=30, T=26, LC=150, LW=210;
+  var GMIN=-10, GMAX=50;
+  var S={a:8,g:22,mode:'g',hl:null};
+  var rad=function(d){return d*Math.PI/180};
+  var nf=function(x,d){d=d||0;return Number(x).toLocaleString('cs-CZ',{minimumFractionDigits:d,maximumFractionDigits:d}).replace('-','−')};
+  var clamp=function(x,lo,hi){return Math.max(lo,Math.min(hi,x))};
+  var $=function(id){return document.getElementById(id)};
+  var q=function(x,y){return (OX+x).toFixed(1)+' '+(OY-y).toFixed(1)};
+  var X=function(x){return (OX+x).toFixed(1)}, Y=function(y){return (OY-y).toFixed(1)};
+
+  function merch(g){
+    var phi=45+g/2-LAM/2;
+    var ratio=Math.cos(rad(phi-g))/Math.sin(rad(phi));
+    var F=Math.cos(rad(LAM-g))/(Math.sin(rad(phi))*Math.cos(rad(phi+LAM-g)));
+    return {phi:phi,ratio:ratio,F:F};
+  }
+  var F0=merch(0).F;
+
+  var PRESETS=[
+    {n:'Sekáč na hliník',a:8,g:47},
+    {n:'Sekáč na ocel',a:8,g:22},
+    {n:'Sekáč na litinu',a:8,g:12},
+    {n:'Vrták na ocel',a:10,g:30},
+    {n:'Nůž z tvrdokovu',a:6,g:-5}
+  ];
+  var MAT=[
+    {n:'Hliník, měď (měkké)',lo:35,hi:45},
+    {n:'Konstrukční ocel',lo:55,hi:65},
+    {n:'Litina, tvrdá ocel',lo:65,hi:75}
+  ];
+
+  /* ---------- kresba ---------- */
+  function arcPath(r,a1,a2){
+    var lo=Math.min(a1,a2), hi=Math.max(a1,a2);
+    var x1=r*Math.cos(rad(lo)), y1=r*Math.sin(rad(lo));
+    var x2=r*Math.cos(rad(hi)), y2=r*Math.sin(rad(hi));
+    return {line:'M'+q(x1,y1)+' A'+r+' '+r+' 0 0 0 '+q(x2,y2),
+            pie:'M'+q(0,0)+' L'+q(x1,y1)+' A'+r+' '+r+' 0 0 0 '+q(x2,y2)+' Z'};
+  }
+  function polar(r,deg){return [r*Math.cos(rad(deg)), r*Math.sin(rad(deg))]}
+  function text(cls,x,y,s,extra){
+    return '<text class="'+cls+'" x="'+x+'" y="'+y+'" '+(extra||'text-anchor="middle" dominant-baseline="central"')+'>'+s+'</text>';
+  }
+
+  function draw(){
+    var a=S.a,g=S.g,b=90-a-g,d=90-g;
+    var r=[-Math.sin(rad(g)),Math.cos(rad(g))];
+    var c=[-Math.cos(rad(a)),Math.sin(rad(a))];
+    var n=[Math.cos(rad(g)),Math.sin(rad(g))];
+    var m=merch(g), xs=T/Math.tan(rad(m.phi)), tc=T*m.ratio;
+    var s='';
+
+    // obráběný materiál
+    var wp=[[-330,-170],[400,-170],[400,T],[xs,T],[0,0],[-330,0]].map(function(p){return q(p[0],p[1])}).join(' ');
+    s+='<polygon points="'+wp+'" fill="var(--wp)"/>';
+    s+='<polygon points="'+wp+'" fill="url(#hatch)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>';
+
+    // tříska
+    var Bx=xs, By=T;
+    var ch=[[0,0],[Bx,By],[Bx+LC*r[0],By+LC*r[1]],[LC*r[0],LC*r[1]]].map(function(p){return q(p[0],p[1])}).join(' ');
+    s+='<polygon points="'+ch+'" fill="var(--chip)" fill-opacity=".72" stroke="var(--chipline)" stroke-width="2" stroke-linejoin="round"/>';
+
+    // nástroj
+    var T1=[LW*r[0],LW*r[1]], T3=[LW*c[0],LW*c[1]], T2=[T1[0]+T3[0],T1[1]+T3[1]];
+    var tool=[[0,0],T1,T2,T3].map(function(p){return q(p[0],p[1])}).join(' ');
+    s+='<g mask="url(#fade)"><polygon points="'+tool+'" fill="url(#steel)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/></g>';
+    // čelo a hřbet zvýrazněné
+    s+='<path d="M'+q(0,0)+' L'+q(190*r[0],190*r[1])+'" stroke="var(--ink)" stroke-width="3.6" stroke-linecap="round" fill="none"/>';
+    s+='<path d="M'+q(0,0)+' L'+q(190*c[0],190*c[1])+'" stroke="var(--ink)" stroke-width="3.6" stroke-linecap="round" fill="none"/>';
+
+    // pomocné čáry: řezná rovina a kolmice
+    s+='<path d="M'+q(-300,0)+' L'+q(185,0)+'" stroke="var(--ink)" stroke-width="1.3" stroke-dasharray="9 5" fill="none" opacity=".8"/>';
+    s+='<path d="M'+q(0,0)+' L'+q(0,205)+'" stroke="var(--ink)" stroke-width="1.3" stroke-dasharray="9 5" fill="none" opacity=".8"/>';
+
+    // rozměry t a tc
+    var dx=150;
+    s+='<path d="M'+q(dx,0)+' L'+q(dx,T)+'" stroke="var(--ink)" stroke-width="1.6" fill="none"/>';
+    s+='<path d="M'+q(dx-6,0)+' L'+q(dx+6,0)+' M'+q(dx-6,T)+' L'+q(dx+6,T)+'" stroke="var(--ink)" stroke-width="1.6" fill="none"/>';
+    s+=text('dim',X(dx+14),Y(T+22),'t','text-anchor="start" dominant-baseline="central"');
+    var P0=[62*r[0],62*r[1]], P1=[P0[0]+tc*n[0],P0[1]+tc*n[1]];
+    s+='<path d="M'+q(P0[0],P0[1])+' L'+q(P1[0],P1[1])+'" stroke="var(--ink)" stroke-width="1.6" fill="none"/>';
+    s+='<circle cx="'+X(P0[0])+'" cy="'+Y(P0[1])+'" r="3" fill="var(--ink)"/><circle cx="'+X(P1[0])+'" cy="'+Y(P1[1])+'" r="3" fill="var(--ink)"/>';
+    s+=text('dim',X(P1[0]+14),Y(P1[1]+2),'t<tspan font-size="11" dy="4">c</tspan>','text-anchor="start" dominant-baseline="central"');
+
+    // úhly
+    var A=arcPath(88,180-a,180), Bb=arcPath(60,90+g,180-a), G=arcPath(104,Math.min(90,90+g),Math.max(90,90+g)), D=arcPath(142,90+g,180);
+    if(a>0.4){
+      s+='<g class="ang ang-a"><path d="'+A.pie+'" fill="var(--a)" fill-opacity=".28"/><path d="'+A.line+'" stroke="var(--a)" stroke-width="3" fill="none"/>'+
+         text('lbl a',X(-118),Y(-20),'α '+a+'°')+'</g>';
+    } else {
+      s+='<g class="ang ang-a">'+text('lbl a',X(-118),Y(-20),'α 0°')+'</g>';
+    }
+    s+='<g class="ang ang-b"><path d="'+Bb.pie+'" fill="var(--b)" fill-opacity=".3"/><path d="'+Bb.line+'" stroke="var(--b)" stroke-width="3" fill="none"/>';
+    var bm=polar(96,(90+g+180-a)/2); s+=text('lbl b',X(bm[0]),Y(bm[1]),'β '+nf(b)+'°')+'</g>';
+    if(Math.abs(g)>0.4){
+      s+='<g class="ang ang-g"><path d="'+G.pie+'" fill="var(--g)" fill-opacity=".28"/><path d="'+G.line+'" stroke="var(--g)" stroke-width="3" fill="none"/>';
+    } else s+='<g class="ang ang-g">';
+    var gm=polar(134,90+g/2); s+=text('lbl g',X(gm[0]),Y(gm[1]),'γ '+nf(g)+'°')+'</g>';
+    s+='<g class="ang ang-d"><path d="'+D.line+'" stroke="var(--d)" stroke-width="2.4" stroke-dasharray="3 6" stroke-linecap="round" fill="none"/>';
+    var dm=polar(166,(90+g+180)/2); s+=text('lbl d',X(dm[0]),Y(dm[1]),'δ '+nf(d)+'°')+'</g>';
+
+    // popisky ploch (otočené podél ploch)
+    var rp=[185*r[0]-14*n[0], 185*r[1]-14*n[1]];
+    s+='<text class="note caps" transform="translate('+X(rp[0])+' '+Y(rp[1])+') rotate('+(-(90+g)).toFixed(1)+')" text-anchor="middle" dominant-baseline="central">ČELO</text>';
+    var cp=[185*c[0]+14*Math.sin(rad(a)), 185*c[1]+14*Math.cos(rad(a))];
+    s+='<text class="note caps" transform="translate('+X(cp[0])+' '+Y(cp[1])+') rotate('+a+')" text-anchor="middle" dominant-baseline="central">HŘBET</text>';
+
+    // ostří
+    s+='<circle cx="'+X(0)+'" cy="'+Y(0)+'" r="4.5" fill="var(--ink)"/>';
+    s+=text('note',X(12),Y(-20),'ostří','text-anchor="start" dominant-baseline="central"');
+
+    // ostatní popisky
+    s+=text('note',X(-262),Y(-20),'obrobená plocha','text-anchor="start" dominant-baseline="central"');
+    s+=text('note',X(196),Y(-14),'řezná rovina','text-anchor="start" dominant-baseline="central"');
+    s+=text('note',X(10),Y(222),'kolmice k řezné rovině','text-anchor="start" dominant-baseline="central"');
+    s+=text('note',X(360),Y(-150),'obráběný materiál','text-anchor="end" dominant-baseline="central"');
+    var ce=[LC*r[0]+xs/2, LC*r[1]+T/2];
+    s+=text('note',X(ce[0]+n[0]*30),Y(ce[1]+n[1]*14+10),'tříska','text-anchor="start" dominant-baseline="central"');
+
+    // pohyb nástroje
+    s+='<path d="M'+q(60,262)+' L'+q(190,262)+'" stroke="var(--ink)" stroke-width="2" fill="none"/>'+
+       '<polygon points="'+q(190,262)+' '+q(178,268)+' '+q(178,256)+'" fill="var(--ink)"/>'+
+       text('note',X(125),Y(282),'pohyb nástroje','text-anchor="middle" dominant-baseline="central"');
+
+    $('dyn').innerHTML=s;
+  }
+
+  /* ---------- vyhodnocení ---------- */
+  function strengthText(b){return b<40?'nízká':b<60?'střední':b<80?'vysoká':'velmi vysoká'}
+  function frictionText(a){return a<3?'velké':a<7?'střední':a<13?'malé':'minimální'}
+
+  function meters(){
+    var a=S.a,g=S.g,b=90-a-g, m=merch(g);
+    $('f-str').style.width=clamp((b-20)/75*100,4,100)+'%';
+    $('t-str').textContent=strengthText(b)+' (β = '+nf(b)+'°)';
+    var rel=m.F/F0;
+    $('f-frc').style.width=clamp((m.F-1.2)/(4.4-1.2)*100,4,100)+'%';
+    $('t-frc').textContent=nf(rel*100)+' % oproti γ = 0°';
+    var fr=clamp((14-a)/14,0,1);
+    $('f-fri').style.width=Math.max(4,fr*100)+'%';
+    $('t-fri').textContent=frictionText(a);
+    $('f-chp').style.width=clamp((m.ratio-1)/1.1*100,4,100)+'%';
+    $('t-chp').textContent='tc/t = '+nf(m.ratio,2);
+  }
+
+  function verdict(){
+    var a=S.a,g=S.g,b=90-a-g,out=[];
+    if(a<3) out.push(['warn','Hřbet se opírá o obrobenou plochu. Nástroj se tře, hřeje a nezařezává se.']);
+    else if(a>12) out.push(['warn','Velký úhel hřbetu ubírá z pevnosti břitu.']);
+    else out.push(['ok','Úhel hřbetu je v obvyklém rozmezí 6–12°.']);
+    if(b<40) out.push(['info','Tenký břit se snadno zařezává, ale snadno se vylomí. Hodí se na hliník, měď, plasty a dřevo.']);
+    else if(b<55) out.push(['info','Střední břit. Vhodný pro měkčí oceli a mosaz.']);
+    else if(b<=75) out.push(['ok','Pevný břit. Typický pro sekání oceli a litiny.']);
+    else out.push(['info','Velmi silný břit pro tvrdé a křehké materiály. Potřebuje velkou sílu.']);
+    if(g<0) out.push(['info','Záporné čelo (δ nad 90°). Břit je podepřený a snese rázy, ale síla a teplo rostou.']);
+    else if(g>35) out.push(['info','Velké čelo: malá řezná síla a tenká tříska, ale tenký klín.']);
+    $('verdict').innerHTML=out.map(function(o){
+      var sym=o[0]==='ok'?'✓':o[0]==='warn'?'!':'i';
+      return '<li><span class="ic '+o[0]+'" aria-hidden="true">'+sym+'</span><span>'+o[1]+'</span></li>';
+    }).join('');
+  }
+
+  function challenge(){
+    var mt=MAT[+$('mat').value], a=S.a, b=90-a-S.g, items=[], okA=a>=5&&a<=12, okB=b>=mt.lo&&b<=mt.hi;
+    items.push([okA,'Úhel hřbetu α má být 5–12°. Máte '+a+'°.'+(okA?'':(a<5?' Je to málo, hřbet se bude třít.':' Je to moc, ubírá z břitu.'))]);
+    items.push([okB,'Úhel břitu β má být '+mt.lo+'–'+mt.hi+'°. Máte '+nf(b)+'°.'+(okB?'':(b<mt.lo?' Břit je pro tento materiál příliš tenký.':' Břit je zbytečně silný, nástroj se hůř zařezává.'))]);
+    $('check').innerHTML=items.map(function(i){
+      return '<li><span class="ic '+(i[0]?'ok':'warn')+'" aria-hidden="true">'+(i[0]?'✓':'!')+'</span><span>'+i[1]+'</span></li>';
+    }).join('');
+    var res=$('result');
+    if(okA&&okB){res.className='result ok';res.textContent='Vyhovuje. Úhel čela vychází γ = '+S.g+'°, úhel řezu δ = '+nf(90-S.g)+'°.'}
+    else{res.className='result';res.textContent=''}
+  }
+
+  function cards(){
+    var a=S.a,g=S.g,b=90-a-g,d=90-g;
+    var derived={a:false,b:S.mode==='g',g:S.mode==='b',d:true};
+    var info=[['a','α','Úhel hřbetu',a],['b','β','Úhel břitu',b],['g','γ','Úhel čela',g],['d','δ','Úhel řezu',d]];
+    $('cards').innerHTML=info.map(function(i){
+      return '<div class="card" data-k="'+i[0]+'" tabindex="0"><div class="row"><span class="sym">'+i[1]+'</span><span class="val">'+nf(i[3])+'°</span></div><div class="nm">'+i[2]+'</div><div class="tag">'+(derived[i[0]]?'dopočteno':'nastaveno')+'</div></div>';
+    }).join('');
+    Array.prototype.forEach.call($('cards').children,function(el){
+      var k=el.getAttribute('data-k');
+      var on=function(){$('svg').setAttribute('data-hl',k)}, off=function(){$('svg').removeAttribute('data-hl')};
+      el.addEventListener('pointerenter',on);el.addEventListener('pointerleave',off);
+      el.addEventListener('focus',on);el.addEventListener('blur',off);
+    });
+    $('sum').innerHTML='α + β + γ = <b>'+a+'° + '+nf(b)+'° + ('+nf(g)+'°) = 90°</b>';
+  }
+
+  function syncControls(){
+    var a=S.a,g=S.g,b=90-a-g,s2=$('s2');
+    $('sa').value=a; $('oa').textContent=a+'°';
+    if(S.mode==='g'){
+      s2.className='mg'; s2.min=GMIN; s2.max=GMAX; s2.value=g;
+      $('l2').innerHTML='Úhel čela <span class="greek cg">γ</span>';
+      $('o2').textContent=nf(g)+'°';
+      $('modehint').textContent='Změníte-li α, přepočítá se β. Úhel čela γ zůstane.';
+    } else {
+      s2.className='mb'; s2.min=20; s2.max=100; s2.value=b;
+      $('l2').innerHTML='Úhel břitu <span class="greek cb">β</span>';
+      $('o2').textContent=nf(b)+'°';
+      $('modehint').textContent='Změníte-li α, přepočítá se γ. Úhel břitu β zůstane.';
+    }
+    $('m-g').setAttribute('aria-pressed',S.mode==='g'); $('m-b').setAttribute('aria-pressed',S.mode==='b');
+    var cur=null;
+    PRESETS.forEach(function(p,i){
+      var btn=$('presets').children[i];
+      btn.setAttribute('aria-pressed',(p.a===a&&p.g===g)?'true':'false');
+    });
+  }
+
+  function render(){draw();meters();verdict();challenge();cards();syncControls()}
+
+  /* ---------- události ---------- */
+  $('sa').addEventListener('input',function(e){
+    var na=+e.target.value;
+    if(S.mode==='b'){
+      var b=90-S.a-S.g; S.a=na; S.g=clamp(90-na-b,GMIN,GMAX);
+    } else S.a=na;
+    render();
+  });
+  $('s2').addEventListener('input',function(e){
+    var v=+e.target.value;
+    if(S.mode==='g') S.g=v; else S.g=clamp(90-S.a-v,GMIN,GMAX);
+    render();
+  });
+  $('m-g').addEventListener('click',function(){S.mode='g';render()});
+  $('m-b').addEventListener('click',function(){S.mode='b';render()});
+
+  PRESETS.forEach(function(p){
+    var btn=document.createElement('button');
+    btn.className='chip';btn.type='button';btn.textContent=p.n;btn.setAttribute('aria-pressed','false');
+    btn.addEventListener('click',function(){S.a=p.a;S.g=p.g;S.mode='g';render()});
+    $('presets').appendChild(btn);
+  });
+  MAT.forEach(function(m,i){
+    var o=document.createElement('option');o.value=i;o.textContent=m.n;$('mat').appendChild(o);
+  });
+  $('mat').value=1;
+  $('mat').addEventListener('change',challenge);
+  $('solve').addEventListener('click',function(){
+    var mt=MAT[+$('mat').value], b=Math.round((mt.lo+mt.hi)/2);
+    S.a=8; S.g=90-8-b; S.mode='g'; render();
+  });
+
+  S.a=8;S.g=22;
+  render();
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,532 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Lapování</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: technický výkres. Úzká stránka, popisky v mono, každý prvek má v celé stránce svou barvu:
+   nástroj = ocelově modrá, obrobek = jantarová, brusivo = karmínová, pohyb a síla = zelená. */
+:root{
+  --bg:#EDF1F4; --surface:#FFFFFF; --ink:#10212B; --muted:#4E6272; --line:#C9D4DB;
+  --lap:#5C7B93; --lap-ink:#FFFFFF; --groove:#A8BFCF;
+  --work:#E3AE40; --work-edge:#8A5A0B; --work-ink:#2B1E04;
+  --abr:#C42D49; --abr-edge:#7E1428; --abr-soft:#F7DCE2;
+  --move:#0B8366; --ring:#B7C3CC; --ring-line:#6B7D8A; --load:#3B4C59; --load-ink:#F3F7FA;
+  --f-head:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E171D; --surface:#152229; --ink:#E6EEF2; --muted:#9DB0BD; --line:#2A3B46;
+    --lap:#6F93AD; --lap-ink:#0B1419; --groove:#3E5A70;
+    --work:#E8B54F; --work-edge:#FFE0A0; --work-ink:#1B1303;
+    --abr:#FF6A84; --abr-edge:#FFB3C0; --abr-soft:#3A1F28;
+    --move:#3FD0A8; --ring:#4A5C69; --ring-line:#9DB0BD; --load:#5B7081; --load-ink:#F3F7FA;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E171D; --surface:#152229; --ink:#E6EEF2; --muted:#9DB0BD; --line:#2A3B46;
+  --lap:#6F93AD; --lap-ink:#0B1419; --groove:#3E5A70;
+  --work:#E8B54F; --work-edge:#FFE0A0; --work-ink:#1B1303;
+  --abr:#FF6A84; --abr-edge:#FFB3C0; --abr-soft:#3A1F28;
+  --move:#3FD0A8; --ring:#4A5C69; --ring-line:#9DB0BD; --load:#5B7081; --load-ink:#F3F7FA;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--f-body);
+  padding-block:0 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-head);font-weight:600;line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.4rem,7vw,3.6rem);letter-spacing:-.01em}
+h2{font-size:1.65rem;margin-top:44px}
+h3{font-size:1.1rem}
+p{margin:0}
+.eyebrow{font:500 12px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+header{padding-top:28px;display:grid;gap:12px}
+.lead{max-width:66ch;font-size:1.08rem}
+.key{display:flex;flex-wrap:wrap;gap:8px 18px;margin:6px 0 0;padding:0;list-style:none;font:500 13px/1.2 var(--f-mono)}
+.key li{display:flex;align-items:center;gap:7px}
+.sw{width:16px;height:12px;border-radius:2px;display:inline-block;border:1px solid var(--ink)}
+.sw.lap{background:var(--lap)} .sw.work{background:var(--work)} .sw.ring{background:var(--ring)} .sw.load{background:var(--load)}
+.sw.abr{width:12px;height:12px;border-radius:50%;background:var(--abr)}
+.sw.mv{border:0;height:0;border-top:3px solid var(--move);width:20px;border-radius:0;position:relative}
+.ctrl{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line);margin-top:18px;padding:10px 0;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+button{font:500 14px/1 var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--ink);border-radius:4px;padding:9px 14px;cursor:pointer}
+button:hover{background:var(--line)}
+button[aria-pressed="true"].seg{background:var(--ink);color:var(--bg)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--move);outline-offset:2px}
+.speed{display:flex;align-items:center;gap:10px;font:500 13px var(--f-mono)}
+input[type=range]{accent-color:var(--move);width:150px}
+output{min-width:3ch;display:inline-block}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,430px),1fr));gap:16px;margin-top:16px;align-items:start}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:12px 12px 14px;min-width:0}
+.figh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font:500 12px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.segs{display:flex;gap:0}
+.segs .seg{border-radius:0;padding:6px 10px;font-size:12px}
+.segs .seg:first-child{border-radius:4px 0 0 4px}
+.segs .seg:last-child{border-radius:0 4px 4px 0;border-left:0}
+figcaption,.cap{font-size:.92rem;color:var(--muted);margin-top:8px;max-width:68ch}
+.motions{margin:16px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px 18px}
+.motions li{padding-left:12px;border-left:3px solid var(--move);font-size:.95rem}
+.motions b{font-family:var(--f-mono);font-weight:500;font-size:.88rem}
+svg{display:block;width:100%;height:auto;max-width:100%}
+.s-lap{fill:var(--lap)}
+.s-work{fill:var(--work);stroke:var(--work-edge);stroke-width:1.2}
+.s-abr{fill:var(--abr)}
+.s-grain{fill:var(--abr);stroke:var(--abr-edge);stroke-width:1}
+.s-chip{fill:var(--work);stroke:var(--work-edge);stroke-width:.6}
+.s-carrier{fill:var(--abr-soft)}
+.s-load{fill:var(--load)}
+.s-ringbg{fill:var(--ring)}
+.s-hatch{stroke:var(--ring-line);stroke-width:1.2}
+.s-ringline{stroke:var(--ring-line);stroke-width:1.2}
+.s-ring{fill:url(#hRingB);stroke:var(--ring-line);stroke-width:1.4}
+.s-ringside{fill:url(#hRingA);stroke:var(--ring-line);stroke-width:1.2}
+.s-move{stroke:var(--move);stroke-width:2.4;fill:none}
+.s-movefill{fill:var(--move)}
+.s-tick{stroke:var(--lap-ink);stroke-opacity:.6;stroke-width:3;fill:none}
+.s-groove{stroke:var(--groove);stroke-width:1.4;fill:none}
+.s-hub{fill:var(--lap);stroke:var(--groove);stroke-width:1.4}
+.s-mark{fill:var(--lap-ink)}
+.s-notch{fill:var(--work-ink)}
+.s-leader{stroke:var(--muted);stroke-width:1;fill:none}
+.s-dot{fill:var(--muted)}
+.s-pdot{stroke:var(--surface);stroke-width:.7;fill:var(--abr)}
+.s-lapfill{fill:var(--lap-ink)}
+.s-lapstroke{stroke:var(--lap-ink);stroke-width:1.6;fill:none}
+.t{font:500 13px var(--f-mono);fill:var(--ink)}
+.t-sm{font-size:12px}
+.t-in{fill:var(--lap-ink)}
+.t-work{fill:var(--work-ink)}
+.t-load{fill:var(--load-ink)}
+.t-mv{fill:var(--move)}
+.t-halo{paint-order:stroke;stroke:var(--surface);stroke-width:4;stroke-linejoin:round}
+.meter{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-top:10px;font:500 12px var(--f-mono);color:var(--muted)}
+.bar{height:8px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--move)}
+.legrows{margin:12px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px 18px}
+.legrows li{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:.95rem;align-items:start}
+.legrows svg{width:22px;height:22px;margin-top:2px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:16px;margin-top:16px}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:14px 16px;display:grid;gap:6px;align-content:start;min-width:0}
+.col .eyebrow{color:var(--move)}
+.tablewrap{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-mono);font-size:.9rem;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
+.chips li{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:7px 12px;font-size:.95rem}
+dl.pit{margin:16px 0 0;display:grid;gap:12px}
+dl.pit div{display:grid;grid-template-columns:minmax(0,15rem) 1fr;gap:4px 18px;padding-top:12px;border-top:1px solid var(--line)}
+dl.pit dt{font-weight:600}
+dl.pit dd{margin:0;color:var(--muted)}
+@media (max-width:640px){dl.pit div{grid-template-columns:1fr}}
+details{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:10px 14px;margin-top:10px}
+summary{cursor:pointer;font-weight:500}
+details p{margin-top:8px;color:var(--muted)}
+.note{font-size:.88rem;color:var(--muted);margin-top:10px;max-width:70ch}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font:500 13px/1.5 var(--f-mono);color:var(--muted)}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Dokončovací metody obrábění · pomůcka č. 1</div>
+  <h1>Lapování</h1>
+  <p class="lead">Lapování je dokončovací obrábění volným zrnem. Brusivo rozptýlené v oleji nebo petroleji se pohybuje v mezeře mezi obrobkem a měkčím nástrojem, lapem, a po mikroskopických částech odebírá hrbolky povrchu. Výsledkem je přesná plocha s velmi malou drsností.</p>
+  <ul class="key" aria-label="Barevný klíč">
+    <li><span class="sw lap"></span>nástroj (lap)</li>
+    <li><span class="sw work"></span>obrobek</li>
+    <li><span class="sw abr"></span>brusivo</li>
+    <li><span class="sw ring"></span>vodicí kroužek</li>
+    <li><span class="sw load"></span>zátěž, stojan</li>
+    <li><span class="sw mv"></span>pohyb a síla</li>
+  </ul>
+</header>
+
+<div class="ctrl">
+  <button id="btnPlay" type="button" aria-pressed="false">Pozastavit</button>
+  <label class="speed" for="speed">Rychlost <input id="speed" type="range" min="0.25" max="3" step="0.25" value="1"> <output id="speedOut" for="speed">1×</output></label>
+</div>
+
+<h2>Stroj a pohyby</h2>
+<div class="grid2">
+  <figure class="fig" style="margin:0">
+    <div class="figh"><span>A · Bokorys jednokotoučové lapky</span></div>
+    <svg viewBox="0 0 460 348" role="img" aria-label="Bokorys lapky: otáčející se lapovací deska, vrstva brusiva, obrobek ve vodicím kroužku, zátěž shora a přívod brusiva.">
+      <defs>
+        <pattern id="hRingA" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" class="s-ringbg"/><line x1="0" y1="0" x2="0" y2="6" class="s-hatch"/></pattern>
+        <marker id="mvA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="s-movefill"/></marker>
+      </defs>
+      <rect x="150" y="326" width="160" height="14" class="s-load"/>
+      <rect x="214" y="292" width="32" height="34" class="s-load"/>
+      <rect x="30" y="262" width="400" height="30" rx="2" class="s-lap"/>
+      <line id="ticks" x1="34" y1="288" x2="426" y2="288" class="s-tick" stroke-dasharray="10 12"/>
+      <text x="230" y="281" text-anchor="middle" class="t t-in">LAP · deska</text>
+      <rect x="30" y="256" width="400" height="6" class="s-carrier"/>
+      <g id="layerDots"></g>
+      <path d="M30 108 h28 l-8 16 h-12 z" class="s-load"/>
+      <rect x="42" y="124" width="4" height="14" class="s-load"/>
+      <text x="66" y="122" class="t t-sm">přívod brusiva</text>
+      <g id="drops"></g>
+      <text x="62" y="236" class="t t-sm">brusivo</text>
+      <path d="M84 241 L98 254" class="s-leader"/><circle cx="98" cy="254" r="2.5" class="s-dot"/>
+      <line x1="160" y1="146" x2="270" y2="146" class="s-move" marker-start="url(#mvA)" marker-end="url(#mvA)"/>
+      <text x="215" y="137" text-anchor="middle" class="t t-sm t-mv">oscilace</text>
+      <g id="osc">
+        <rect x="133" y="226" width="32" height="30" class="s-ringside"/>
+        <rect x="265" y="226" width="32" height="30" class="s-ringside"/>
+        <rect x="165" y="226" width="100" height="30" class="s-work"/>
+        <text x="215" y="246" text-anchor="middle" class="t t-work">OBROBEK</text>
+        <rect x="150" y="190" width="130" height="36" class="s-load"/>
+        <text x="215" y="213" text-anchor="middle" class="t t-load">ZÁTĚŽ</text>
+        <line x1="190" y1="152" x2="190" y2="187" class="s-move" marker-end="url(#mvA)"/>
+        <text x="200" y="170" class="t t-mv">F</text>
+        <path d="M226 176 A24 6 0 0 1 274 176" class="s-move" marker-end="url(#mvA)"/>
+        <text x="282" y="180" class="t t-mv">n₂</text>
+        <text x="302" y="244" class="t t-sm">kroužek</text>
+      </g>
+      <line x1="60" y1="306" x2="150" y2="306" class="s-move" marker-end="url(#mvA)"/>
+      <text x="60" y="322" class="t t-sm t-mv">n₁ otáčení desky</text>
+    </svg>
+    <figcaption>Deska se otáčí a unáší brusivo. Obrobek leží ve vodicím kroužku na vrstvě brusiva a je zatížen přítlakem F. Tloušťka vrstvy brusiva je pro přehlednost přehnaná.</figcaption>
+  </figure>
+
+  <figure class="fig" style="margin:0">
+    <div class="figh">
+      <span>B · Pohled shora</span>
+      <span class="segs" role="group" aria-label="Způsob lapování">
+        <button id="modeMachine" class="seg" type="button" aria-pressed="true">Strojně</button>
+        <button id="modeManual" class="seg" type="button" aria-pressed="false">Ručně</button>
+      </span>
+    </div>
+    <svg viewBox="0 0 460 400" role="img" aria-label="Pohled shora: otáčející se lapovací deska s drážkami a dva vodicí kroužky s obrobky, nebo ruční vedení obrobku po desce v osmičkách.">
+      <defs>
+        <pattern id="hRingB" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" class="s-ringbg"/><line x1="0" y1="0" x2="0" y2="6" class="s-hatch"/></pattern>
+        <marker id="mvB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="s-movefill"/></marker>
+      </defs>
+      <g id="plateRot">
+        <circle cx="230" cy="205" r="150" class="s-lap"/>
+        <g id="grooves" class="s-groove"></g>
+        <circle cx="230" cy="205" r="22" class="s-hub"/>
+        <g id="pasteDots"></g>
+        <circle cx="230" cy="64" r="5" class="s-mark"/>
+      </g>
+      <g id="manual" hidden>
+        <path id="manPath" class="s-leader" stroke-dasharray="4 4"/>
+        <g id="hand">
+          <rect x="-34" y="-34" width="68" height="68" rx="3" class="s-work"/>
+          <text x="0" y="4" text-anchor="middle" class="t t-sm t-work">obrobek</text>
+        </g>
+      </g>
+      <g id="ringA">
+        <g id="spinA"><circle r="42" class="s-ring"/><circle r="30" class="s-work"/><rect x="-3" y="-30" width="6" height="12" class="s-notch"/></g>
+        <line x1="-30" y1="0" x2="30" y2="0" transform="rotate(30)" class="s-move" marker-start="url(#mvB)" marker-end="url(#mvB)"/>
+      </g>
+      <g id="ringB">
+        <g id="spinB"><circle r="42" class="s-ring"/><circle r="30" class="s-work"/><rect x="-3" y="-30" width="6" height="12" class="s-notch"/></g>
+        <line x1="-30" y1="0" x2="30" y2="0" transform="rotate(150)" class="s-move" marker-start="url(#mvB)" marker-end="url(#mvB)"/>
+      </g>
+      <text x="6" y="34" class="t t-sm">lap</text><text x="6" y="48" class="t t-sm">(deska)</text>
+      <path d="M40 54 L138 113" class="s-leader"/><circle cx="138" cy="113" r="2.5" class="s-dot"/>
+      <text x="454" y="34" text-anchor="end" class="t t-sm">brusivo</text><text x="454" y="48" text-anchor="end" class="t t-sm">(pasta)</text>
+      <path d="M432 54 L318 117" class="s-leader"/><circle cx="318" cy="117" r="2.5" class="s-dot"/>
+      <g id="machLabels">
+        <text x="6" y="262" class="t t-sm">obrobek</text>
+        <path d="M60 258 L140 250" class="s-leader"/><circle cx="140" cy="250" r="2.5" class="s-dot"/>
+        <text x="454" y="282" text-anchor="end" class="t t-sm">kroužek</text>
+        <path d="M410 278 L318 268" class="s-leader"/><circle cx="318" cy="268" r="2.5" class="s-dot"/>
+        <path d="M312.5 347.9 A165 165 0 0 1 147.5 347.9" class="s-move" marker-end="url(#mvB)"/>
+        <text x="230" y="392" text-anchor="middle" class="t t-sm t-mv">n₁ otáčení desky</text>
+      </g>
+      <g id="manLabels" hidden>
+        <text x="230" y="392" text-anchor="middle" class="t t-sm t-mv">ruční vedení · osmičky · lehký tlak</text>
+      </g>
+    </svg>
+    <p id="capMachine" class="cap">Pohled shora. Deska se otáčí (n₁). Kroužky s obrobky jsou vedeny válečky, třením se otáčejí samy (n₂) a lehce kmitají po poloměru desky, aby se deska opotřebovávala rovnoměrně. Drážky v desce odvádějí otěr.</p>
+    <p id="capManual" class="cap" hidden>Ručně se obrobek vede po nehybné desce v osmičkách, aby každý tah pokryl jinou část desky. Tlak ruky je lehký a stálý, natočení obrobku se průběžně mění.</p>
+  </figure>
+</div>
+
+<ul class="motions">
+  <li><b>n₁</b> otáčení desky<br>Hlavní řezný pohyb. Určuje rychlost, jakou se brusivo pohybuje vůči obrobku.</li>
+  <li><b>n₂</b> otáčení kroužku<br>Vzniká třením. Zrna pak působí na obrobek z různých směrů a úběr je rovnoměrný.</li>
+  <li><b>oscilace</b> po poloměru<br>Obrobek využívá celou šířku desky, deska se nevyjíždí do žlabu a zůstává rovná.</li>
+  <li><b>F</b> přítlak<br>Malý a stálý. Větší tlak zrychlí úběr, ale zhorší povrch.</li>
+</ul>
+
+<h2>Co se děje v mezeře</h2>
+<figure class="fig" style="margin:16px 0 0">
+  <div class="figh"><span>C · Detail mezery, silně zvětšeno</span></div>
+  <svg viewBox="0 0 460 300" role="img" aria-label="Detail mezery mezi obrobkem a lapem: zrna brusiva se pohybují s lapem, odebírají hrbolky z povrchu obrobku a drsnost postupně klesá.">
+    <defs>
+      <marker id="mvC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="s-movefill"/></marker>
+      <marker id="mvLap" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="s-lapfill"/></marker>
+    </defs>
+    <rect x="0" y="100" width="460" height="70" class="s-carrier"/>
+    <g id="wpG">
+      <path id="wpPath" class="s-work"/>
+      <text x="16" y="70" class="t t-work">OBROBEK</text>
+      <line x1="230" y1="2" x2="230" y2="22" class="s-move" marker-end="url(#mvC)"/>
+      <text x="240" y="16" class="t t-mv">F</text>
+    </g>
+    <rect x="0" y="170" width="460" height="86" class="s-lap"/>
+    <text x="16" y="214" class="t t-in">LAP</text>
+    <text x="16" y="232" class="t t-sm t-in">měkčí než obrobek</text>
+    <text x="350" y="228" text-anchor="middle" class="t t-sm t-in">brusivo v nosiči</text>
+    <line x1="350" y1="212" x2="350" y2="176" class="s-lapstroke" marker-end="url(#mvLap)"/>
+    <g id="grainsG"></g>
+    <g id="chipsG"></g>
+    <line x1="16" y1="278" x2="106" y2="278" class="s-move" marker-end="url(#mvC)"/>
+    <text x="116" y="282" class="t t-sm t-mv">pohyb lapu vůči obrobku</text>
+  </svg>
+  <div class="meter" aria-hidden="true"><span>průběh lapování</span><div class="bar"><i id="barFill"></i></div><span id="raVal">Ra ≈ 0,80 µm</span></div>
+  <p class="note">Hrbolky, zrna i vrstva nosiče jsou nakreslené v nereálném měřítku. Hodnota Ra v ukazateli je jen schematická.</p>
+  <ul class="legrows">
+    <li><svg viewBox="0 0 22 22" aria-hidden="true"><polygon points="11,3 18,7 19,15 12,19 5,16 4,8" class="s-grain"/></svg><span><b>Zrno zatlačené do lapu.</b> Drží se v měkkém povrchu a pohybuje se s lapem. Funguje jako nástroj s mnoha mikroskopickými břity.</span></li>
+    <li><svg viewBox="0 0 22 22" aria-hidden="true"><polygon points="11,4 17,7 18,14 12,18 6,15 5,8" class="s-grain"/></svg><span><b>Valící se zrno.</b> Pohybuje se pomaleji než lap a odlamuje drobné částice z vrcholků nerovností.</span></li>
+    <li><svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="3" class="s-chip"/></svg><span><b>Třísky.</b> Nosič (olej, petrolej) je odnáší, maže a chladí. Proto se brusivo průběžně doplňuje.</span></li>
+    <li><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M2 14 L6 6 L10 14 L14 8 L18 14 L20 12" fill="none" class="s-leader" stroke-width="1.6"/></svg><span><b>Výsledek.</b> Vrcholky ubývají, údolí zůstávají. Obrobek se pod tlakem snižuje a povrch se vyrovnává.</span></li>
+  </ul>
+</figure>
+
+<h2>Teorie v kostce</h2>
+<div class="cols">
+  <div class="col"><span class="eyebrow">Podmínka funkce</span><h3>Lap je měkčí než obrobek</h3><p>Zrna se musí zatlačit do lapu a držet se v něm. Tvrdší lap by je tlačil do obrobku, který by se rýhoval. Brusivo naopak musí být tvrdší než obrobek.</p></div>
+  <div class="col"><span class="eyebrow">Nástroj</span><h3>Lap</h3><p>Nejčastěji jemnozrnná šedá litina, dále měď, mosaz nebo sklo. Pro rovinné plochy je to deska s drážkami, pro válcové plochy kroužek nebo trn. Přesnost obrobku nemůže být lepší než přesnost lapu.</p></div>
+  <div class="col"><span class="eyebrow">Brusivo</span><h3>Zrno a nosič</h3><p>Korund, karbid křemíku, karbid boru nebo diamant. Používají se jemné mikroprášky v oleji, petroleji nebo tuku, jako pasta nebo suspenze. Postupuje se od hrubšího zrna k jemnějšímu.</p></div>
+</div>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Veličina</th><th>Orientační hodnota</th><th>Poznámka</th></tr></thead>
+  <tbody>
+    <tr><td>Přídavek na lapování</td><td class="num">5–20 µm</td><td>Předchozí operace (jemné broušení) musí být kvalitní, lapování chyby tvaru jen dolaďuje.</td></tr>
+    <tr><td>Přítlak</td><td class="num">0,01–0,2 MPa</td><td>Větší tlak zrychlí úběr, ale zhorší drsnost.</td></tr>
+    <tr><td>Rychlost</td><td class="num">desítky m/min</td><td>Řádově nižší než při broušení, vzniká minimum tepla.</td></tr>
+    <tr><td>Zrnitost brusiva</td><td class="num">cca 1–40 µm</td><td>Od hrubšího k jemnému zrnu po stupních.</td></tr>
+    <tr><td>Drsnost</td><td class="num">Ra 0,01–0,2 µm</td><td>Lesklá, až zrcadlová plocha.</td></tr>
+    <tr><td>Rovinnost</td><td class="num">řádově 1 µm a lépe</td><td>U měřidel a optických ploch pod 0,1 µm.</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="note">Hodnoty jsou orientační, vycházejí z běžné strojírenské literatury. Pro konkrétní součást platí vždy technologický postup a materiál.</p>
+
+<h2>Kde se používá</h2>
+<ul class="chips">
+  <li>koncové měrky</li><li>těsnicí kroužky mechanických ucpávek</li><li>sedla a kuželky ventilů</li><li>pístky a rozváděče hydrauliky</li><li>vstřikovací trysky</li><li>optické planparalelní desky</li><li>křemíkové plátky</li><li>kalibry a měřicí plochy</li><li>párové lapování kuželových soukolí</li>
+</ul>
+
+<h2>Lapování a broušení</h2>
+<div class="tablewrap">
+<table>
+  <thead><tr><th></th><th>Broušení</th><th>Lapování</th></tr></thead>
+  <tbody>
+    <tr><td>Zrno</td><td>vázané v kotouči</td><td>volné v nosiči</td></tr>
+    <tr><td>Rychlost</td><td class="num">asi 30 m/s</td><td class="num">desítky m/min</td></tr>
+    <tr><td>Úběr</td><td>setiny až desetiny mm</td><td>jednotky µm</td></tr>
+    <tr><td>Teplo</td><td>výrazné, nutné chlazení</td><td>minimální</td></tr>
+    <tr><td>Drsnost</td><td class="num">běžně Ra 0,4–1,6 µm</td><td class="num">Ra 0,01–0,2 µm</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Na co si dát pozor</h2>
+<dl class="pit">
+  <div><dt>Hrubé zrno v mezeře</dt><dd>Zbytek hrubší pasty nebo nečistota způsobí hluboké rýhy. Při změně zrnitosti se čistí obrobek, deska i ruce.</dd></div>
+  <div><dt>Příliš velký přítlak</dt><dd>Zrna se drtí a zařezávají hlouběji. Povrch je horší a deska se deformuje.</dd></div>
+  <div><dt>Nerovná deska</dt><dd>Obrobek přebírá tvar desky. Deska se pravidelně kontroluje a upravuje, kroužky ji pomáhají srovnávat.</dd></div>
+  <div><dt>Příliš mnoho pasty</dt><dd>Obrobek plave po vrstvě a hrany se zaoblují. Brusivo se dávkuje po malých množstvích.</dd></div>
+</dl>
+
+<h2>Zkus si odpovědět</h2>
+<details><summary>Proč musí být lap měkčí než obrobek?</summary><p>Zrna se zatlačují do lapu a drží se v něm, takže řežou obrobek. Tvrdší lap by zrna tlačil do obrobku a rýhoval ho.</p></details>
+<details><summary>Proč se kroužek s obrobkem pohybuje po poloměru desky?</summary><p>Aby se deska opotřebovávala rovnoměrně a zůstala rovná. Rovinnost obrobku přímo závisí na rovinnosti lapu.</p></details>
+<details><summary>Co způsobí příliš velký přítlak?</summary><p>Úběr je rychlejší, ale zrna se drtí a zařezávají hlouběji. Vznikají hlubší rýhy, horší drsnost a hrozí deformace desky.</p></details>
+
+<footer>Další díly pomůcky: zaškrabávání · zabrušování · superfinišování · další metody podle zadání.</footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+var NS='http://www.w3.org/2000/svg';
+function $(id){return document.getElementById(id);}
+function mk(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs){e.setAttribute(k,attrs[k]);}if(parent){parent.appendChild(e);}return e;}
+function rng(seed){return function(){seed=(seed+0x6D2B79F5)|0;var t=Math.imul(seed^(seed>>>15),1|seed);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
+function fmt(n,d){return n.toFixed(d).replace('.',',');}
+function show(el,on){if(on){el.removeAttribute('hidden');}else{el.setAttribute('hidden','');}}
+var D2R=Math.PI/180,R2D=180/Math.PI;
+var reduce=false;try{reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
+var st={playing:!reduce,speed:1,mode:'machine',dirty:true};
+var T=0,MT=5;
+
+/* ---------- A: bokorys ---------- */
+var dots=[],gDots=$('layerDots'),r1=rng(7),i,k;
+for(i=0;i<46;i++){
+  var rr=1.7+r1()*0.8;
+  dots.push({x:i*(400/46)+r1()*6,e:mk('circle',{r:rr.toFixed(2),cx:0,cy:(257.2+r1()*3.6).toFixed(2),'class':'s-abr'},gDots)});
+}
+var drops=[0,1,2].map(function(){return mk('circle',{cx:44,cy:146,r:3,'class':'s-abr'},$('drops'));});
+function renderSide(){
+  dots.forEach(function(d){d.e.setAttribute('cx',(30+((d.x+T*40)%400)).toFixed(1));});
+  drops.forEach(function(e,n){
+    var p=(T*0.8+n/3)%1;
+    e.setAttribute('cy',(146+110*Math.pow(p,1.4)).toFixed(1));
+    e.setAttribute('opacity',p>0.92?(1-(p-0.92)/0.08).toFixed(2):'1');
+  });
+  $('ticks').setAttribute('stroke-dashoffset',(-(T*40)%22).toFixed(1));
+  $('osc').setAttribute('transform','translate('+(14*Math.sin(T*0.55)).toFixed(2)+' 0)');
+}
+
+/* ---------- B: pohled shora ---------- */
+var CX=230,CY=205;
+var gr=$('grooves');
+for(i=0;i<12;i++){
+  var a=i*30*D2R;
+  mk('line',{x1:(CX+22*Math.cos(a)).toFixed(1),y1:(CY+22*Math.sin(a)).toFixed(1),x2:(CX+150*Math.cos(a)).toFixed(1),y2:(CY+150*Math.sin(a)).toFixed(1)},gr);
+}
+[45,90,135].forEach(function(r){mk('circle',{cx:CX,cy:CY,r:r},gr);});
+var r2=rng(21),pd=$('pasteDots');
+for(i=0;i<46;i++){
+  var rad=30+Math.sqrt(r2())*112,ang=r2()*2*Math.PI;
+  mk('circle',{cx:(CX+rad*Math.cos(ang)).toFixed(1),cy:(CY+rad*Math.sin(ang)).toFixed(1),r:(1.8+r2()*1.2).toFixed(1),'class':'s-pdot'},pd);
+}
+['spinA','spinB'].forEach(function(id){
+  var g=$(id);
+  for(k=0;k<8;k++){
+    var b=k*45*D2R;
+    mk('line',{x1:(33*Math.sin(b)).toFixed(1),y1:(-33*Math.cos(b)).toFixed(1),x2:(40*Math.sin(b)).toFixed(1),y2:(-40*Math.cos(b)).toFixed(1),'class':'s-ringline'},g);
+  }
+});
+var rings=[{g:$('ringA'),s:$('spinA'),al:30*D2R,ph:0},{g:$('ringB'),s:$('spinB'),al:150*D2R,ph:1.3}];
+var path=[];
+for(i=0;i<=120;i++){var u=i/120*2*Math.PI;path.push((CX+95*Math.sin(u)).toFixed(1)+' '+(CY+58*Math.sin(2*u)).toFixed(1));}
+$('manPath').setAttribute('d','M'+path.join(' L')+' Z');
+function renderTop(){
+  if(st.mode==='machine'){
+    $('plateRot').setAttribute('transform','rotate('+((T*0.8*R2D)%360).toFixed(2)+' '+CX+' '+CY+')');
+    rings.forEach(function(r){
+      var rad=86+8*Math.sin(T*0.55+r.ph);
+      r.g.setAttribute('transform','translate('+(CX+rad*Math.cos(r.al)).toFixed(1)+' '+(CY+rad*Math.sin(r.al)).toFixed(1)+')');
+      r.s.setAttribute('transform','rotate('+((T*0.45*R2D)%360).toFixed(2)+')');
+    });
+  }else{
+    $('plateRot').setAttribute('transform','rotate(0 '+CX+' '+CY+')');
+    var u=T*0.7;
+    $('hand').setAttribute('transform','translate('+(CX+95*Math.sin(u)).toFixed(1)+' '+(CY+58*Math.sin(2*u)).toFixed(1)+') rotate('+(20*Math.sin(u*0.7)).toFixed(1)+')');
+  }
+}
+function setMode(m){
+  st.mode=m;
+  var mach=(m==='machine');
+  show($('ringA'),mach);show($('ringB'),mach);show($('machLabels'),mach);show($('capMachine'),mach);
+  show($('manual'),!mach);show($('manLabels'),!mach);show($('capManual'),!mach);
+  $('modeMachine').setAttribute('aria-pressed',String(mach));
+  $('modeManual').setAttribute('aria-pressed',String(!mach));
+  st.dirty=true;
+}
+$('modeMachine').addEventListener('click',function(){setMode('machine');});
+$('modeManual').addEventListener('click',function(){setMode('manual');});
+
+/* ---------- C: mezera ---------- */
+var PK=[[50,26],[112,20],[178,26],[241,17],[297,24],[362,22],[421,26]],PW=22,YV=124,VL=34,CYC=20;
+var AA=[],AMAX=0;
+for(i=0;i<=115;i++){
+  var x=i*4,m=0;
+  PK.forEach(function(p){var d=Math.abs(x-p[0]);if(d<PW){var v=p[1]*(1-d/PW);if(v>m){m=v;}}});
+  m+=1.4*(1+Math.sin(x*0.47+1));
+  AA.push(m);if(m>AMAX){AMAX=m;}
+}
+function wOf(m){
+  var p=m%CYC,q;
+  if(p<14){q=p/14;return 1-Math.pow(1-q,1.8);}
+  if(p<18){return 1;}
+  q=(p-18)/2;return 1-q*q*(3-2*q);
+}
+function poly(r,seed){
+  var q=rng(seed),n=7,pts=[];
+  for(var j=0;j<n;j++){var a=j/n*2*Math.PI,kk=r*(0.82+q()*0.34);pts.push((kk*Math.cos(a)).toFixed(1)+','+(kk*Math.sin(a)).toFixed(1));}
+  return pts.join(' ');
+}
+var gg=$('grainsG'),grains=[];
+[20,135,250,355].forEach(function(x0,n){
+  var g=mk('g',{},gg);mk('polygon',{points:poly(10,40+n),'class':'s-grain'},g);
+  grains.push({x:x0,y:164,r:10,f:1,roll:false,e:g,rot:n*47});
+});
+[75,195,305,415].forEach(function(x0,n){
+  var g=mk('g',{},gg);mk('polygon',{points:poly(9,70+n),'class':'s-grain'},g);
+  grains.push({x:x0,y:161,r:9,f:0.55,roll:true,e:g,rot:0});
+});
+var chips=[],cg=$('chipsG'),r3=rng(99);
+for(i=0;i<40;i++){chips.push({a:false,x:0,y:0,vx:0,vy:0,life:0,e:mk('circle',{r:1.9,cx:0,cy:0,opacity:0,'class':'s-chip'},cg)});}
+function spawn(x,y){
+  for(var j=0;j<chips.length;j++){
+    var c=chips[j];
+    if(!c.a){c.a=true;c.x=x;c.y=y;c.vx=VL*0.6+r3()*14;c.vy=r3()*10;c.life=1.6;return;}
+  }
+}
+function stepMicro(d){
+  var s=0.9*wOf(MT),j,n,p;
+  for(j=0;j<grains.length;j++){
+    var g=grains[j];p=g.x;g.x+=VL*g.f*d;
+    if(g.x>=480){g.x-=500;continue;}
+    for(n=0;n<PK.length;n++){
+      if(p<PK[n][0]&&g.x>=PK[n][0]&&PK[n][1]*(1-s)>5&&(!g.roll||r3()<0.55)){spawn(PK[n][0],153);}
+    }
+  }
+  chips.forEach(function(c){
+    if(!c.a){return;}
+    c.life-=d;c.x+=c.vx*d;c.y+=c.vy*d;
+    if(c.y>166){c.y=166;c.vy=0;c.vx=VL*0.9;}
+    if(c.life<=0||c.x>470){c.a=false;}
+  });
+}
+function renderMicro(){
+  var w=wOf(MT),s=0.9*w,pts=[],x,y;
+  for(i=0;i<=115;i++){x=i*4;y=YV+AA[i]*(1-s);pts.push(x+' '+y.toFixed(1));}
+  pts.reverse();
+  $('wpPath').setAttribute('d','M0 24 H460 L'+pts.join(' L')+' Z');
+  $('wpG').setAttribute('transform','translate(0 '+(AMAX*s).toFixed(2)+')');
+  grains.forEach(function(g){
+    var rot=g.roll?(g.x/g.r*R2D)%360:g.rot;
+    g.e.setAttribute('transform','translate('+g.x.toFixed(1)+' '+g.y+') rotate('+rot.toFixed(1)+')');
+  });
+  chips.forEach(function(c){
+    if(c.a){c.e.setAttribute('cx',c.x.toFixed(1));c.e.setAttribute('cy',c.y.toFixed(1));c.e.setAttribute('opacity',Math.min(1,c.life/0.6).toFixed(2));}
+    else{c.e.setAttribute('opacity','0');}
+  });
+  $('barFill').style.width=(w*100).toFixed(1)+'%';
+  $('raVal').textContent=(MT%CYC>=18?'další obrobek':'Ra ≈ '+fmt(0.8*(1-0.9*w),2)+' µm');
+}
+
+/* ---------- smyčka a ovládání ---------- */
+function renderAll(){renderSide();renderTop();renderMicro();}
+var last=0;
+function frame(ts){
+  if(!last){last=ts;}
+  var dt=Math.min((ts-last)/1000,0.05);last=ts;
+  if(st.playing){var d=dt*st.speed;T+=d;MT+=d;stepMicro(d);renderAll();}
+  else if(st.dirty){renderAll();}
+  st.dirty=false;
+  window.requestAnimationFrame(frame);
+}
+var btn=$('btnPlay');
+function syncBtn(){btn.textContent=st.playing?'Pozastavit':'Spustit animaci';btn.setAttribute('aria-pressed',String(!st.playing));}
+btn.addEventListener('click',function(){st.playing=!st.playing;last=0;syncBtn();});
+$('speed').addEventListener('input',function(e){st.speed=parseFloat(e.target.value);$('speedOut').textContent=String(st.speed).replace('.',',')+'×';});
+syncBtn();renderAll();
+window.requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

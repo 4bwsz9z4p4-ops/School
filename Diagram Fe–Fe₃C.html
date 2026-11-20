@@ -1,0 +1,694 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Diagram Fe–Fe₃C</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: technický výkres. Úzká stránka, popisky v mono, každý prvek má v celé stránce svou barvu:
+   nástroj = ocelově modrá, obrobek = jantarová, brusivo = karmínová, pohyb a síla = zelená. */
+:root{
+  --bg:#EDF1F4; --surface:#FFFFFF; --ink:#10212B; --muted:#4E6272; --line:#C9D4DB;
+  --lap:#5C7B93; --lap-ink:#FFFFFF; --groove:#A8BFCF;
+  --work:#E3AE40; --work-edge:#8A5A0B; --work-ink:#2B1E04;
+  --abr:#C42D49; --abr-edge:#7E1428; --abr-soft:#F7DCE2;
+  --move:#0B8366; --ring:#B7C3CC; --ring-line:#6B7D8A; --load:#3B4C59; --load-ink:#F3F7FA;
+  --f-head:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E171D; --surface:#152229; --ink:#E6EEF2; --muted:#9DB0BD; --line:#2A3B46;
+    --lap:#6F93AD; --lap-ink:#0B1419; --groove:#3E5A70;
+    --work:#E8B54F; --work-edge:#FFE0A0; --work-ink:#1B1303;
+    --abr:#FF6A84; --abr-edge:#FFB3C0; --abr-soft:#3A1F28;
+    --move:#3FD0A8; --ring:#4A5C69; --ring-line:#9DB0BD; --load:#5B7081; --load-ink:#F3F7FA;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E171D; --surface:#152229; --ink:#E6EEF2; --muted:#9DB0BD; --line:#2A3B46;
+  --lap:#6F93AD; --lap-ink:#0B1419; --groove:#3E5A70;
+  --work:#E8B54F; --work-edge:#FFE0A0; --work-ink:#1B1303;
+  --abr:#FF6A84; --abr-edge:#FFB3C0; --abr-soft:#3A1F28;
+  --move:#3FD0A8; --ring:#4A5C69; --ring-line:#9DB0BD; --load:#5B7081; --load-ink:#F3F7FA;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--f-body);
+  padding-block:0 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-head);font-weight:600;line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.4rem,7vw,3.6rem);letter-spacing:-.01em}
+h2{font-size:1.65rem;margin-top:44px}
+h3{font-size:1.1rem}
+p{margin:0}
+.eyebrow{font:500 12px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+header{padding-top:28px;display:grid;gap:12px}
+.lead{max-width:66ch;font-size:1.08rem}
+.key{display:flex;flex-wrap:wrap;gap:8px 18px;margin:6px 0 0;padding:0;list-style:none;font:500 13px/1.2 var(--f-mono)}
+.key li{display:flex;align-items:center;gap:7px}
+.sw{width:16px;height:12px;border-radius:2px;display:inline-block;border:1px solid var(--ink)}
+.sw.lap{background:var(--lap)} .sw.work{background:var(--work)} .sw.ring{background:var(--ring)} .sw.load{background:var(--load)}
+.sw.abr{width:12px;height:12px;border-radius:50%;background:var(--abr)}
+.sw.mv{border:0;height:0;border-top:3px solid var(--move);width:20px;border-radius:0;position:relative}
+.ctrl{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line);margin-top:18px;padding:10px 0;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+button{font:500 14px/1 var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--ink);border-radius:4px;padding:9px 14px;cursor:pointer}
+button:hover{background:var(--line)}
+button[aria-pressed="true"].seg{background:var(--ink);color:var(--bg)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--move);outline-offset:2px}
+.speed{display:flex;align-items:center;gap:10px;font:500 13px var(--f-mono)}
+input[type=range]{accent-color:var(--move);width:150px}
+output{min-width:3ch;display:inline-block}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,430px),1fr));gap:16px;margin-top:16px;align-items:start}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:12px 12px 14px;min-width:0}
+.figh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font:500 12px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.segs{display:flex;gap:0}
+.segs .seg{border-radius:0;padding:6px 10px;font-size:12px}
+.segs .seg:first-child{border-radius:4px 0 0 4px}
+.segs .seg:last-child{border-radius:0 4px 4px 0;border-left:0}
+figcaption,.cap{font-size:.92rem;color:var(--muted);margin-top:8px;max-width:68ch}
+.motions{margin:16px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px 18px}
+.motions li{padding-left:12px;border-left:3px solid var(--move);font-size:.95rem}
+.motions b{font-family:var(--f-mono);font-weight:500;font-size:.88rem}
+svg{display:block;width:100%;height:auto;max-width:100%}
+.s-lap{fill:var(--lap)}
+.s-work{fill:var(--work);stroke:var(--work-edge);stroke-width:1.2}
+.s-abr{fill:var(--abr)}
+.s-grain{fill:var(--abr);stroke:var(--abr-edge);stroke-width:1}
+.s-chip{fill:var(--work);stroke:var(--work-edge);stroke-width:.6}
+.s-carrier{fill:var(--abr-soft)}
+.s-load{fill:var(--load)}
+.s-ringbg{fill:var(--ring)}
+.s-hatch{stroke:var(--ring-line);stroke-width:1.2}
+.s-ringline{stroke:var(--ring-line);stroke-width:1.2}
+.s-ring{fill:url(#hRingB);stroke:var(--ring-line);stroke-width:1.4}
+.s-ringside{fill:url(#hRingA);stroke:var(--ring-line);stroke-width:1.2}
+.s-move{stroke:var(--move);stroke-width:2.4;fill:none}
+.s-movefill{fill:var(--move)}
+.s-tick{stroke:var(--lap-ink);stroke-opacity:.6;stroke-width:3;fill:none}
+.s-groove{stroke:var(--groove);stroke-width:1.4;fill:none}
+.s-hub{fill:var(--lap);stroke:var(--groove);stroke-width:1.4}
+.s-mark{fill:var(--lap-ink)}
+.s-notch{fill:var(--work-ink)}
+.s-leader{stroke:var(--muted);stroke-width:1;fill:none}
+.s-dot{fill:var(--muted)}
+.s-pdot{stroke:var(--surface);stroke-width:.7;fill:var(--abr)}
+.s-lapfill{fill:var(--lap-ink)}
+.s-lapstroke{stroke:var(--lap-ink);stroke-width:1.6;fill:none}
+.t{font:500 13px var(--f-mono);fill:var(--ink)}
+.t-sm{font-size:12px}
+.t-in{fill:var(--lap-ink)}
+.t-work{fill:var(--work-ink)}
+.t-load{fill:var(--load-ink)}
+.t-mv{fill:var(--move)}
+.t-halo{paint-order:stroke;stroke:var(--surface);stroke-width:4;stroke-linejoin:round}
+.meter{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-top:10px;font:500 12px var(--f-mono);color:var(--muted)}
+.bar{height:8px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--move)}
+.legrows{margin:12px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px 18px}
+.legrows li{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:.95rem;align-items:start}
+.legrows svg{width:22px;height:22px;margin-top:2px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:16px;margin-top:16px}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:14px 16px;display:grid;gap:6px;align-content:start;min-width:0}
+.col .eyebrow{color:var(--move)}
+.tablewrap{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-mono);font-size:.9rem;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
+.chips li{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:7px 12px;font-size:.95rem}
+dl.pit{margin:16px 0 0;display:grid;gap:12px}
+dl.pit div{display:grid;grid-template-columns:minmax(0,15rem) 1fr;gap:4px 18px;padding-top:12px;border-top:1px solid var(--line)}
+dl.pit dt{font-weight:600}
+dl.pit dd{margin:0;color:var(--muted)}
+@media (max-width:640px){dl.pit div{grid-template-columns:1fr}}
+details{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:10px 14px;margin-top:10px}
+summary{cursor:pointer;font-weight:500}
+details p{margin-top:8px;color:var(--muted)}
+.note{font-size:.88rem;color:var(--muted);margin-top:10px;max-width:70ch}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font:500 13px/1.5 var(--f-mono);color:var(--muted)}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+<style>
+:root{--ph-L:#E3AE40;--ph-d:#9DB8CC;--ph-g:#8FCDB5;--ph-a:#D4E1EA;--ph-c:#C42D49}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ph-L:#C99530;--ph-d:#4C6F89;--ph-g:#2F7D66;--ph-a:#5E7F96;--ph-c:#FF6A84}}
+:root[data-theme="dark"]{--ph-L:#C99530;--ph-d:#4C6F89;--ph-g:#2F7D66;--ph-a:#5E7F96;--ph-c:#FF6A84}
+.sw.pL{background:var(--ph-L)} .sw.pd{background:var(--ph-d)} .sw.pg{background:var(--ph-g)} .sw.pa{background:var(--ph-a)} .sw.pc{background:var(--ph-c)}
+.sw.perl{background:repeating-linear-gradient(90deg,var(--ph-a) 0 3px,var(--ph-c) 3px 4px)}
+.sw.lede{background:radial-gradient(circle,var(--ph-a) 0 2px,transparent 2.5px),var(--ph-c);background-size:6px 6px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px;margin-top:16px;align-items:start}
+svg#dia{touch-action:pan-y;cursor:crosshair;max-width:640px;margin:0 auto}
+.rg{stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round}
+.rg-L{fill:var(--ph-L);fill-opacity:.4} .rg-d{fill:var(--ph-d);fill-opacity:.5} .rg-g{fill:var(--ph-g);fill-opacity:.5} .rg-a{fill:var(--ph-a);fill-opacity:.8} .rg-2{fill:var(--surface)}
+.rg-act{fill:var(--move);fill-opacity:.22;stroke:var(--move);stroke-width:3;stroke-linejoin:round;pointer-events:none}
+.band{fill:var(--move);fill-opacity:.5;stroke:var(--move);stroke-width:1;pointer-events:none}
+.cur-line{stroke:var(--move);stroke-width:1.3;stroke-dasharray:4 3;pointer-events:none}
+.cur-dot{fill:var(--move);stroke:var(--surface);stroke-width:2;pointer-events:none}
+.ax{stroke:var(--ink);stroke-width:1.2;fill:none}
+.tk{stroke:var(--muted);stroke-width:1}
+.rl{font:500 14px var(--f-mono);fill:var(--ink);pointer-events:none}
+.rl-s{font-size:12px}
+.pt{fill:var(--ink)}
+.sliders{display:grid;gap:10px;margin-top:12px}
+.sliders .speed{flex-wrap:wrap}
+.sliders input[type=range]{flex:1 1 140px;max-width:300px}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.presets button,.acts button{padding:7px 10px;font-size:13px}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.acts button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px 16px}
+.stat .big{font:600 1.9rem/1 var(--f-head)}
+.reg{margin:12px 0 4px}
+.reg b{font:600 1.2rem/1.2 var(--f-head)}
+.pbar{display:flex;height:22px;border:1px solid var(--ink);border-radius:3px;overflow:hidden;margin-top:6px}
+.pbar i{display:block;height:100%;min-width:0}
+.plist{margin:8px 0 12px;padding:0;list-style:none;display:grid;gap:4px;font-size:.93rem}
+.plist li{display:grid;grid-template-columns:16px 1fr auto;gap:8px;align-items:center}
+.plist .sw{width:16px;height:12px}
+.plist em{font:500 13px var(--f-mono);font-style:normal}
+canvas#micro{width:100%;max-width:300px;aspect-ratio:1;border:1px solid var(--ink);border-radius:3px;display:block;margin-top:6px}
+.eyebrow.sp{display:block;margin-top:12px}
+.ev{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.ev li{display:grid;grid-template-columns:8ch 1fr;gap:12px;padding:8px 12px;border-left:3px solid var(--line);background:var(--surface)}
+.ev li b{font:500 13px/1.5 var(--f-mono)}
+.ev li.past{border-left-color:var(--move)}
+.ev li.future{color:var(--muted)}
+.ev li.now{outline:2px solid var(--move);outline-offset:-2px}
+.bk-L{background:var(--ph-L)} .bk-d{background:var(--ph-d)} .bk-g{background:var(--ph-g)} .bk-a{background:var(--ph-a)} .bk-c{background:var(--ph-c)}
+.bk-perlit{background:repeating-linear-gradient(90deg,var(--ph-a) 0 5px,var(--ph-c) 5px 6px)}
+.bk-lede{background:radial-gradient(circle,var(--ph-a) 0 2.2px,transparent 2.7px),var(--ph-c);background-size:7px 7px}
+</style>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Materiály a tepelné zpracování · pomůcka č. 3</div>
+  <h1>Diagram Fe–Fe₃C</h1>
+  <p class="lead">Diagram ukazuje, jaké fáze a struktury vzniknou ve slitině železa s uhlíkem při velmi pomalém ochlazování. Nastav obsah uhlíku a teplotu posuvníky nebo klikni přímo do diagramu. Vpravo uvidíš fáze, jejich podíly a schéma struktury. Tlačítkem spustíš ochlazování z taveniny.</p>
+  <ul class="key" aria-label="Barevný klíč">
+    <li><span class="sw pL"></span>tavenina</li>
+    <li><span class="sw pd"></span>δ-ferit</li>
+    <li><span class="sw pg"></span>austenit</li>
+    <li><span class="sw pa"></span>ferit</li>
+    <li><span class="sw pc"></span>cementit</li>
+    <li><span class="sw mv"></span>zvolená slitina</li>
+  </ul>
+</header>
+
+<h2>Diagram a stav slitiny</h2>
+<div class="dgrid">
+  <figure class="fig" style="margin:0">
+    <div class="figh"><span>A · Diagram, klikni nebo táhni</span></div>
+    <svg id="dia" viewBox="0 0 600 452" role="img" aria-label="Rovnovážný diagram Fe–Fe3C s oblastmi taveniny, delta-feritu, austenitu, feritu a cementitu a značkou zvolené slitiny.">
+      <g id="gReg"></g><g id="gBand"></g><g id="gAct"></g><g id="gAx"></g><g id="gLab"></g><g id="gCur"></g>
+      <rect id="cap" x="54" y="20" width="481" height="360" fill="transparent"/>
+    </svg>
+    <div class="sliders">
+      <label class="speed" for="sc">C, uhlík <input id="sc" type="range" min="0.01" max="6.67" step="0.01" value="0.4"> <output id="scOut" for="sc">0,40 %</output></label>
+      <label class="speed" for="sT">T, teplota <input id="sT" type="range" min="20" max="1600" step="1" value="600"> <output id="sTOut" for="sT">600 °C</output></label>
+      <div class="presets" role="group" aria-label="Předvolby slitin">
+        <button class="seg pre" type="button" data-c="0.02">technické železo</button>
+        <button class="seg pre" type="button" data-c="0.4">ocel 0,4</button>
+        <button class="seg pre" type="button" data-c="0.77">ocel 0,77</button>
+        <button class="seg pre" type="button" data-c="1.2">ocel 1,2</button>
+        <button class="seg pre" type="button" data-c="3">litina 3,0</button>
+        <button class="seg pre" type="button" data-c="4.3">litina 4,3</button>
+        <button class="seg pre" type="button" data-c="5.5">litina 5,5</button>
+      </div>
+      <div class="acts">
+        <button id="btnCool" type="button">Ochladit z taveniny</button>
+        <button id="btnHard" type="button" aria-pressed="false">Kalicí teploty ocelí</button>
+      </div>
+    </div>
+    <figcaption>Najdi na vodorovné ose obsah uhlíku a veď svislici dolů. Poloha bodu na ní určuje teplotu. Zvýrazněná oblast je aktuální stav. Diagram platí pro rovnováhu, tedy pro velmi pomalé ochlazování.</figcaption>
+  </figure>
+
+  <figure class="fig" style="margin:0">
+    <div class="figh"><span>B · Stav slitiny</span></div>
+    <div class="stat">
+      <div><span class="eyebrow">uhlík</span><div class="big"><span id="bC">0,40</span> %</div></div>
+      <div><span class="eyebrow">teplota</span><div class="big"><span id="bT">600</span> °C</div></div>
+    </div>
+    <p class="reg"><b id="regName">ferit + cementit</b><br><span id="regInfo" class="cap"></span></p>
+    <span class="eyebrow sp">fáze podle pákového pravidla</span>
+    <div class="pbar" id="pbar"></div><ul class="plist" id="plist"></ul>
+    <span class="eyebrow sp">schéma struktury při teplotě T</span>
+    <canvas id="micro" width="200" height="200" role="img" aria-label="Schéma struktury slitiny při zvolené teplotě"></canvas>
+    <ul class="key" aria-label="Legenda struktury" style="margin-top:8px">
+      <li><span class="sw perl"></span>perlit</li>
+      <li><span class="sw lede"></span>ledeburit</li>
+    </ul>
+    <span class="eyebrow sp">strukturní složky po pomalém ochlazení na 20 °C</span>
+    <div class="pbar" id="cbar"></div><ul class="plist" id="clist"></ul>
+    <figcaption>Schéma struktury je zjednodušené. Zrna jsou nakreslená uměle a podíly odpovídají pákovému pravidlu.</figcaption>
+  </figure>
+</div>
+
+<h2>Co se děje při ochlazování</h2>
+<figure class="fig" style="margin:16px 0 0">
+  <div class="figh"><span>C · Přeměny zvolené slitiny od taveniny dolů</span></div>
+  <ol class="ev" id="evList"></ol>
+  <figcaption>Seznam se přepočítá podle zvoleného obsahu uhlíku. Již proběhlé přeměny při zvolené teplotě mají zelený okraj.</figcaption>
+</figure>
+
+<h2>Teorie v kostce</h2>
+<div class="cols">
+  <div class="col"><span class="eyebrow">Soustava</span><h3>Metastabilní Fe–Fe₃C</h3><p>Uhlík je vázán v cementitu Fe₃C, který má 6,67 % C. Proto diagram končí na této hodnotě. Při velmi pomalém ochlazování nebo s větším obsahem křemíku vzniká místo cementitu grafit (stabilní soustava Fe–C), typické pro šedou litinu.</p></div>
+  <div class="col"><span class="eyebrow">Fáze</span><h3>Ferit, austenit, cementit</h3><p><b>Ferit α</b> je měkký roztok uhlíku v železe α, nejvýš 0,022 % C. <b>Austenit γ</b> je houževnatý nemagnetický roztok, nejvýš 2,11 % C. <b>Cementit</b> je tvrdá a křehká sloučenina Fe₃C. Vysoko nad 1394 °C je ještě δ-ferit.</p></div>
+  <div class="col"><span class="eyebrow">Struktury</span><h3>Perlit a ledeburit</h3><p><b>Perlit</b> je eutektoid, lamely feritu a cementitu o 0,77 % C. <b>Ledeburit</b> je eutektikum o 4,30 % C, směs austenitu (později perlitu) a cementitu. Obojí jsou směsi fází, ne fáze samy.</p></div>
+</div>
+
+<h3 style="margin-top:28px">Tři invariantní reakce</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Reakce</th><th>Teplota</th><th>Rovnice (obsah C v hm. %)</th></tr></thead>
+  <tbody>
+    <tr><td>Peritektická</td><td class="num">1495 °C</td><td class="num">tavenina 0,53 + δ-ferit 0,09 → austenit 0,16</td></tr>
+    <tr><td>Eutektická</td><td class="num">1147 °C</td><td class="num">tavenina 4,30 → austenit 2,11 + cementit 6,67 (ledeburit)</td></tr>
+    <tr><td>Eutektoidní</td><td class="num">727 °C</td><td class="num">austenit 0,77 → ferit 0,022 + cementit 6,67 (perlit)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 style="margin-top:28px">Rozdělení slitin podle uhlíku</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Skupina</th><th>Uhlík [%]</th><th>Struktura při 20 °C</th></tr></thead>
+  <tbody>
+    <tr><td>Technické železo</td><td class="num">do 0,022</td><td>ferit</td></tr>
+    <tr><td>Podeutektoidní ocel</td><td class="num">0,022–0,77</td><td>ferit + perlit</td></tr>
+    <tr><td>Eutektoidní ocel</td><td class="num">0,77</td><td>perlit</td></tr>
+    <tr><td>Nadeutektoidní ocel</td><td class="num">0,77–2,11</td><td>perlit + sekundární cementit (síť po hranicích zrn)</td></tr>
+    <tr><td>Podeutektická bílá litina</td><td class="num">2,11–4,30</td><td>perlit + sekundární cementit + ledeburit</td></tr>
+    <tr><td>Eutektická bílá litina</td><td class="num">4,30</td><td>ledeburit</td></tr>
+    <tr><td>Nadeutektická bílá litina</td><td class="num">4,30–6,67</td><td>primární cementit (jehlice) + ledeburit</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3 style="margin-top:28px">Kritické body a čáry</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Označení</th><th>Teplota</th><th>Uhlík [%]</th><th>Význam</th></tr></thead>
+  <tbody>
+    <tr><td>A</td><td class="num">1538 °C</td><td class="num">0</td><td>tání čistého železa</td></tr>
+    <tr><td>N</td><td class="num">1394 °C</td><td class="num">0</td><td>přeměna δ → γ čistého železa</td></tr>
+    <tr><td>G</td><td class="num">912 °C</td><td class="num">0</td><td>přeměna γ → α čistého železa</td></tr>
+    <tr><td>E</td><td class="num">1147 °C</td><td class="num">2,11</td><td>největší rozpustnost uhlíku v austenitu, hranice oceli a litiny</td></tr>
+    <tr><td>C</td><td class="num">1147 °C</td><td class="num">4,30</td><td>eutektický bod</td></tr>
+    <tr><td>S</td><td class="num">727 °C</td><td class="num">0,77</td><td>eutektoidní bod</td></tr>
+    <tr><td>P</td><td class="num">727 °C</td><td class="num">0,022</td><td>největší rozpustnost uhlíku ve feritu</td></tr>
+    <tr><td>A₁ (PSK)</td><td class="num">727 °C</td><td class="num">–</td><td>začátek přeměny austenitu při ochlazování</td></tr>
+    <tr><td>A₃ (GS)</td><td class="num">912 → 727 °C</td><td class="num">0 → 0,77</td><td>začátek vylučování feritu z austenitu</td></tr>
+    <tr><td>A<sub>cm</sub> (ES)</td><td class="num">1147 → 727 °C</td><td class="num">2,11 → 0,77</td><td>začátek vylučování sekundárního cementitu</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="note">Feritu se při 768 °C ztrácí feromagnetismus (Curieův bod A₂), cementit je magnetický do asi 210 °C (A₀). Učebnice se liší v setinách procenta, například eutektoid 0,77 nebo 0,8 % C a hranice oceli 2,11 nebo 2,14 % C.</p>
+
+<h2>Pákové pravidlo</h2>
+<div class="cols">
+  <div class="col"><span class="eyebrow">Postup</span><h3>Úsečka mezi dvěma hranicemi</h3><p>Ve dvoufázové oblasti vedeš při dané teplotě vodorovnou úsečku od levé hranice k pravé. Složení slitiny ji rozdělí na dvě části. Podíl fáze je délka protější části dělená celou délkou.</p></div>
+  <div class="col"><span class="eyebrow">Příklad</span><h3>Ocel 0,40 % C při 700 °C</h3><p>Ferit má asi 0,02 % C a cementit 6,67 % C. Podíl cementitu je (0,40 − 0,02) / (6,67 − 0,02), tedy asi 5,7 %. Zbytek, asi 94,3 %, je ferit.</p></div>
+  <div class="col"><span class="eyebrow">Ověř si</span><h3>Vyzkoušej v diagramu</h3><p>Nastav 0,40 % C a posuň teplotu na 700 °C. Pravý panel spočítá stejné podíly. Pak zkus 0,77 % C těsně nad a pod 727 °C.</p></div>
+</div>
+
+<h2>K čemu je to v praxi</h2>
+<ul class="chips">
+  <li>volba teploty kalení</li><li>žíhání na měkko a normalizační žíhání</li><li>výběr oceli podle uhlíku</li><li>odhad podílu perlitu a feritu</li><li>chování litin při odlévání</li><li>tvrdost a houževnatost podle struktury</li>
+</ul>
+<p class="note">Tlačítko Kalicí teploty ocelí zvýrazní obvyklá okna. Podeutektoidní oceli se ohřívají asi o 30 až 50 °C nad A₃, nadeutektoidní asi o 30 až 50 °C nad A₁. U nich se záměrně nechají nerozpuštěné karbidy. Přesné teploty určuje předpis pro daný materiál.</p>
+
+<h2>Na co si dát pozor</h2>
+<dl class="pit">
+  <div><dt>Fáze a strukturní složka není totéž</dt><dd>Perlit je jedna strukturní složka, ale obsahuje dvě fáze, ferit a cementit. Pákové pravidlo v diagramu dává podíly fází, ne složek.</dd></div>
+  <div><dt>Diagram platí pro rovnováhu</dt><dd>Při rychlejším ochlazování, zejména při kalení, vznikají struktury, které v diagramu nejsou (martenzit, bainit). K nim slouží diagramy ARA a IRA.</dd></div>
+  <div><dt>Perlit nemá přesně 0,8 %</dt><dd>Hodnota 0,77 % je přesnější. V učebnicích se často zaokrouhluje na 0,8 %, podle zdroje počítej s tím, co používá.</dd></div>
+  <div><dt>Čti ve správném pořadí</dt><dd>Nejprve najdi na vodorovné ose obsah uhlíku a veď svislici, teprve potom po ní jdi na teplotu. Slitina se při ochlazování pohybuje po této svislici.</dd></div>
+  <div><dt>Hranice oceli a litiny</dt><dd>Je to bod E, 2,11 % C, ne 2 %. Pod ním slitina zcela ztuhne jako austenit, nad ním vzniká ledeburit.</dd></div>
+</dl>
+
+<h2>Zkus si odpovědět</h2>
+<details><summary>Kolik perlitu je v oceli s 0,40 % C po pomalém ochlazení?</summary><p>Asi 50 %. Podíl perlitu je (0,40 − 0,022) / (0,77 − 0,022). Zbytek je proeutektoidní ferit.</p></details>
+<details><summary>Čím se liší ledeburit I a ledeburit II?</summary><p>Ledeburit I (nad 727 °C) je směs austenitu a cementitu. Ledeburit II (pod 727 °C) je směs perlitu a cementitu, protože se austenit přeměnil.</p></details>
+<details><summary>Z čeho se kalí nadeutektoidní ocel a proč ne z oblasti čistého austenitu?</summary><p>Z teploty asi o 30 až 50 °C nad A₁. Nerozpuštěné karbidy zvyšují odolnost proti opotřebení a zrno nehrubne tak jako při ohřevu nad A<sub>cm</sub>.</p></details>
+<details><summary>Co se stane se slitinou s 3,0 % C při 1147 °C?</summary><p>Z taveniny nejprve vznikají krystaly austenitu. Při 1147 °C zbylá tavenina (4,30 % C) ztuhne jako ledeburit. Je to podeutektická bílá litina.</p></details>
+
+<footer>Další díly pomůcky: zaškrabávání · zabrušování · superfinišování · další metody a témata podle zadání.</footer>
+</div>
+<script>
+(function(){
+'use strict';
+var NS='http://www.w3.org/2000/svg';
+function $(id){return document.getElementById(id);}
+function mk(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs){e.setAttribute(k,attrs[k]);}if(parent){parent.appendChild(e);}return e;}
+function fmt(n,d){return n.toFixed(d).replace('.',',');}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+/* ---- geometrie diagramu: [uhlík %, teplota °C] ---- */
+var P={A:[0,1538],H:[0.09,1495],J:[0.16,1495],B:[0.53,1495],N:[0,1394],G:[0,912],Pp:[0.022,727],S:[0.77,727],
+  E:[2.11,1147],C:[4.3,1147],F:[6.67,1147],D:[6.67,1252],K:[6.67,727],Q:[0.006,0],O:[0,0],R:[6.67,0],TL:[0,1600],TR:[6.67,1600]};
+function poly(keys){return keys.map(function(k){return P[k];});}
+var PH={L:'tavenina',d:'δ-ferit',g:'austenit',a:'ferit',c:'cementit'};
+var CEM={fix:6.67,ph:'c'};
+var REG=[
+ {id:'L',n:'tavenina (L)',cls:'rg-L',ph:['L'],pts:poly(['TL','TR','D','C','B','A'])},
+ {id:'Ld',n:'tavenina + δ-ferit',cls:'rg-2',pts:poly(['A','B','H']),lo:{ph:'d',a:'A',b:'H'},ro:{ph:'L',a:'A',b:'B'}},
+ {id:'d',n:'δ-ferit',cls:'rg-d',ph:['d'],pts:poly(['A','H','N'])},
+ {id:'dg',n:'δ-ferit + austenit',cls:'rg-2',pts:poly(['H','J','N']),lo:{ph:'d',a:'N',b:'H'},ro:{ph:'g',a:'N',b:'J'}},
+ {id:'Lg',n:'tavenina + austenit',cls:'rg-2',pts:poly(['J','B','C','E']),lo:{ph:'g',a:'J',b:'E'},ro:{ph:'L',a:'B',b:'C'}},
+ {id:'g',n:'austenit (γ)',cls:'rg-g',ph:['g'],pts:poly(['N','J','E','S','G'])},
+ {id:'Lc',n:'tavenina + cementit',cls:'rg-2',pts:poly(['C','D','F']),lo:{ph:'L',a:'D',b:'C'},ro:CEM},
+ {id:'gc',n:'austenit + cementit',cls:'rg-2',pts:poly(['E','F','K','S']),lo:{ph:'g',a:'E',b:'S'},ro:CEM},
+ {id:'ag',n:'ferit + austenit',cls:'rg-2',pts:poly(['G','S','Pp']),lo:{ph:'a',a:'G',b:'Pp'},ro:{ph:'g',a:'G',b:'S'}},
+ {id:'a',n:'ferit (α)',cls:'rg-a',ph:['a'],pts:poly(['G','Pp','Q','O'])},
+ {id:'ac',n:'ferit + cementit',cls:'rg-2',pts:poly(['Pp','K','R','Q']),lo:{ph:'a',a:'Pp',b:'Q'},ro:CEM}
+];
+var RID={};REG.forEach(function(r,i){RID[r.id]=i;});
+
+function inPoly(pts,c,T){
+  var ins=false,i,j,xi,yi,xj,yj;
+  for(i=0,j=pts.length-1;i<pts.length;j=i++){
+    xi=pts[i][0];yi=pts[i][1];xj=pts[j][0];yj=pts[j][1];
+    if(((yi>T)!==(yj>T))&&(c<(xj-xi)*(T-yi)/(yj-yi)+xi)){ins=!ins;}
+  }
+  return ins;
+}
+function regionAt(c,T){
+  var tries=[[0,0],[0.0005,0.4],[-0.0005,-0.4],[0.0005,-0.4],[-0.0005,0.4]],t,i;
+  for(t=0;t<tries.length;t++){
+    for(i=0;i<REG.length;i++){if(inPoly(REG[i].pts,c+tries[t][0],T+tries[t][1])){return i;}}
+  }
+  return 0;
+}
+function cx(p,q,T){return p[0]+(q[0]-p[0])*(T-p[1])/(q[1]-p[1]);}
+function compAt(o,T){return o.fix?o.fix:cx(P[o.a],P[o.b],T);}
+function phasesAt(c,T,ri){
+  var r=REG[ri],cl,cr,f;
+  if(!r.lo){return [{ph:r.ph[0],f:1}];}
+  cl=compAt(r.lo,T);cr=compAt(r.ro,T);
+  f=clamp((c-cl)/(cr-cl),0,1);
+  return [{ph:r.lo.ph,f:1-f},{ph:r.ro.ph,f:f}];
+}
+
+/* ---- strukturní složky při 20 °C ---- */
+function constituents(c){
+  var fp,fl;
+  if(c<=0.022){return [{k:'ferrit',n:'ferit',f:1}];}
+  if(c<=0.77){fp=(c-0.022)/0.748;return [{k:'ferrit',n:'proeutektoidní ferit',f:1-fp},{k:'perlit',n:'perlit',f:fp}];}
+  if(c<=2.11){fp=(6.67-c)/5.9;return [{k:'perlit',n:'perlit',f:fp},{k:'cem',n:'sekundární cementit',f:1-fp}];}
+  if(c<=4.3){fl=(c-2.11)/2.19;return [{k:'perlit',n:'perlit',f:(1-fl)*0.773},{k:'cem',n:'sekundární cementit',f:(1-fl)*0.227},{k:'lede',n:'ledeburit II',f:fl}];}
+  fl=(6.67-c)/2.37;
+  return [{k:'cem',n:'primární cementit',f:1-fl},{k:'lede',n:'ledeburit II',f:fl}];
+}
+function groupName(c){
+  if(c<=0.022){return 'technické železo';}
+  if(c<0.765){return 'podeutektoidní ocel';}
+  if(c<=0.775){return 'eutektoidní ocel';}
+  if(c<=2.11){return 'nadeutektoidní ocel';}
+  if(c<4.25){return 'podeutektická bílá litina';}
+  if(c<=4.35){return 'eutektická bílá litina';}
+  return 'nadeutektická bílá litina';
+}
+
+/* ---- události při ochlazování ---- */
+var EVT={
+ 'L>Ld':'Začíná tuhnutí: z taveniny krystalizuje δ-ferit.',
+ 'L>Lg':'Začíná tuhnutí: z taveniny krystalizuje austenit.',
+ 'L>Lc':'Začíná tuhnutí: z taveniny se vylučuje primární cementit (hrubé jehlice).',
+ 'Ld>d':'Tavenina dotuhla, vznikl δ-ferit.',
+ 'Ld>dg':'Peritektická reakce (1495 °C): tavenina + δ-ferit → austenit. Přebývá δ-ferit.',
+ 'Ld>Lg':'Peritektická reakce (1495 °C): δ-ferit + tavenina → austenit. Přebývá tavenina, která dál tuhne na austenit.',
+ 'd>dg':'δ-ferit se začíná přeměňovat na austenit.',
+ 'd>g':'δ-ferit se přeměňuje na austenit.',
+ 'dg>g':'Přeměna δ-ferit → austenit je dokončena.',
+ 'Lg>g':'Tavenina dotuhla, vznikl čistý austenit.',
+ 'Lg>gc':'Eutektická reakce (1147 °C): zbylá tavenina (4,30 % C) → ledeburit (austenit + cementit). Austenit pak ochuzuje uhlík podél čáry ES a vylučuje sekundární cementit.',
+ 'Lc>gc':'Eutektická reakce (1147 °C): zbylá tavenina (4,30 % C) → ledeburit (austenit + cementit).',
+ 'g>ag':'Začíná přeměna austenitu na ferit (A₃, čára GS). Ferit vzniká po hranicích austenitických zrn.',
+ 'g>gc':'Z austenitu se po hranicích zrn vylučuje sekundární cementit (A<sub>cm</sub>, čára ES).',
+ 'g>ac':'Eutektoidní reakce (727 °C): celý austenit (0,77 % C) → perlit (ferit + cementit).',
+ 'ag>ac':'Eutektoidní reakce (727 °C): zbylý austenit (0,77 % C) → perlit (ferit + cementit).',
+ 'ag>a':'Austenit se zcela přeměnil na ferit (čára GP).',
+ 'gc>ac':'Eutektoidní reakce (727 °C): austenit (0,77 % C) → perlit (ferit + cementit).',
+ 'a>ac':'Klesá rozpustnost uhlíku ve feritu (čára PQ), vylučuje se terciární cementit.'
+};
+function snapT(T){var s=[1495,1147,727],i;for(i=0;i<s.length;i++){if(Math.abs(T-s[i])<=1.6){return s[i];}}return Math.round(T);}
+function events(c){
+  var out=[],prev=regionAt(c,1600),T,r,key,txt;
+  for(T=1599;T>=20;T--){
+    r=regionAt(c,T);
+    if(r!==prev){
+      key=REG[prev].id+'>'+REG[r].id;
+      txt=EVT[key]||('Přechod do oblasti: '+REG[r].n+'.');
+      if(key==='gc>ac'&&c>2.11){txt+=' Ledeburit I se mění na ledeburit II.';}
+      out.push({T:snapT(T+1),txt:txt});prev=r;
+    }
+  }
+  return out;
+}
+
+/* ---- kreslení diagramu ---- */
+function X(c){return 54+c*72;}
+function Y(T){return 380-T*0.225;}
+var gReg=$('gReg'),gAct=$('gAct'),gAx=$('gAx'),gLab=$('gLab'),gCur=$('gCur'),gBand=$('gBand');
+function pathOf(pts){return 'M'+pts.map(function(p){return X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1);}).join(' L')+' Z';}
+function txt(g,x,y,s,cls,anchor){var e=mk('text',{x:x,y:y,'class':cls||'rl','text-anchor':anchor||'middle'},g);e.textContent=s;return e;}
+REG.forEach(function(r){mk('path',{d:pathOf(r.pts),'class':'rg '+r.cls},gReg);});
+var actPath=mk('path',{'class':'rg-act'},gAct);
+var T,k;
+for(T=0;T<=1600;T+=200){
+  mk('line',{x1:49,y1:Y(T),x2:54,y2:Y(T),'class':'tk'},gAx);
+  txt(gAx,46,Y(T)+4,String(T),'rl rl-s','end');
+}
+[0,0.77,2.11,4.3,6.67].forEach(function(c){
+  mk('line',{x1:X(c),y1:380,x2:X(c),y2:385,'class':'tk'},gAx);
+  txt(gAx,X(c),398,c===0?'0':fmt(c,2),'rl rl-s');
+});
+[[0.77,727],[2.11,1147],[4.3,1147]].forEach(function(p){
+  mk('line',{x1:X(p[0]),y1:Y(p[1]),x2:X(p[0]),y2:380,'class':'tk','stroke-dasharray':'3 3'},gAx);
+});
+mk('path',{d:'M54 20 V380 H534','class':'ax'},gAx);
+txt(gAx,294,414,'obsah uhlíku C [hm. %]','rl');
+var yt=txt(gAx,12,200,'teplota T [°C]','rl');yt.setAttribute('transform','rotate(-90 12 200)');
+mk('path',{d:'M'+X(0)+' 426 H'+(X(2.11)-3),'class':'ax'},gAx);
+mk('path',{d:'M'+(X(2.11)+3)+' 426 H'+X(6.67),'class':'ax'},gAx);
+txt(gAx,(X(0)+X(2.11))/2,442,'ocel','rl');
+txt(gAx,(X(2.11)+X(6.67))/2,442,'bílá litina','rl');
+txt(gAx,538,Y(1147)+4,'1147 °C','rl rl-s','start');
+txt(gAx,538,Y(727)+4,'727 °C','rl rl-s','start');
+[['tavenina L',3.0,1450],['L+δ',0.24,1507,1],['L+γ',2.3,1245],['austenit γ',0.95,1030],['L+Fe₃C',5.9,1190],
+ ['γ+Fe₃C',4.2,930],['α+γ',0.19,820,1],['α+Fe₃C',3.4,350]].forEach(function(l){
+  txt(gLab,X(l[1]),Y(l[2]),l[0],l[3]?'rl rl-s':'rl');
+});
+txt(gLab,X(0.64),Y(800),'A₃','rl','start');
+txt(gLab,X(1.7),Y(950),'Acm','rl','start');
+txt(gLab,X(6.0),Y(727)-6,'A₁','rl','middle');
+[['S','S',7,15],['E','E',6,16],['C','C',0,18],['Pp','P',8,16]].forEach(function(p){
+  mk('circle',{cx:X(P[p[0]][0]),cy:Y(P[p[0]][1]),r:2.6,'class':'pt'},gLab);
+  txt(gLab,X(P[p[0]][0])+p[2],Y(P[p[0]][1])+p[3],p[1],'rl','start');
+});
+/* kalicí teploty */
+(function(){
+  var up=[],lo=[],c,gs=function(v){return 912-v/0.77*185;};
+  for(c=0.06;c<=0.77;c+=0.05){up.push([c,gs(c)+50]);lo.push([c,gs(c)+30]);}
+  up.push([0.77,777]);up.push([2.11,777]);lo.push([0.77,757]);lo.push([2.11,757]);
+  var pts=up.concat(lo.reverse());
+  mk('path',{d:pathOf(pts),'class':'band'},gBand);
+  txt(gBand,X(1.4),Y(777)-6,'kalicí teploty','rl rl-s');
+  gBand.style.display='none';
+})();
+var vl=mk('line',{'class':'cur-line',y1:20,y2:380},gCur),hl=mk('line',{'class':'cur-line',x1:54,x2:534},gCur),dot=mk('circle',{r:5.5,'class':'cur-dot'},gCur);
+
+/* ---- schéma struktury (canvas) ---- */
+var CW=200,ctx=$('micro').getContext('2d'),NG=36,gid=new Uint8Array(CW*CW),bd=new Uint8Array(CW*CW);
+var sx=[],sy=[],angs=[],rr=[],area=[],ord=[],gt=[],seed=11;
+function rnd(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
+for(k=0;k<NG;k++){
+  sx.push(((k%6)+0.5+(rnd()-0.5)*0.9)*CW/6);sy.push(((Math.floor(k/6))+0.5+(rnd()-0.5)*0.9)*CW/6);
+  angs.push(rnd()*Math.PI);rr.push(rnd());area.push(0);
+}
+(function(){
+  var x,y,g,best,d,bdist,i,it,tmp,j;
+  for(y=0;y<CW;y++){for(x=0;x<CW;x++){
+    best=0;bdist=1e9;
+    for(g=0;g<NG;g++){d=(x-sx[g])*(x-sx[g])+(y-sy[g])*(y-sy[g]);if(d<bdist){bdist=d;best=g;}}
+    gid[y*CW+x]=best;area[best]++;
+  }}
+  for(i=0;i<bd.length;i++){bd[i]=255;}
+  for(y=0;y<CW-1;y++){for(x=0;x<CW-1;x++){i=y*CW+x;if(gid[i]!==gid[i+1]||gid[i]!==gid[i+CW]){bd[i]=0;}}}
+  for(it=1;it<=3;it++){
+    tmp=bd.slice();
+    for(y=1;y<CW-1;y++){for(x=1;x<CW-1;x++){i=y*CW+x;
+      if(bd[i]===255&&(bd[i-1]===it-1||bd[i+1]===it-1||bd[i-CW]===it-1||bd[i+CW]===it-1)){tmp[i]=it;}
+    }}
+    bd=tmp;
+  }
+  for(j=0;j<NG;j++){ord.push(j);}
+  ord.sort(function(a,b){return rr[a]-rr[b];});
+})();
+var NDL=[];
+for(k=0;k<90;k++){NDL.push([rnd()*CW,rnd()*CW,(rnd()<0.5?0.5:2.1)+(rnd()-0.5)*0.9,30+rnd()*34]);}
+function hex(v){v=v.trim();return [parseInt(v.substr(1,2),16),parseInt(v.substr(3,2),16),parseInt(v.substr(5,2),16)];}
+function mixc(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+var COL={};
+function loadCols(){
+  var cs=getComputedStyle(document.documentElement);
+  COL.L=hex(cs.getPropertyValue('--ph-L'));COL.d=hex(cs.getPropertyValue('--ph-d'));COL.g=hex(cs.getPropertyValue('--ph-g'));
+  COL.a=hex(cs.getPropertyValue('--ph-a'));COL.c=hex(cs.getPropertyValue('--ph-c'));COL.m=hex(cs.getPropertyValue('--muted'));
+  COL.p=mixc(COL.a,COL.c,0.5);
+}
+var PT={L:'L',d:'d',g:'g',a:'a',c:'c'};
+function microState(c,ri){
+  var id=REG[ri].id,ph=phasesAt(c,st.T,ri),s={types:[],net:0,nd:0,liq:false},fp,fl,fs,i;
+  if(id==='L'){s.liq=true;s.types=[['L',1]];return s;}
+  if(id==='Lc'){s.types=[['L',1]];s.nd=6+Math.round(ph[1].f*70);s.noBd=true;return s;}
+  if(id==='gc'){
+    if(c<=2.11){s.types=[['g',1]];s.net=clamp(Math.round(1+ph[1].f*12),1,4);return s;}
+    fl=c<=4.3?(c-2.11)/2.19:(6.67-c)/2.37;
+    if(c<=4.3){s.types=[['g',1-fl],['e1',fl]];}else{s.types=[['e1',1]];s.nd=Math.round((1-fl)*80);}
+    return s;
+  }
+  if(id==='ac'){
+    if(c<=0.022){s.types=[['a',1]];return s;}
+    if(c<=0.77){fp=(c-0.022)/0.748;s.types=[['a',1-fp],['p',fp]];return s;}
+    if(c<=2.11){fp=(6.67-c)/5.9;s.types=[['p',1]];s.net=clamp(Math.round(1+(1-fp)*12),1,4);return s;}
+    if(c<=4.3){fl=(c-2.11)/2.19;s.types=[['e2',fl],['p',1-fl]];s.net=clamp(Math.round(1+(1-fl)*0.227*12),1,3);return s;}
+    fl=(6.67-c)/2.37;s.types=[['e2',1]];s.nd=Math.round((1-fl)*80);return s;
+  }
+  for(i=0;i<ph.length;i++){s.types.push([PT[ph[i].ph],ph[i].f]);}
+  return s;
+}
+function drawMicro(c,ri){
+  var s=microState(c,ri),img=ctx.createImageData(CW,CW),dat=img.data,i,j,x,y,g,t,cum=0,target,col,u,idx,e,ti=0,bw,px,py,row,dxn,dyn,n,ex,ey,st2;
+  target=s.types[0][1]*CW*CW;
+  for(j=0;j<NG;j++){
+    g=ord[j];gt[g]=s.types[ti][0];cum+=area[g];
+    if(cum>=target&&ti<s.types.length-1){ti++;target+=s.types[ti][1]*CW*CW;}
+  }
+  for(y=0;y<CW;y++){for(x=0;x<CW;x++){
+    i=y*CW+x;g=gid[i];t=gt[g];
+    if(t==='p'){u=(((x*Math.cos(angs[g])+y*Math.sin(angs[g]))%6)+6)%6;col=u<1.3?COL.c:COL.a;}
+    else if(t==='e1'||t==='e2'){
+      row=Math.floor(y/7);px=((x+(row%2)*4)%8)-4;py=(y%7)-3.5;
+      col=(px*px+py*py<=7)?(t==='e1'?COL.g:COL.p):COL.c;
+    }else{col=COL[t];}
+    if(!s.liq&&!s.noBd){
+      if(s.net>0&&bd[i]<s.net){col=COL.c;}
+      else if(bd[i]===0&&t!=='e1'&&t!=='e2'){col=mixc(col,COL.m,0.7);}
+    }
+    idx=i*4;dat[idx]=col[0];dat[idx+1]=col[1];dat[idx+2]=col[2];dat[idx+3]=255;
+  }}
+  for(n=0;n<s.nd&&n<NDL.length;n++){
+    for(u=0;u<NDL[n][3];u+=0.7){
+      ex=Math.round(NDL[n][0]+Math.cos(NDL[n][2])*u);ey=Math.round(NDL[n][1]+Math.sin(NDL[n][2])*u);
+      for(py=0;py<2;py++){for(px=0;px<2;px++){
+        if(ex+px>=0&&ex+px<CW&&ey+py>=0&&ey+py<CW){idx=((ey+py)*CW+ex+px)*4;dat[idx]=COL.c[0];dat[idx+1]=COL.c[1];dat[idx+2]=COL.c[2];}
+      }}
+    }
+  }
+  ctx.putImageData(img,0,0);
+}
+
+/* ---- stav a vykreslení ---- */
+var st={c:0.4,T:600,cool:false},lastC=-1,evs=[];
+var BK={L:'bk-L',d:'bk-d',g:'bk-g',a:'bk-a',c:'bk-c',ferrit:'bk-a',perlit:'bk-perlit',cem:'bk-c',lede:'bk-lede'};
+function bars(barEl,listEl,items){
+  barEl.innerHTML='';listEl.innerHTML='';
+  items.forEach(function(it){
+    if(it.f<0.0005){return;}
+    var b=document.createElement('i');b.className=BK[it.k];b.style.width=(it.f*100).toFixed(2)+'%';barEl.appendChild(b);
+    var li=document.createElement('li'),sw=document.createElement('span'),nm=document.createElement('span'),em=document.createElement('em');
+    sw.className='sw '+BK[it.k];nm.textContent=it.n;em.textContent=fmt(it.f*100,1)+' %';
+    li.appendChild(sw);li.appendChild(nm);li.appendChild(em);listEl.appendChild(li);
+  });
+}
+function renderEvents(){
+  var list=$('evList'),lis,now=-1,i;
+  if(lastC!==st.c){
+    lastC=st.c;evs=[{T:null,txt:'Slitina je nad čarou likvidu zcela tekutá.'}].concat(events(st.c));
+    list.innerHTML='';
+    evs.forEach(function(e){
+      var li=document.createElement('li'),b=document.createElement('b'),sp=document.createElement('span');
+      b.textContent=e.T===null?'tavenina':e.T+' °C';sp.innerHTML=e.txt;li.appendChild(b);li.appendChild(sp);list.appendChild(li);
+    });
+  }
+  lis=list.children;
+  for(i=0;i<evs.length;i++){
+    if(evs[i].T===null||evs[i].T>=st.T){now=i;}
+  }
+  for(i=0;i<lis.length;i++){lis[i].className=i<now?'past':(i===now?'past now':'future');}
+}
+function sync(){
+  var ri=regionAt(st.c,st.T),ph=phasesAt(st.c,st.T,ri),cons=constituents(st.c),r=REG[ri];
+  $('sc').value=st.c;$('sT').value=st.T;
+  $('scOut').textContent=fmt(st.c,2)+' %';$('sTOut').textContent=Math.round(st.T)+' °C';
+  $('bC').textContent=fmt(st.c,2);$('bT').textContent=Math.round(st.T);
+  $('regName').textContent=r.n;
+  $('regInfo').textContent='Slitina: '+groupName(st.c)+'.';
+  var cx0=X(st.c),cy0=Y(st.T);
+  vl.setAttribute('x1',cx0);vl.setAttribute('x2',cx0);hl.setAttribute('y1',cy0);hl.setAttribute('y2',cy0);
+  dot.setAttribute('cx',cx0);dot.setAttribute('cy',cy0);
+  actPath.setAttribute('d',pathOf(r.pts));
+  bars($('pbar'),$('plist'),ph.map(function(p){return {k:p.ph,n:PH[p.ph],f:p.f};}));
+  bars($('cbar'),$('clist'),cons);
+  drawMicro(st.c,ri);
+  renderEvents();
+  Array.prototype.forEach.call(document.querySelectorAll('.pre'),function(b){
+    b.setAttribute('aria-pressed',String(Math.abs(parseFloat(b.getAttribute('data-c'))-st.c)<0.005));
+  });
+}
+
+/* ---- ovládání ---- */
+function stopCool(){st.cool=false;$('btnCool').textContent='Ochladit z taveniny';}
+function fromEvent(ev){
+  var svg=$('dia'),pt=svg.createSVGPoint(),p;
+  pt.x=ev.clientX;pt.y=ev.clientY;p=pt.matrixTransform(svg.getScreenCTM().inverse());
+  st.c=clamp(Math.round((p.x-54)/72*100)/100,0.01,6.67);st.T=clamp(Math.round((380-p.y)/0.225),20,1600);
+  stopCool();sync();
+}
+var drag=false,cap=$('cap');
+cap.addEventListener('pointerdown',function(ev){drag=true;try{cap.setPointerCapture(ev.pointerId);}catch(e){}fromEvent(ev);});
+cap.addEventListener('pointermove',function(ev){if(drag){fromEvent(ev);}});
+cap.addEventListener('pointerup',function(){drag=false;});
+cap.addEventListener('pointercancel',function(){drag=false;});
+$('sc').addEventListener('input',function(e){st.c=parseFloat(e.target.value);stopCool();sync();});
+$('sT').addEventListener('input',function(e){st.T=parseFloat(e.target.value);stopCool();sync();});
+Array.prototype.forEach.call(document.querySelectorAll('.pre'),function(b){
+  b.addEventListener('click',function(){st.c=parseFloat(b.getAttribute('data-c'));stopCool();sync();});
+});
+$('btnCool').addEventListener('click',function(){
+  if(st.cool){stopCool();return;}
+  st.T=1600;st.cool=true;$('btnCool').textContent='Zastavit ochlazování';sync();
+});
+$('btnHard').addEventListener('click',function(){
+  var on=$('btnHard').getAttribute('aria-pressed')!=='true';
+  $('btnHard').setAttribute('aria-pressed',String(on));gBand.style.display=on?'':'none';
+});
+var last=0;
+function frame(ts){
+  if(!last){last=ts;}
+  var dt=Math.min((ts-last)/1000,0.05);last=ts;
+  if(st.cool){
+    st.T-=dt*150;
+    if(st.T<=20){st.T=20;stopCool();}
+    sync();
+  }
+  window.requestAnimationFrame(frame);
+}
+function redraw(){loadCols();sync();}
+try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redraw);}catch(e){}
+try{new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});}catch(e){}
+loadCols();sync();
+window.requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

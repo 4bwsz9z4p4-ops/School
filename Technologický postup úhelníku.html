@@ -1,0 +1,548 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Technologický postup úhelníku</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: the written TP appears step by step on the left, the 3D part on the right stays in view while you scroll.
+   Palette: drafting-paper neutrals, steel for the part. Hole sizes keep one colour everywhere:
+   Ø6,4 orange, Ø5,3 green, M10 violet. */
+:root{
+  --bg:#EEF1F5; --panel:#FFFFFF; --soft:#F5F7FA; --stage:#F4F7FA; --ink:#18202B; --muted:#566273;
+  --rule:#D5DCE5; --rule-strong:#9FACBD; --steel:#7E8CA2; --edge:#27303C;
+  --h64:#C2570F; --h53:#12795C; --hm10:#7A3FB0; --hi:#B4237A; --ok:#12795C; --bad:#B3261E;
+  --on-ink:#FFFFFF; --focus:#2B59C9;
+  --font-display:'Archivo','Arial Narrow',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F141B; --panel:#171E28; --soft:#1C2531; --stage:#121921; --ink:#E7ECF2; --muted:#9AA7B8;
+    --rule:#2A3441; --rule-strong:#4A5A72; --steel:#AAB7C9; --edge:#0A0E13;
+    --h64:#FF9B5E; --h53:#5ED6B0; --hm10:#C79BFF; --hi:#FF7AC6; --ok:#5ED6B0; --bad:#FF7B72;
+    --on-ink:#0F141B; --focus:#7DA2FF; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --panel:#171E28; --soft:#1C2531; --stage:#121921; --ink:#E7ECF2; --muted:#9AA7B8;
+  --rule:#2A3441; --rule-strong:#4A5A72; --steel:#AAB7C9; --edge:#0A0E13;
+  --h64:#FF9B5E; --h53:#5ED6B0; --hm10:#C79BFF; --hi:#FF7AC6; --ok:#5ED6B0; --bad:#FF7B72;
+  --on-ink:#0F141B; --focus:#7DA2FF; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;
+  padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.wrap{max-width:1200px;margin-inline:auto}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(26px,4.4vw,40px);line-height:1.1;letter-spacing:-.01em;margin:0 0 8px;text-wrap:balance}
+.lead{margin:0 0 18px;color:var(--muted);max-width:70ch}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.tp{min-width:0}
+.form{display:grid;grid-template-columns:1fr 1fr;background:var(--panel);border:1px solid var(--rule-strong);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.form div{padding:8px 12px;border-bottom:1px solid var(--rule);min-width:0}
+.form div:nth-child(odd){border-right:1px solid var(--rule)}
+.form div:nth-last-child(-n+2){border-bottom:0}
+.form small{display:block;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.form b{font-weight:600;font-family:var(--font-mono);font-size:14px}
+.form .ttl{grid-column:1/-1;font-family:var(--font-display);font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);border-right:0!important;background:var(--soft)}
+ol.ops{list-style:none;margin:0;padding:0}
+.op{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;animation:rise .35s ease both}
+.op.cur{border:2px solid var(--ink);padding:11px}
+.op .no{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--rule-strong);display:grid;place-items:center;font-family:var(--font-mono);font-weight:600;font-size:14px}
+.op.cur .no{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.op .desc{font-weight:600;margin:0 0 8px}
+.op dl{margin:0;display:grid;gap:6px}
+.op dt{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.op dd{margin:0;font-size:14px}
+.op .why{margin:8px 0 0;padding:8px 10px;border-left:3px solid var(--ink);background:var(--soft);font-size:13.5px;display:none}
+.op.cur .why{display:block}
+.empty{border:1.5px dashed var(--rule-strong);border-radius:10px;padding:16px;color:var(--muted);text-align:center}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.model{background:var(--panel);border:1px solid var(--rule-strong);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;position:sticky;top:max(12px,env(safe-area-inset-top,0px));min-width:0}
+.mhead{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;justify-content:space-between}
+.mhead b{font-family:var(--font-display);font-size:19px}
+.mhead span{font-family:var(--font-mono);font-size:13px;color:var(--muted)}
+canvas{display:block;width:100%;aspect-ratio:4/3;max-height:62vh;border-radius:8px;background:var(--stage);cursor:grab;touch-action:none}
+.cap{margin:0;font-size:14px;min-height:3.1em}
+.chips{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}
+.chips i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:14px;padding:8px 14px;min-height:40px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--ink);color:var(--on-ink);border-color:var(--ink);font-weight:600}
+.btn:focus-visible,.op:focus-visible,.pill:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.pills{display:flex;gap:4px;flex-wrap:wrap}
+.pill{font:inherit;font-family:var(--font-mono);font-size:13px;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--rule-strong);background:var(--panel);color:var(--ink);cursor:pointer;padding:0}
+.pill[aria-current="step"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink);font-weight:600}
+.pill.done{border-color:var(--ink)}
+.chk{display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--ink);margin:0}
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px 14px;font-size:12.5px;color:var(--muted);margin:0;padding:8px 0 0;border-top:1px solid var(--rule)}
+.spec b{color:var(--ink);font-weight:500;font-family:var(--font-mono)}
+.note{margin:0;font-size:12.5px;color:var(--muted)}
+details.rules{margin-top:22px;background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:12px 16px;max-width:820px}
+details.rules summary{cursor:pointer;font-weight:600}
+details.rules ul{margin:10px 0 0;padding-left:20px}details.rules li{margin-bottom:6px}
+.chkl{list-style:none;padding:0!important}
+.chkl li{display:grid;grid-template-columns:22px 1fr;gap:8px;color:var(--muted)}
+.chkl li.on{color:var(--ink)}
+.chkl i{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--rule-strong);margin-top:3px;display:block}
+.chkl li.on i{background:var(--ok);border-color:var(--ok);box-shadow:inset 0 0 0 3px var(--panel)}
+@media (max-width:920px){
+  .layout{display:flex;flex-direction:column-reverse;gap:14px}
+  .model{position:sticky;top:max(6px,env(safe-area-inset-top,0px));z-index:5}
+  canvas{aspect-ratio:5/4;max-height:38vh}
+  .cap{min-height:0}
+  .spec,.note{display:none}
+  .layout{display:block}
+  .tp{margin-top:14px}
+}
+@media (prefers-reduced-motion: reduce){.op{animation:none}*{scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Technologický postup úhelníku</h1>
+  <p class="lead">Postup výroby součásti ÚHELNÍK LEVÝ, výkres ZZP-02-02. Při každém kroku se vlevo objeví další operace technologického postupu a vpravo se podle ní změní 3D model, od polotovaru až po hotový díl. Model můžete otáčet tažením a přiblížit kolečkem.</p>
+</header>
+
+<div class="layout">
+  <section class="tp" aria-label="Technologický postup výroby">
+    <div class="form">
+      <div class="ttl">Technologický postup výroby</div>
+      <div><small>Materiál</small><b>11 373 (S235JRG1)</b></div>
+      <div><small>Číslo výkresu</small><b>ZZP-02-02</b></div>
+      <div><small>Polotovar</small><b>P3-100 x 75 ČSN 425310</b></div>
+      <div><small>Název součásti</small><b>ÚHELNÍK LEVÝ</b></div>
+    </div>
+    <ol class="ops" id="ops" aria-live="polite"></ol>
+    <div class="empty" id="empty">Zatím je vyplněná jen záhlaví. Tlačítkem Další krok zobrazíte první operaci.</div>
+  </section>
+
+  <section class="model" id="mdl" aria-label="3D model součásti">
+    <div class="mhead"><b id="mtitle"></b><span id="mstep"></span></div>
+    <canvas id="cv" role="img" aria-label="Otočný 3D model úhelníku, který se při postupu mění z plechu na hotový díl"></canvas>
+    <p class="cap" id="cap" aria-live="polite"></p>
+    <div class="chips" aria-label="Značení děr">
+      <span><i style="background:var(--h64)"></i>4 × Ø6,4</span>
+      <span><i style="background:var(--h53)"></i>3 × Ø5,3</span>
+      <span><i style="background:var(--hm10)"></i>1 × M10 (vrtá se Ø8,5)</span>
+    </div>
+    <div class="pills" id="pills" role="group" aria-label="Přejít na krok"></div>
+    <div class="ctl">
+      <button class="btn" id="prev" type="button">Zpět</button>
+      <button class="btn primary" id="next" type="button">Další krok</button>
+      <button class="btn" id="play" type="button">Přehrát vše</button>
+      <button class="btn" id="reset" type="button">Od začátku</button>
+    </div>
+    <div class="ctl">
+      <label class="chk"><input type="checkbox" id="dims" checked>Rozměry</label>
+      <button class="btn" id="camReset" type="button">Výchozí pohled</button>
+    </div>
+    <div class="spec">
+      <span>Drsnost <b>Ra 12,5</b></span><span>Nekótovaná sražení <b>0,5 × 45°</b></span>
+      <span>Tolerování <b>ISO 8015</b></span><span>Přesnost <b>ISO 2768-mK</b></span>
+      <span>Hmotnost <b>0,17 kg</b></span><span>Měřítko <b>1 : 1</b></span>
+    </div>
+    <p class="note">Rozměry a polohy děr jsou z výkresu ZZP-02-02. Rozvinutá délka plechu je 75 mm podle TP, protože z rozměrů 50, 30, R3 a tloušťky 3 mm vychází asi 75 mm. Výkres uvádí 72 mm.</p>
+  </section>
+</div>
+
+<details class="rules">
+  <summary>Pravidla zápisu technologického postupu</summary>
+  <ul class="chkl" id="rules">
+    <li data-r="1"><i></i><span>Každá operace je označena číslem a oddělena od další.</span></li>
+    <li data-r="2"><i></i><span>Popis práce je v infinitivu a u každé operace je konkrétní rozměr, například vrtat Ø10.</span></li>
+    <li data-r="3"><i></i><span>Ve sloupci BOZP jsou obecné zásady (pracovní oděv, obuv, nepoškozené nářadí) i zásady pro dané pracoviště, například při vrtání brýle, pokrývka vlasů a bez rukavic.</span></li>
+    <li data-r="4"><i></i><span>Každý TP končí dvěma operacemi: ojehlit celou součást a zkontrolovat rozměry.</span></li>
+  </ul>
+  <p class="note" style="margin-top:8px">Body se odškrtávají podle toho, kolik operací už je zobrazeno.</p>
+</details>
+</div>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function ease(u){u=clamp(u,0,1);return u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;}
+function fx(x,d){return (+x).toFixed(d===undefined?1:d).replace(".",",");}
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var cv=$("cv"),ctx=cv.getContext("2d"),R=Math.PI/180;
+function css(){
+  var cs=getComputedStyle(document.documentElement),o={};
+  ["ink","muted","stage","steel","edge","h64","h53","hm10","hi","panel","rule-strong"].forEach(function(k){o[k]=cs.getPropertyValue("--"+k).trim();});
+  return o;
+}
+function rgb(hex){hex=hex.trim();var n=parseInt(hex.slice(1,7),16);return [(n>>16)&255,(n>>8)&255,n&255];}
+function rgba(hex,a){var c=rgb(hex);return "rgba("+c[0]+","+c[1]+","+c[2]+","+a+")";}
+function shade(hex,k){var c=rgb(hex);return "rgb("+Math.round(clamp(c[0]*k,0,255))+","+Math.round(clamp(c[1]*k,0,255))+","+Math.round(clamp(c[2]*k,0,255))+")";}
+
+/* ---------- the part, in millimetres (drawing ZZP-02-02) ---------- */
+var T=3,H=T/2,LEN=100,LA=44,RN=4.5,ARC=Math.PI/2*RN,FL=75,LBL=FL-LA-ARC;
+var COL={"64":"h64","53":"h53","m10":"hm10"};
+var HOLES=[
+  {leg:"A",u:16,y:90,d:6.4,k:"64",lab:"16; 90"},{leg:"A",u:16,y:34,d:6.4,k:"64",lab:"16; 34"},
+  {leg:"B",u:LBL-10,y:90,d:6.4,k:"64",lab:"10; 90"},{leg:"B",u:LBL-10,y:10,d:6.4,k:"64",lab:"10; 10"},
+  {leg:"A",u:34,y:90,d:5.3,k:"53",lab:"34; 90"},{leg:"A",u:34,y:50,d:5.3,k:"53",lab:"34; 50"},{leg:"A",u:34,y:10,d:5.3,k:"53",lab:"34; 10"},
+  {leg:"A",u:9,y:13,d:8.5,k:"m10",lab:"9; 13"}
+];
+var S={step:0,a:1,yaw:35,pitch:30,zoom:1,dims:true,playing:false};
+var DEF={yaw:35,pitch:30,zoom:1};
+var W=0,H2=0,DPR=1,raf=0,anim=null;
+
+function flags(){
+  var st=S.step,A=S.a,f={phi:0,k:[],cham:[],thread:0,outline:0,marks:0,filed:0,sweep:-1,bendLine:0,dimsStart:0,dimsEnd:0,labels:0,tool:null};
+  var i;
+  for(i=0;i<8;i++){
+    f.k[i]=st<3?0:st===3?clamp(A*8-i,0,1):1;
+    f.cham[i]=st<4?0:st===4?clamp(A*8-i,0,1):1;
+  }
+  f.outline=st===1?A:st===2?1-A:0;
+  f.marks=st===1?A:st===2?1:st===3?1:0;
+  f.filed=st<2?0:st===2?A:1;
+  f.sweep=st===2?A:-1;
+  f.thread=st<5?0:st===5?A:1;
+  f.bendLine=st===6&&A<0.28?1:0;
+  f.phi=st<6?0:st===6?ease((A-0.2)/0.8)*Math.PI/2:Math.PI/2;
+  f.dimsStart=st===0?1:0;
+  f.dimsEnd=st>=7?(st===7?A:1):0;
+  f.labels=st===1?A:0;
+  if(st===3&&A<1){var hi=Math.min(7,Math.floor(A*8));f.tool={i:hi,u:clamp(A*8-hi,0,1),txt:"vrták Ø"+fx(HOLES[hi].d,1)};}
+  if(st===4&&A<1){var hc=Math.min(7,Math.floor(A*8));f.tool={i:hc,u:clamp(A*8-hc,0,1),txt:"záhlubník"};}
+  if(st===5&&A<1) f.tool={i:7,u:A,txt:"závitník M10"};
+  return f;
+}
+/* bend geometry: flat at phi = 0, 90 degrees at phi = pi/2; the bend zone keeps its arc length */
+function bendG(phi){
+  var ph=Math.max(phi,0.001),r=ARC/ph;
+  return {ph:ph,r:r,c:Math.cos(ph),s:Math.sin(ph),ex:LA+ARC*Math.sin(ph)/ph,ez:2*r*Math.pow(Math.sin(ph/2),2)};
+}
+function bp(g,sig,y,off){var a=sig/g.r;return [LA+(g.r-off)*Math.sin(a),y,2*g.r*Math.pow(Math.sin(a/2),2)+off*Math.cos(a)];}
+function mapper(g,leg){
+  if(leg==="A") return function(u,y,off){return [u,y,off];};
+  return function(u,y,off){return [g.ex+u*g.c-off*g.s,y,g.ez+u*g.s+off*g.c];};
+}
+function nTop(g,leg){return leg==="A"?[0,0,1]:[-g.s,0,g.c];}
+function neg(n){return [-n[0],-n[1],-n[2]];}
+
+/* ---------- camera ---------- */
+var P0=[26,50,6];
+function cam(p){
+  var cy=Math.cos(S.yaw*R),sy=Math.sin(S.yaw*R),cp=Math.cos(S.pitch*R),sp=Math.sin(S.pitch*R);
+  var xr=p[0]*cy-p[1]*sy,yr=p[0]*sy+p[1]*cy;
+  return [xr,p[2]*cp+yr*sp,yr*cp-p[2]*sp];
+}
+var C0=[0,0,0],SC=4;
+function scr(p){var c=cam(p);return [W/2+(c[0]-C0[0])*SC,H2/2-(c[1]-C0[1])*SC];}
+function gdir(){var cy=Math.cos(S.yaw*R),sy=Math.sin(S.yaw*R),cp=Math.cos(S.pitch*R),sp=Math.sin(S.pitch*R);return [sy*cp,cy*cp,-sp];}
+
+/* ---------- build the faces for the current state ---------- */
+function ringPts(g,h,f_k,off,n){
+  var m=mapper(g,h.leg),a=[],i,r=h.d/2*f_k;
+  for(i=0;i<n;i++){var t=i/n*2*Math.PI;a.push(m(h.u+r*Math.cos(t),h.y+r*Math.sin(t),off));}
+  return a;
+}
+function build(f){
+  var g=bendG(f.phi),F=[],NB=14,i,j;
+  function add(pts,n,kind,hole,arc){F.push({pts:pts,n:n,kind:kind,hole:hole||null,arc:!!arc});}
+  ["A","B"].forEach(function(leg){
+    var m=mapper(g,leg),u1=leg==="A"?LA:LBL,nt=nTop(g,leg),holes=[];
+    HOLES.forEach(function(h,idx){if(h.leg===leg&&f.k[idx]>0.02) holes.push({h:h,idx:idx});});
+    add([m(0,0,H),m(u1,0,H),m(u1,LEN,H),m(0,LEN,H)],nt,"face",holes.map(function(o){return ringPts(g,o.h,f.k[o.idx],H,28);}));
+    add([m(0,0,-H),m(u1,0,-H),m(u1,LEN,-H),m(0,LEN,-H)],neg(nt),"face",holes.map(function(o){return ringPts(g,o.h,f.k[o.idx],-H,28);}));
+    add([m(0,0,-H),m(u1,0,-H),m(u1,0,H),m(0,0,H)],[0,-1,0],"edge");
+    add([m(0,LEN,-H),m(u1,LEN,-H),m(u1,LEN,H),m(0,LEN,H)],[0,1,0],"edge");
+    var tg=leg==="A"?[-1,0,0]:[g.c,0,g.s],uu=leg==="A"?0:u1;
+    add([m(uu,0,-H),m(uu,LEN,-H),m(uu,LEN,H),m(uu,0,H)],tg,"edge");
+    holes.forEach(function(o){
+      var top=ringPts(g,o.h,f.k[o.idx],H,24),bot=ringPts(g,o.h,f.k[o.idx],-H,24),ax=m(o.h.u,o.h.y,0);
+      for(j=0;j<24;j++){
+        var k2=(j+1)%24,c=[(top[j][0]+bot[k2][0])/2,(top[j][1]+bot[k2][1])/2,(top[j][2]+bot[k2][2])/2],v=[ax[0]-c[0],ax[1]-c[1],ax[2]-c[2]],l=Math.hypot(v[0],v[1],v[2])||1;
+        add([top[j],top[k2],bot[k2],bot[j]],[v[0]/l,v[1]/l,v[2]/l],"wall");
+      }
+    });
+    HOLES.forEach(function(h,idx){
+      if(h.leg!==leg||f.cham[idx]<0.02) return;
+      var rr=h.d/2*f.k[idx]+0.5*f.cham[idx];
+      [[H,nt],[-H,neg(nt)]].forEach(function(o){
+        var out=[],inn=[];
+        for(i=0;i<28;i++){var t=i/28*2*Math.PI;out.push(m(h.u+rr*Math.cos(t),h.y+rr*Math.sin(t),o[0]));}
+        add(out,o[1],"cham",[ringPts(g,h,f.k[idx],o[0],28)]);
+      });
+    });
+  });
+  for(i=0;i<NB;i++){
+    var s0=ARC*i/NB,s1=ARC*(i+1)/NB,am=(s0+s1)/2/g.r,ni=[-Math.sin(am),0,Math.cos(am)];
+    add([bp(g,s0,0,H),bp(g,s1,0,H),bp(g,s1,LEN,H),bp(g,s0,LEN,H)],ni,"face",null,1);
+    add([bp(g,s0,0,-H),bp(g,s1,0,-H),bp(g,s1,LEN,-H),bp(g,s0,LEN,-H)],neg(ni),"face",null,1);
+    add([bp(g,s0,0,-H),bp(g,s1,0,-H),bp(g,s1,0,H),bp(g,s0,0,H)],[0,-1,0],"edge",null,1);
+    add([bp(g,s0,LEN,-H),bp(g,s1,LEN,-H),bp(g,s1,LEN,H),bp(g,s0,LEN,H)],[0,1,0],"edge",null,1);
+  }
+  return {g:g,faces:F};
+}
+
+/* ---------- drawing ---------- */
+function draw(){
+  if(!W||!H2) return;
+  var C=css(),f=flags(),B=build(f),g=B.g,gd=gdir(),i;
+  /* fit */
+  SC=Math.min(W,H2)/142*S.zoom;
+  var c0=cam(P0);C0=[c0[0],c0[1]];
+  ctx.setTransform(DPR,0,0,H2?DPR:1,0,0);ctx.clearRect(0,0,W,H2);
+  ctx.lineJoin="round";ctx.lineCap="round";
+  var L=[-0.35,-0.55,0.75],ll=Math.hypot(L[0],L[1],L[2]);L=[L[0]/ll,L[1]/ll,L[2]/ll];
+  var vis=[];
+  B.faces.forEach(function(F){
+    var d=F.n[0]*gd[0]+F.n[1]*gd[1]+F.n[2]*gd[2];
+    if(d>=0) return;
+    var cx=0,cy=0,cz=0;F.pts.forEach(function(p){cx+=p[0];cy+=p[1];cz+=p[2];});
+    var n=F.pts.length,dep=cam([cx/n,cy/n,cz/n])[2];
+    if(F.kind==="cham") dep-=0.05;
+    F.dep=dep;vis.push(F);
+  });
+  vis.sort(function(a,b){return b.dep-a.dep;});
+  function path(pts){pts.forEach(function(p,k){var s=scr(p);if(k)ctx.lineTo(s[0],s[1]);else ctx.moveTo(s[0],s[1]);});ctx.closePath();}
+  vis.forEach(function(F){
+    var lam=Math.max(0,F.n[0]*L[0]+F.n[1]*L[1]+F.n[2]*L[2]),k=0.5+0.5*lam;
+    if(F.kind==="edge") k*=0.72+0.33*f.filed;
+    if(F.kind==="wall") k*=0.62;
+    ctx.beginPath();path(F.pts);
+    if(F.hole) F.hole.forEach(function(h){path(h);});
+    ctx.fillStyle=F.kind==="cham"?shade(C.steel,1.22+0.2*lam):shade(C.steel,k);
+    ctx.fill("evenodd");
+    if(F.arc){ctx.strokeStyle=ctx.fillStyle;ctx.lineWidth=1;ctx.stroke();return;}
+    ctx.strokeStyle=rgba(C.edge,F.kind==="wall"?0.55:0.85);ctx.lineWidth=F.kind==="edge"?1:1.2;
+    if(F.kind!=="wall") ctx.stroke();
+  });
+  [[0,gd[1]>0],[LEN,gd[1]<0]].forEach(function(e){
+    if(!e[1]) return;
+    [H,-H].forEach(function(o){ctx.beginPath();for(i=0;i<=14;i++){var q=scr(bp(g,ARC*i/14,e[0],o));if(i)ctx.lineTo(q[0],q[1]);else ctx.moveTo(q[0],q[1]);}ctx.strokeStyle=rgba(C.edge,0.85);ctx.lineWidth=1.2;ctx.stroke();});
+  });
+  /* hole rims in the colour of their size while they are being worked on */
+  var st=S.step;
+  HOLES.forEach(function(h,idx){
+    var act=(st===3&&f.tool&&f.tool.i===idx)||(st===4&&f.tool&&f.tool.i===idx)||(st===5&&idx===7&&S.a<1);
+    if(f.k[idx]<0.5||!act) return;
+    var m=mapper(g,h.leg),top=ringPts(g,h,f.k[idx],H+0.04,28),nt=nTop(g,h.leg);
+    if(nt[0]*gd[0]+nt[1]*gd[1]+nt[2]*gd[2]>=0) return;
+    ctx.beginPath();path(top);ctx.strokeStyle=C[COL[h.k]];ctx.lineWidth=3;ctx.stroke();
+  });
+  var topVisible=(function(){var nt=[0,0,1];return nt[0]*gd[0]+nt[1]*gd[1]+nt[2]*gd[2]<0;})();
+  var mA=mapper(g,"A"),mB=mapper(g,"B");
+  function line(a,b){var p=scr(a),q=scr(b);ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);}
+  function halo(t,x,y,col,font,al,al2){
+    ctx.font=font;ctx.textAlign=al||"center";ctx.textBaseline="middle";ctx.lineWidth=4;ctx.strokeStyle=C.stage;ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);
+  }
+  var fontS='600 12px "IBM Plex Sans",system-ui,sans-serif',fontM='500 11px "IBM Plex Mono",ui-monospace,monospace';
+  /* scribed outline, centre marks, bend line (flat plate only) */
+  if(f.phi<0.001&&topVisible){
+    if(f.outline>0.01){
+      var ins=1.2,pr=[[ins,ins],[FL-ins,ins],[FL-ins,LEN-ins],[ins,LEN-ins]];
+      ctx.save();ctx.globalAlpha=f.outline;ctx.strokeStyle=C.hi;ctx.lineWidth=1.6;ctx.setLineDash([6,3]);ctx.beginPath();
+      pr.forEach(function(q,k){var s=scr([q[0],q[1],H+0.05]);if(k)ctx.lineTo(s[0],s[1]);else ctx.moveTo(s[0],s[1]);});ctx.closePath();ctx.stroke();ctx.restore();
+    }
+    if(f.marks>0.01){
+      HOLES.forEach(function(h,idx){
+        var al=f.marks*(1-f.k[idx]);if(al<0.02) return;
+        var wu=h.leg==="A"?h.u:LA+ARC+h.u,p=[wu,h.y,H+0.05],s=scr(p),col=C[COL[h.k]];
+        ctx.save();ctx.globalAlpha=al;ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1.8;ctx.beginPath();
+        line([wu-3,h.y,H+0.05],[wu+3,h.y,H+0.05]);line([wu,h.y-3,H+0.05],[wu,h.y+3,H+0.05]);ctx.stroke();
+        ctx.beginPath();ctx.arc(s[0],s[1],2.4,0,7);ctx.fill();ctx.restore();
+        if(S.dims&&f.labels>0.5){ctx.globalAlpha=al;halo(h.lab,s[0]+8,s[1]-12,col,fontM,"left");ctx.globalAlpha=1;}
+      });
+    }
+  }
+  if(f.bendLine>0&&topVisible){
+    var bx=LA+ARC/2;ctx.strokeStyle=C.hi;ctx.lineWidth=1.8;ctx.setLineDash([7,4]);ctx.beginPath();line([bx,-3,H+0.05],[bx,LEN+3,H+0.05]);ctx.stroke();ctx.setLineDash([]);
+    var sb=scr([bx,LEN+3,H]);halo("ohyb",sb[0],sb[1]-10,C.hi,fontS);
+  }
+  /* filing sweep along the outline (step 2) */
+  if(f.sweep>=0&&f.sweep<1&&f.phi<0.001){
+    var per=[[0,0],[FL,0],[FL,LEN],[0,LEN],[0,0]],tot=2*(FL+LEN),want=f.sweep*tot,acc=0;
+    ctx.strokeStyle=C.hi;ctx.lineWidth=3.4;ctx.beginPath();
+    for(i=0;i<4&&want>0;i++){
+      var a=per[i],b=per[i+1],len=Math.hypot(b[0]-a[0],b[1]-a[1]),t2=Math.min(1,want/len);
+      line([a[0],a[1],H+0.05],[a[0]+(b[0]-a[0])*t2,a[1]+(b[1]-a[1])*t2,H+0.05]);want-=len;
+    }
+    ctx.stroke();
+  }
+  /* thread symbol on the M10 hole: thin three-quarter circle of the nominal diameter */
+  if(f.thread>0.01&&topVisible){
+    var hh=HOLES[7],ptsT=[],n2=48,span=1.5*Math.PI*f.thread;
+    for(i=0;i<=n2;i++){var t3=0.25*Math.PI+i/n2*span;ptsT.push(mA(hh.u+5*Math.cos(t3),hh.y+5*Math.sin(t3),H+0.05));}
+    ctx.strokeStyle=C.hm10;ctx.lineWidth=2;ctx.beginPath();ptsT.forEach(function(p,k){var s=scr(p);if(k)ctx.lineTo(s[0],s[1]);else ctx.moveTo(s[0],s[1]);});ctx.stroke();
+    if(S.step>=5&&S.a>0.6||S.step>5){var sT=scr(mA(hh.u-7,hh.y,H));if(S.dims) halo("M10",sT[0]-12,sT[1],C.hm10,fontS);}
+  }
+  /* tool while a step is running */
+  if(f.tool&&topVisible){
+    var h2=HOLES[f.tool.i],mm=mapper(g,h2.leg),nn=nTop(g,h2.leg),lift=20*(1-Math.sin(Math.PI*f.tool.u));
+    var base=mm(h2.u,h2.y,H),p1=[base[0]+nn[0]*lift,base[1]+nn[1]*lift,base[2]+nn[2]*lift],p2=[p1[0]+nn[0]*26,p1[1]+nn[1]*26,p1[2]+nn[2]*26];
+    var col=C[COL[h2.k]],s1=scr(p1),s2=scr(p2);
+    ctx.strokeStyle=col;ctx.lineWidth=h2.d*SC*0.5;ctx.lineCap="butt";ctx.beginPath();ctx.moveTo(s1[0],s1[1]);ctx.lineTo(s2[0],s2[1]);ctx.stroke();ctx.lineCap="round";
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(s1[0],s1[1],Math.max(2,h2.d*SC*0.28),0,7);ctx.fill();
+    halo(f.tool.txt,s2[0],s2[1]-12,col,fontS);
+  }
+  /* dimensions */
+  function arrow(a,b,col){
+    var an=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.fillStyle=col;
+    [[a,an+Math.PI],[b,an]].forEach(function(e){ctx.beginPath();ctx.moveTo(e[0][0],e[0][1]);ctx.lineTo(e[0][0]-8*Math.cos(e[1]-0.4),e[0][1]-8*Math.sin(e[1]-0.4));ctx.lineTo(e[0][0]-8*Math.cos(e[1]+0.4),e[0][1]-8*Math.sin(e[1]+0.4));ctx.closePath();ctx.fill();});
+  }
+  function dim(p,q,off,txt,al){
+    var a=[p[0]+off[0],p[1]+off[1],p[2]+off[2]],b=[q[0]+off[0],q[1]+off[1],q[2]+off[2]],sa=scr(a),sb2=scr(b);
+    ctx.save();ctx.globalAlpha=al;ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.beginPath();line(p,a);line(q,b);ctx.stroke();
+    ctx.strokeStyle=C.ink;ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(sa[0],sa[1]);ctx.lineTo(sb2[0],sb2[1]);ctx.stroke();arrow(sa,sb2,C.ink);
+    halo(txt,(sa[0]+sb2[0])/2,(sa[1]+sb2[1])/2-12,C.ink,fontS);ctx.restore();
+  }
+  if(S.dims){
+    if(f.dimsStart>0){
+      dim([0,0,-H],[FL,0,-H],[0,-10,0],"75",f.dimsStart);
+      dim([FL,0,-H],[FL,LEN,-H],[10,0,0],"100",f.dimsStart);
+      var st0=scr([FL,LEN,H]);halo("tl. 3",st0[0]+6,st0[1]-14,C.muted,fontS,"left");
+    }
+    if(f.dimsEnd>0){
+      dim([0,0,-H],[LA+RN+H,0,-H],[0,-10,0],"50",f.dimsEnd);
+      dim([LA+RN+H,0,-H],[LA+RN+H,0,g.ez+LBL-H+H+0.0],[10,-10,0],"(30)",f.dimsEnd);
+      dim([0,0,-H],[0,LEN,-H],[-10,0,0],"100",f.dimsEnd);
+      var rp=bp(g,ARC/2,0,H),sr=scr([rp[0]-4,-8,rp[2]+4]);
+      ctx.save();ctx.globalAlpha=f.dimsEnd;halo("R3",sr[0],sr[1],C.hi,fontS);ctx.restore();
+    }
+  }
+}
+function resize(){
+  var r=cv.getBoundingClientRect();W=Math.max(10,Math.round(r.width));H2=Math.max(10,Math.round(r.height));DPR=window.devicePixelRatio||1;
+  cv.width=Math.round(W*DPR);cv.height=Math.round(H2*DPR);invalidate();
+}
+function invalidate(){if(!raf) raf=requestAnimationFrame(function(now){raf=0;tick(now);});}
+/* ---------- operations from the TP ---------- */
+var OPS=[
+ {d:"Orýsovat vnější tvar z plechu P3-100x75 a středy otvorů 4 × Ø 6,4, 3 × Ø 5,3, 1 × M10, odúlčíkovat.",t:"rýsovací jehla, ocelové pravítko, důlčík, kladivo",b:"Pracovní oděv, obuv, ochranné pomůcky, používat nepoškozené nástroje a nářadí.",why:"Nejdřív se na polotovar přenese tvar a polohy děr z výkresu. Středy děr se důlčíkem označí, aby vrták neujel.",cap:"Orýsování: na plechu 100 × 75 vznikl obrys a středy děr. Barva odpovídá průměru.",ti:"Orýsování"},
+ {d:"Vyřezat tvar, pilovat na rozměr dle výkresu 100 × 75, ojehlit.",t:"pákové nůžky (ruční pilka na kov), posuvné měřítko, pilník, svěrák",b:"Stejné obecné zásady BOZP jako u operace 1.",why:"Přebytečný materiál se odstřihne těsně u rysky a hrany se opilují přesně na rozměr. Ojehlením se odstraní ostřiny.",cap:"Vyřezání a opilování: plech má přesný obrys a hrany bez ostřin.",ti:"Vyřezání a opilování"},
+ {d:"Vyvrtat 2 × Ø 6,4, 2 × Ø 6,4 (polohy dle výkresu), 3 × Ø 5,3 a 1 × Ø 8,5 pro závit M10.",t:"vrtačka sloupová, vrtáky Ø 5,3, Ø 6,4, Ø 8,5",b:"BP při vrtání: brýle, pokrývka vlasů, nepoužívat rukavice.",why:"Díry se vrtají postupně od většího průměru k menšímu. Ø 8,5 je jádro pod závit M10 (10 − 1,5 = 8,5).",cap:"Vrtání: čtyři díry Ø 6,4, tři Ø 5,3 a jádrová díra Ø 8,5 pro M10.",ti:"Vrtání"},
+ {d:"Ojehlit vyvrtané díry 8 × 0,5 × 45°.",t:"vrtačka sloupová, kuželový záhlubník",b:"Jako při vrtání: brýle, pokrývka vlasů, bez rukavic.",why:"Sražení hran odstraní otřep po vrtání a usnadní zavedení šroubu i závitníku.",cap:"Ojehlení děr: všech 8 děr má sražení 0,5 × 45° (světlejší kroužky).",ti:"Ojehlení děr"},
+ {d:"Řezat závit 1 × M10. Dodržet souosost otvoru a závitu, použít řezný olej.",t:"sadový závitník M10, vratidlo, úhelník, svěrák, závitový kalibr M10",b:"Pracovní oděv, obuv, ochranné pomůcky, nepoškozené nářadí.",why:"Závit se řeže před ohybem, dokud je plech rovný a dobře se upíná. Závitník se vede kolmo, proto úhelník.",cap:"Řezání závitu: v díře Ø 8,5 vznikl závit M10 (tenký kruh v kresbě).",ti:"Řezání závitu"},
+ {d:"Ohnout plech na rozměr 30 mm, radius R3, ojehlit celou součást.",t:"rádiusová šablona R3, úhelník, ocelové měřítko, pilník, svěrák",b:"Pracovní oděv, obuv, rukavice při manipulaci s ostrými hranami jen mimo vrtačku.",why:"Ohyb se dělá až nakonec, aby se díry nedeformovaly. Rozvinutá délka 75 = 44 + oblouk 7,07 + 23,93. Po ohnutí se ojehlí celá součást.",cap:"Ohýbání: rameno se ohýbá o 90° kolem poloměru R3, plech tl. 3 mm.",ti:"Ohýbání"},
+ {d:"Zkontrolovat rozměry.",t:"úhelník, posuvné měřítko, rádiusová šablona R3, závitový kalibr M10",b:"Kontrola až po úplném zastavení všech pohybů.",why:"Poslední operace. Změří se rozměry z výkresu, úhel 90°, rádius a závit kalibrem.",cap:"Hotový úhelník levý, kóty 50, 30, 100 a R3 dle výkresu.",ti:"Kontrola rozměrů"}
+];
+var CAP0="Polotovar: plech P3-100 × 75, tloušťka 3 mm, materiál 11 373.";
+var N=OPS.length;
+
+/* ---------- UI ---------- */
+var opsEl=$("ops"),emptyEl=$("empty"),pillsEl=$("pills"),capEl=$("cap"),mt=$("mtitle"),ms=$("mstep");
+var rendered=0;
+function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
+function card(i){
+  var o=OPS[i],li=mk("li","op");li.tabIndex=0;li.dataset.i=i+1;
+  li.appendChild(mk("div","no",String(i+1)));
+  var b=mk("div");b.appendChild(mk("p","desc",o.d));
+  var dl=mk("dl"),r=[["Nářadí, nástroje, měřidla",o.t],["Bezpečnost práce",o.b]];
+  r.forEach(function(x){dl.appendChild(mk("dt",null,x[0]));dl.appendChild(mk("dd",null,x[1]));});
+  b.appendChild(dl);b.appendChild(mk("p","why",o.why));li.appendChild(b);
+  li.addEventListener("click",function(){go(i+1);});
+  li.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();go(i+1);}});
+  return li;
+}
+function pills(){
+  pillsEl.textContent="";
+  for(var i=0;i<=N;i++){(function(i){
+    var p=mk("button","pill",String(i));p.type="button";p.setAttribute("aria-label",i?"Operace "+i+": "+OPS[i-1].ti:"Polotovar");
+    p.addEventListener("click",function(){go(i);});pillsEl.appendChild(p);})(i);
+  }
+}
+function sync(){
+  var st=S.step,i;
+  /* cards */
+  while(rendered>st){opsEl.removeChild(opsEl.lastChild);rendered--;}
+  while(rendered<st){opsEl.appendChild(card(rendered));rendered++;}
+  var cs=opsEl.children;
+  for(i=0;i<cs.length;i++) cs[i].classList.toggle("cur",i===st-1);
+  emptyEl.hidden=st>0;
+  /* pills */
+  var ps=pillsEl.children;
+  for(i=0;i<ps.length;i++){ps[i].classList.toggle("done",i<st);if(i===st) ps[i].setAttribute("aria-current","step");else ps[i].removeAttribute("aria-current");}
+  mt.textContent=st?OPS[st-1].ti:"Polotovar";
+  ms.textContent=st?"Operace "+st+" z "+N:"Výchozí stav";
+  capEl.textContent=st?OPS[st-1].cap:CAP0;
+  $("prev").disabled=st===0;$("next").disabled=st===N;
+  /* rules */
+  var on={1:st>=1,2:st>=1,3:st>=3,4:st>=N};
+  Array.prototype.forEach.call(document.querySelectorAll("#rules li"),function(li){li.classList.toggle("on",!!on[li.dataset.r]);});
+  var cur=opsEl.lastChild;
+  if(cur&&st>0&&!reduce){try{cur.scrollIntoView({block:"nearest",behavior:"smooth"});}catch(e){}}
+}
+function go(n,instant){
+  n=clamp(n,0,N);
+  var fwd=n===S.step+1;
+  S.step=n;sync();
+  if(instant||reduce||!(n>=1)){S.a=1;anim=null;}
+  else{S.a=0;anim={t0:null,dur:n===3?4200:n===6?3200:2400};}
+  if(!anim&&S.playing) schedule();
+  invalidate();
+}
+var timer=0;
+function schedule(){
+  clearTimeout(timer);
+  timer=setTimeout(function(){
+    if(!S.playing) return;
+    if(S.step>=N){stop();return;}
+    go(S.step+1);
+  },reduce?1800:1300);
+}
+function stop(){S.playing=false;clearTimeout(timer);$("play").textContent="▶ Přehrát";$("play").setAttribute("aria-pressed","false");}
+function tick(now){
+  if(anim){
+    if(anim.t0===null) anim.t0=now;
+    var u=clamp((now-anim.t0)/anim.dur,0,1);S.a=u;
+    if(u>=1){anim=null;S.a=1;if(S.playing) schedule();}
+  }
+  draw();
+  if(anim) invalidate();
+}
+$("next").addEventListener("click",function(){stop();go(S.step+1);});
+$("prev").addEventListener("click",function(){stop();go(S.step-1,true);});
+$("reset").addEventListener("click",function(){stop();go(0,true);});
+$("play").addEventListener("click",function(){
+  if(S.playing){stop();return;}
+  S.playing=true;$("play").textContent="❚❚ Pauza";$("play").setAttribute("aria-pressed","true");
+  if(S.step>=N) go(0,true);
+  if(anim) return;
+  schedule();
+});
+$("dims").addEventListener("change",function(){S.dims=this.checked;invalidate();});
+S.dims=$("dims").checked;
+$("camReset").addEventListener("click",function(){S.yaw=DEF.yaw;S.pitch=DEF.pitch;S.zoom=1;invalidate();});
+/* drag to rotate, wheel to zoom */
+(function(){
+  var drag=null;
+  cv.style.touchAction="none";cv.style.cursor="grab";
+  cv.addEventListener("pointerdown",function(e){drag={x:e.clientX,y:e.clientY,yaw:S.yaw,pitch:S.pitch};try{cv.setPointerCapture(e.pointerId);}catch(_){}cv.style.cursor="grabbing";});
+  cv.addEventListener("pointermove",function(e){if(!drag)return;S.yaw=drag.yaw-(e.clientX-drag.x)*0.5;S.pitch=clamp(drag.pitch+(e.clientY-drag.y)*0.4,-80,85);invalidate();});
+  function up(){drag=null;cv.style.cursor="grab";}
+  cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+  cv.addEventListener("wheel",function(e){e.preventDefault();S.zoom=clamp(S.zoom*(e.deltaY<0?1.08:1/1.08),0.6,2.2);invalidate();},{passive:false});
+  cv.tabIndex=0;
+  cv.addEventListener("keydown",function(e){
+    var k=e.key,h=true;
+    if(k==="ArrowLeft")S.yaw-=8;else if(k==="ArrowRight")S.yaw+=8;else if(k==="ArrowUp")S.pitch=clamp(S.pitch-6,-80,85);else if(k==="ArrowDown")S.pitch=clamp(S.pitch+6,-80,85);else h=false;
+    if(h){e.preventDefault();invalidate();}
+  });
+})();
+document.addEventListener("keydown",function(e){
+  if(/INPUT|TEXTAREA|SELECT/.test((e.target.tagName||""))||e.target===cv) return;
+  if(e.key==="ArrowRight"){stop();go(S.step+1);}
+  else if(e.key==="ArrowLeft"){stop();go(S.step-1,true);}
+});
+if(window.ResizeObserver) new ResizeObserver(resize).observe(cv);
+window.addEventListener("resize",resize);
+try{window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",invalidate);}catch(_){}
+new MutationObserver(invalidate).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+pills();sync();resize();
+})();
+</script>
+
+</body></html>

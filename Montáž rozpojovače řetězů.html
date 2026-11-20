@@ -1,0 +1,624 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Montáž rozpojovače řetězů</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: the written TP appears step by step on the left, the 3D part on the right stays in view while you scroll.
+   Palette: drafting-paper neutrals, steel for the part. Hole sizes keep one colour everywhere:
+   Ø6,4 orange, Ø5,3 green, M10 violet. */
+:root{
+  --bg:#EEF1F5; --panel:#FFFFFF; --soft:#F5F7FA; --stage:#F4F7FA; --ink:#18202B; --muted:#566273;
+  --rule:#D5DCE5; --rule-strong:#9FACBD; --steel:#7E8CA2; --edge:#27303C;
+  --h64:#C2570F; --h53:#12795C; --hm10:#7A3FB0; --hi:#B4237A; --ok:#12795C; --bad:#B3261E;
+  --on-ink:#FFFFFF; --p1:#7F8FA6; --p2:#C06A2B; --p3:#2F8F83; --p4:#7B5FB0; --p5:#8C96A3; --p6:#2B2F36; --p7:#D6B11F; --focus:#2B59C9;
+  --font-display:'Archivo','Arial Narrow',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F141B; --panel:#171E28; --soft:#1C2531; --stage:#121921; --ink:#E7ECF2; --muted:#9AA7B8;
+    --rule:#2A3441; --rule-strong:#4A5A72; --steel:#AAB7C9; --edge:#0A0E13;
+    --h64:#FF9B5E; --h53:#5ED6B0; --hm10:#C79BFF; --hi:#FF7AC6; --ok:#5ED6B0; --bad:#FF7B72;
+    --on-ink:#0F141B; --p1:#9FB0C8; --p2:#E08A4A; --p3:#4FC0AE; --p4:#A68BDB; --p5:#B8C1CD; --p6:#6B7482; --p7:#F0CD45; --focus:#7DA2FF; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --panel:#171E28; --soft:#1C2531; --stage:#121921; --ink:#E7ECF2; --muted:#9AA7B8;
+  --rule:#2A3441; --rule-strong:#4A5A72; --steel:#AAB7C9; --edge:#0A0E13;
+  --h64:#FF9B5E; --h53:#5ED6B0; --hm10:#C79BFF; --hi:#FF7AC6; --ok:#5ED6B0; --bad:#FF7B72;
+  --on-ink:#0F141B; --p1:#9FB0C8; --p2:#E08A4A; --p3:#4FC0AE; --p4:#A68BDB; --p5:#B8C1CD; --p6:#6B7482; --p7:#F0CD45; --focus:#7DA2FF; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;
+  padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.wrap{max-width:1200px;margin-inline:auto}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(26px,4.4vw,40px);line-height:1.1;letter-spacing:-.01em;margin:0 0 8px;text-wrap:balance}
+.lead{margin:0 0 18px;color:var(--muted);max-width:70ch}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.tp{min-width:0}
+.form{display:grid;grid-template-columns:1fr 1fr;background:var(--panel);border:1px solid var(--rule-strong);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.form div{padding:8px 12px;border-bottom:1px solid var(--rule);min-width:0}
+.form div:nth-child(odd){border-right:1px solid var(--rule)}
+.form div:nth-last-child(-n+2){border-bottom:0}
+.form small{display:block;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.form b{font-weight:600;font-family:var(--font-mono);font-size:14px}
+.form .ttl{grid-column:1/-1;font-family:var(--font-display);font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);border-right:0!important;background:var(--soft)}
+ol.ops{list-style:none;margin:0;padding:0}
+.op{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;animation:rise .35s ease both}
+.op.cur{border:2px solid var(--ink);padding:11px}
+.op .no{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--rule-strong);display:grid;place-items:center;font-family:var(--font-mono);font-weight:600;font-size:14px}
+.op.cur .no{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.op .desc{font-weight:600;margin:0 0 8px}
+.op dl{margin:0;display:grid;gap:6px}
+.op dt{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.op dd{margin:0;font-size:14px}
+.op .why{margin:8px 0 0;padding:8px 10px;border-left:3px solid var(--ink);background:var(--soft);font-size:13.5px;display:none}
+.op.cur .why{display:block}
+.empty{border:1.5px dashed var(--rule-strong);border-radius:10px;padding:16px;color:var(--muted);text-align:center}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.model{background:var(--panel);border:1px solid var(--rule-strong);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;position:sticky;top:max(12px,env(safe-area-inset-top,0px));min-width:0}
+.mhead{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;justify-content:space-between}
+.mhead b{font-family:var(--font-display);font-size:19px}
+.mhead span{font-family:var(--font-mono);font-size:13px;color:var(--muted)}
+canvas{display:block;width:100%;aspect-ratio:4/3;max-height:62vh;border-radius:8px;background:var(--stage);cursor:grab;touch-action:none}
+.cap{margin:0;font-size:14px;min-height:3.1em}
+.chips{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}
+.chips i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:14px;padding:8px 14px;min-height:40px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--ink);color:var(--on-ink);border-color:var(--ink);font-weight:600}
+.btn:focus-visible,.op:focus-visible,.pill:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.pills{display:flex;gap:4px;flex-wrap:wrap}
+.pill{font:inherit;font-family:var(--font-mono);font-size:13px;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--rule-strong);background:var(--panel);color:var(--ink);cursor:pointer;padding:0}
+.pill[aria-current="step"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink);font-weight:600}
+.pill.done{border-color:var(--ink)}
+.chk{display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--ink);margin:0}
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px 14px;font-size:12.5px;color:var(--muted);margin:0;padding:8px 0 0;border-top:1px solid var(--rule)}
+.spec b{color:var(--ink);font-weight:500;font-family:var(--font-mono)}
+.note{margin:0;font-size:12.5px;color:var(--muted)}
+details.rules{margin-top:22px;background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:12px 16px;max-width:820px}
+details.rules summary{cursor:pointer;font-weight:600}
+details.rules ul{margin:10px 0 0;padding-left:20px}details.rules li{margin-bottom:6px}
+.chkl{list-style:none;padding:0!important}
+.chkl li{display:grid;grid-template-columns:22px 1fr;gap:8px;color:var(--muted)}
+.chkl li.on{color:var(--ink)}
+.chkl i{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--rule-strong);margin-top:3px;display:block}
+.chkl li.on i{background:var(--ok);border-color:var(--ok);box-shadow:inset 0 0 0 3px var(--panel)}
+@media (max-width:920px){
+  .layout{display:flex;flex-direction:column-reverse;gap:14px}
+  .model{position:sticky;top:max(6px,env(safe-area-inset-top,0px));z-index:5}
+  canvas{aspect-ratio:5/4;max-height:38vh}
+  .cap{min-height:0}
+  .spec,.note{display:none}
+  .layout{display:block}
+  .tp{margin-top:14px}
+}
+@media (prefers-reduced-motion: reduce){.op{animation:none}*{scroll-behavior:auto!important}}
+.tags{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
+.tg{font:500 12px var(--font-mono);display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;border:1.5px solid var(--rule-strong)}
+.tg i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.form .bozp{grid-column:1/-1;border-right:0!important;border-bottom:0!important;background:var(--soft)}
+.form .bozp span{font-size:13.5px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:4px 12px;font-size:13px;margin:0;padding:0;list-style:none}
+.legend li{display:flex;align-items:center;gap:7px}
+.legend i{width:14px;height:14px;border-radius:50%;flex:none;border:1.5px solid var(--ink)}
+</style>
+<div class="wrap">
+<header>
+  <h1>Montáž rozpojovače řetězů</h1>
+  <p class="lead">Technologický postup montáže sestavy ZZP-04-00. Při každém kroku se vlevo objeví další operace a vpravo se rozložené součásti postupně skládají do hotového rozpojovače. Model můžete otáčet tažením a přiblížit kolečkem.</p>
+</header>
+
+<div class="layout">
+  <section class="tp" aria-label="Technologický postup montáže">
+    <div class="form">
+      <div class="ttl">Technologický postup montáže</div>
+      <div><small>Číslo výkresu sestavy</small><b>ZZP - 04 - 00</b></div>
+      <div><small>Název sestavy</small><b>Rozpojovač řetězů</b></div>
+      <div class="bozp"><small>Bezpečnost práce (všechny operace)</small><span>Pracovní oděv, obuv, ochranné pomůcky, používat nepoškozené nástroje a nářadí.</span></div>
+    </div>
+    <ol class="ops" id="ops" aria-live="polite"></ol>
+    <div class="empty" id="empty">Zatím je vyplněná jen záhlaví. Na modelu jsou rozložené součásti pol. 1 až 7. Tlačítkem Další krok zobrazíte první operaci.</div>
+  </section>
+
+  <section class="model" id="mdl" aria-label="3D model sestavy">
+    <div class="mhead"><b id="mtitle"></b><span id="mstep"></span></div>
+    <canvas id="cv" role="img" aria-label="Otočný 3D model rozpojovače řetězů, který se při postupu skládá z jednotlivých součástí"></canvas>
+    <p class="cap" id="cap" aria-live="polite"></p>
+    <ul class="legend" id="legend" aria-label="Pozice sestavy"></ul>
+    <div class="pills" id="pills" role="group" aria-label="Přejít na krok"></div>
+    <div class="ctl">
+      <button class="btn" id="prev" type="button">Zpět</button>
+      <button class="btn primary" id="next" type="button">Další krok</button>
+      <button class="btn" id="play" type="button">Přehrát vše</button>
+      <button class="btn" id="reset" type="button">Od začátku</button>
+    </div>
+    <div class="ctl">
+      <label class="chk"><input type="checkbox" id="dims" checked>Čísla pozic</label>
+      <button class="btn" id="camReset" type="button">Výchozí pohled</button>
+    </div>
+    <p class="note">Polohy a rozměry součástí jsou na modelu odvozeny z výkresu sestavy v měřítku 1:1 a jsou orientační. V TP jsou uvedeny jen M10-24, M8-43 a kolík 3 × 30. Zašroubování pol. 3 do tělesa TP výslovně nezmiňuje, na modelu se provede při kontrole souososti v operaci 4.</p>
+  </section>
+</div>
+
+<details class="rules">
+  <summary>Pravidla zápisu technologického postupu</summary>
+  <ul class="chkl" id="rules">
+    <li data-r="1"><i></i><span>Každá operace je označena číslem a oddělena od další.</span></li>
+    <li data-r="2"><i></i><span>Popis práce je v infinitivu a u každé operace je zapsán konkrétní rozměr nebo označení součásti, například kolík 3 x 30, šroub M10-24.</span></li>
+    <li data-r="3"><i></i><span>Ve sloupci BOZP jsou obecné zásady (pracovní oděv, obuv, nepoškozené nářadí). Při práci na zvláštním pracovišti se doplní zásady pro ně.</span></li>
+    <li data-r="4"><i></i><span>Montážní postup končí kontrolou, zde ověřením správné funkce rozpojovače na cvičném řetězu.</span></li>
+  </ul>
+  <p class="note" style="margin-top:8px">Body se odškrtávají podle toho, kolik operací už je zobrazeno.</p>
+</details>
+</div>
+<script>
+(function(){
+"use strict";
+var TAU=Math.PI*2;
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+/* ---------- mesh builder: triangles with per-vertex normals, colour index per triangle ---------- */
+function Mesh(){this.P=[];this.N=[];this.I=[];this.C=[];}
+Mesh.prototype.v=function(p,n){this.P.push(p[0],p[1],p[2]);this.N.push(n[0],n[1],n[2]);return this.P.length/3-1;};
+Mesh.prototype.tri=function(a,na,b,nb,c,nc,col){var i=this.v(a,na),j=this.v(b,nb),k=this.v(c,nc);this.I.push(i,j,k);this.C.push(col||0);};
+Mesh.prototype.quad=function(a,b,c,d,n,col){this.tri(a,n,b,n,c,n,col);this.tri(a,n,c,n,d,n,col);};
+function mp(ax,u,a,b){return ax==="x"?[u,a,b]:ax==="y"?[a,u,b]:[a,b,u];}
+/* cylinder / cone; inner flips normals (bore wall); pitch>0 draws a helical stripe; checker draws a knurl pattern */
+function cyl(m,o){
+ var ax=o.ax,c=o.c,r0=o.r,r1=o.r1===undefined?o.r:o.r1,u0=o.u0,u1=o.u1,n=o.n||28,col=o.col||0,col2=o.col2===undefined?col:o.col2;
+ var ns=o.pitch?Math.max(1,Math.ceil((u1-u0)/(o.pitch/4))):(o.checker?Math.max(1,Math.round((u1-u0)/o.checker)):1),s=o.inner?-1:1,i,j;
+ for(j=0;j<ns;j++){
+  var ua=u0+(u1-u0)*j/ns,ub=u0+(u1-u0)*(j+1)/ns,ra=r0+(r1-r0)*j/ns,rb=r0+(r1-r0)*(j+1)/ns;
+  for(i=0;i<n;i++){
+   var t0=TAU*i/n,t1=TAU*(i+1)/n,tm=(t0+t1)/2;
+   var d0=mp(ax,0,Math.cos(t0),Math.sin(t0)),d1=mp(ax,0,Math.cos(t1),Math.sin(t1));
+   var n0=[d0[0]*s,d0[1]*s,d0[2]*s],n1=[d1[0]*s,d1[1]*s,d1[2]*s];
+   function pt(u,r,t){return mp(ax,u,c[0]+r*Math.cos(t),c[1]+r*Math.sin(t));}
+   var cc=col;
+   if(o.pitch){var f=((tm/TAU)+((ua+ub)/2)/o.pitch)%1;cc=f<.5?col:col2;}
+   else if(o.checker){cc=((i+j)%2)?col2:col;}
+   m.tri(pt(ua,ra,t0),n0,pt(ua,ra,t1),n1,pt(ub,rb,t1),n1,cc);
+   m.tri(pt(ua,ra,t0),n0,pt(ub,rb,t1),n1,pt(ub,rb,t0),n0,cc);
+  }
+ }
+ if(o.caps){
+  var ac=mp(ax,1,0,0);
+  [[0,u0,r0,-1],[1,u1,r1,1]].forEach(function(e){
+   if(!o.caps[e[0]])return;
+   var nn=[ac[0]*e[3],ac[1]*e[3],ac[2]*e[3]],ctr=mp(ax,e[1],c[0],c[1]);
+   for(i=0;i<n;i++){var t0=TAU*i/n,t1=TAU*(i+1)/n;
+    m.tri(ctr,nn,mp(ax,e[1],c[0]+e[2]*Math.cos(t0),c[1]+e[2]*Math.sin(t0)),nn,mp(ax,e[1],c[0]+e[2]*Math.cos(t1),c[1]+e[2]*Math.sin(t1)),nn,col);}
+  });
+ }
+}
+function prism(m,o){ /* regular polygon prism, flat shaded */
+ var ax=o.ax,c=o.c,R=o.R,u0=o.u0,u1=o.u1,ns=o.ns||6,rot=o.rot||0,col=o.col||0,i;
+ function pt(u,k){var t=rot+TAU*k/ns;return mp(ax,u,c[0]+R*Math.cos(t),c[1]+R*Math.sin(t));}
+ var ac=mp(ax,1,0,0);
+ for(i=0;i<ns;i++){
+  var tm=rot+TAU*(i+.5)/ns,nn=mp(ax,0,Math.cos(tm),Math.sin(tm));
+  m.quad(pt(u0,i),pt(u0,i+1),pt(u1,i+1),pt(u1,i),nn,col);
+  var cn0=mp(ax,u0,c[0],c[1]),cn1=mp(ax,u1,c[0],c[1]);
+  m.tri(cn0,[-ac[0],-ac[1],-ac[2]],pt(u0,i+1),[-ac[0],-ac[1],-ac[2]],pt(u0,i),[-ac[0],-ac[1],-ac[2]],col);
+  m.tri(cn1,ac,pt(u1,i),ac,pt(u1,i+1),ac,col);
+ }
+}
+function plane(m,ax,u,r,sgn,col){ /* r=[a0,a1,b0,b1] in the two perpendicular coordinates */
+ var ac=mp(ax,sgn,0,0);
+ m.quad(mp(ax,u,r[0],r[2]),mp(ax,u,r[1],r[2]),mp(ax,u,r[1],r[3]),mp(ax,u,r[0],r[3]),ac,col);
+}
+function rectHole(m,ax,u,r,h,sgn,col){
+ var ac=mp(ax,sgn,0,0),ca=h.c[0],cb=h.c[1],angs=[],i,N=40;
+ for(i=0;i<N;i++)angs.push(TAU*i/N+0.0001);
+ [[r[0],r[2]],[r[1],r[2]],[r[1],r[3]],[r[0],r[3]]].forEach(function(p){var a=Math.atan2(p[1]-cb,p[0]-ca);if(a<0)a+=TAU;angs.push(a);});
+ angs.sort(function(a,b){return a-b;});
+ function hit(t){var dx=Math.cos(t),dy=Math.sin(t),best=1e9;
+  if(dx>1e-9)best=Math.min(best,(r[1]-ca)/dx);if(dx<-1e-9)best=Math.min(best,(r[0]-ca)/dx);
+  if(dy>1e-9)best=Math.min(best,(r[3]-cb)/dy);if(dy<-1e-9)best=Math.min(best,(r[2]-cb)/dy);
+  return [ca+dx*best,cb+dy*best];}
+ for(i=0;i<angs.length;i++){
+  var t0=angs[i],t1=angs[(i+1)%angs.length]+(i===angs.length-1?TAU:0);
+  var C0=[ca+h.r*Math.cos(t0),cb+h.r*Math.sin(t0)],C1=[ca+h.r*Math.cos(t1),cb+h.r*Math.sin(t1)],B0=hit(t0),B1=hit(t1);
+  m.quad(mp(ax,u,C0[0],C0[1]),mp(ax,u,B0[0],B0[1]),mp(ax,u,B1[0],B1[1]),mp(ax,u,C1[0],C1[1]),ac,col);
+ }
+}
+function ring(m,ax,u,c,ri,ro,sgn,col,n){ /* annulus */
+ n=n||28;var ac=mp(ax,sgn,0,0),i;
+ for(i=0;i<n;i++){var t0=TAU*i/n,t1=TAU*(i+1)/n;
+  m.quad(mp(ax,u,c[0]+ri*Math.cos(t0),c[1]+ri*Math.sin(t0)),mp(ax,u,c[0]+ro*Math.cos(t0),c[1]+ro*Math.sin(t0)),mp(ax,u,c[0]+ro*Math.cos(t1),c[1]+ro*Math.sin(t1)),mp(ax,u,c[0]+ri*Math.cos(t1),c[1]+ri*Math.sin(t1)),ac,col);}
+}
+function disc(m,ax,u,c,r,sgn,col,n){
+ n=n||24;var ac=mp(ax,sgn,0,0),i,ctr=mp(ax,u,c[0],c[1]);
+ for(i=0;i<n;i++){var t0=TAU*i/n,t1=TAU*(i+1)/n;
+  m.tri(ctr,ac,mp(ax,u,c[0]+r*Math.cos(t0),c[1]+r*Math.sin(t0)),ac,mp(ax,u,c[0]+r*Math.cos(t1),c[1]+r*Math.sin(t1)),ac,col);}
+}
+/* ---------- software renderer with z-buffer ---------- */
+var R={W:0,H:0,z:null,id:null,img:null,sc:1};
+function setSize(w,h){R.W=w;R.H=h;R.z=new Float32Array(w*h);R.id=new Uint8Array(w*h);R.img=new ImageData(w,h);}
+/* items: [{mesh,pal,xf:{o,rot,ax,pv},id,tint:[r,g,b,a],edge:[r,g,b]}] */
+function render(items,cam,bg){
+ var W=R.W,H=R.H,Z=R.z,ID=R.id,D=R.img.data,i,k;
+ for(i=0;i<W*H;i++){Z[i]=-1e9;ID[i]=0;D[i*4]=bg[0];D[i*4+1]=bg[1];D[i*4+2]=bg[2];D[i*4+3]=255;}
+ var cy=Math.cos(cam.yaw),sy=Math.sin(cam.yaw),cp=Math.cos(cam.pitch),sp=Math.sin(cam.pitch);
+ function view(x,y,z){var x1=x*cy+z*sy,z1=-x*sy+z*cy;return [x1,y*cp-z1*sp,y*sp+z1*cp];}
+ var L=[-.35,.55,.75],ll=Math.hypot(L[0],L[1],L[2]);L=[L[0]/ll,L[1]/ll,L[2]/ll];
+ var Hh=[L[0],L[1],L[2]+1],hl=Math.hypot(Hh[0],Hh[1],Hh[2]);Hh=[Hh[0]/hl,Hh[1]/hl,Hh[2]/hl];
+ var edgeCol={};
+ items.forEach(function(it){
+  var m=it.mesh,nv=m.P.length/3,xf=it.xf,ca=Math.cos(xf.rot),sa=Math.sin(xf.rot);
+  var X=new Float32Array(nv),Y=new Float32Array(nv),Zv=new Float32Array(nv),In=new Float32Array(nv),Sp=new Float32Array(nv),NZ=new Float32Array(nv);
+  for(var v=0;v<nv;v++){
+   var px=m.P[v*3],py=m.P[v*3+1],pz=m.P[v*3+2],nx=m.N[v*3],ny=m.N[v*3+1],nz=m.N[v*3+2],t;
+   var rx=px-xf.pv[0],ry=py-xf.pv[1],rz=pz-xf.pv[2];
+   if(xf.rot){
+    if(xf.ax==="x"){t=ry*ca-rz*sa;rz=ry*sa+rz*ca;ry=t;t=ny*ca-nz*sa;nz=ny*sa+nz*ca;ny=t;}
+    else{t=rx*ca+rz*sa;rz=-rx*sa+rz*ca;rx=t;t=nx*ca+nz*sa;nz=-nx*sa+nz*ca;nx=t;}
+   }
+   var wx=rx+xf.pv[0]+xf.o[0],wy=ry+xf.pv[1]+xf.o[1],wz=rz+xf.pv[2]+xf.o[2];
+   var q=view(wx,wy,wz),nn=view(nx,ny,nz);
+   X[v]=q[0];Y[v]=q[1];Zv[v]=q[2];NZ[v]=nn[2];
+   var d=Math.max(0,nn[0]*L[0]+nn[1]*L[1]+nn[2]*L[2]);
+   In[v]=.34+.66*d;
+   var s=Math.max(0,nn[0]*Hh[0]+nn[1]*Hh[1]+nn[2]*Hh[2]);Sp[v]=Math.pow(s,22)*.35;
+  }
+  it.minmax=null;
+  var tint=it.tint||[0,0,0,0];
+  for(var tI=0;tI<m.C.length;tI++){
+   var a=m.I[tI*3],b=m.I[tI*3+1],c=m.I[tI*3+2];
+   if(NZ[a]+NZ[b]+NZ[c]<=0.001)continue;
+   var pc=it.pal[m.C[tI]];
+   var br=pc[0]*(1-tint[3])+tint[0]*tint[3],bgc=pc[1]*(1-tint[3])+tint[1]*tint[3],bb=pc[2]*(1-tint[3])+tint[2]*tint[3];
+   var x0=cam.cx+X[a]*cam.sc,y0=cam.cy-Y[a]*cam.sc,x1=cam.cx+X[b]*cam.sc,y1=cam.cy-Y[b]*cam.sc,x2=cam.cx+X[c]*cam.sc,y2=cam.cy-Y[c]*cam.sc;
+   var minx=Math.max(0,Math.floor(Math.min(x0,x1,x2))),maxx=Math.min(W-1,Math.ceil(Math.max(x0,x1,x2)));
+   var miny=Math.max(0,Math.floor(Math.min(y0,y1,y2))),maxy=Math.min(H-1,Math.ceil(Math.max(y0,y1,y2)));
+   var den=(y1-y2)*(x0-x2)+(x2-x1)*(y0-y2);if(Math.abs(den)<1e-9)continue;
+   var z0=Zv[a],z1=Zv[b],z2=Zv[c],i0=In[a],i1=In[b],i2=In[c],s0=Sp[a],s1=Sp[b],s2=Sp[c],idv=it.id;
+   for(var py2=miny;py2<=maxy;py2++){
+    var yy=py2+.5;
+    for(var px2=minx;px2<=maxx;px2++){
+     var xx=px2+.5;
+     var w0=((y1-y2)*(xx-x2)+(x2-x1)*(yy-y2))/den,w1=((y2-y0)*(xx-x2)+(x0-x2)*(yy-y2))/den,w2=1-w0-w1;
+     if(w0<-1e-4||w1<-1e-4||w2<-1e-4)continue;
+     var zz=w0*z0+w1*z1+w2*z2,pi=py2*W+px2;
+     if(zz<=Z[pi])continue;
+     Z[pi]=zz;ID[pi]=idv;
+     var I=w0*i0+w1*i1+w2*i2,S=(w0*s0+w1*s1+w2*s2)*255,o=pi*4;
+     D[o]=Math.min(255,br*I+S);D[o+1]=Math.min(255,bgc*I+S);D[o+2]=Math.min(255,bb*I+S);
+    }
+   }
+  }
+  edgeCol[it.id]=it.edge||[24,28,36];
+ });
+ /* outlines from id and depth discontinuities */
+ var thr=cam.thr;
+ for(var y=0;y<H-1;y++){
+  for(var x=0;x<W-1;x++){
+   var p=y*W+x,i0b=ID[p],r1=ID[p+1],d1=ID[p+W];
+   var e=0;
+   if(i0b!==r1||i0b!==d1)e=1;
+   else if(i0b&&(Math.abs(Z[p]-Z[p+1])>thr||Math.abs(Z[p]-Z[p+W])>thr))e=1;
+   if(e){var idE=(i0b&&(Z[p]>=Z[p+1]||!r1)&&(Z[p]>=Z[p+W]||!d1))?i0b:(r1?r1:d1);var ec=edgeCol[idE]||[24,28,36];var o=p*4;D[o]=ec[0];D[o+1]=ec[1];D[o+2]=ec[2];}
+  }
+ }
+ return R.img;
+}
+window.MT={Mesh:Mesh,cyl:cyl,prism:prism,plane:plane,rectHole:rectHole,ring:ring,disc:disc,setSize:setSize,render:render,R:R};
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var Mesh=MT.Mesh,cyl=MT.cyl,prism=MT.prism,plane=MT.plane,rectHole=MT.rectHole,ring=MT.ring,disc=MT.disc;
+var $=function(id){return document.getElementById(id);};
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function ease(u){u=clamp(u,0,1);return u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;}
+var TAU=Math.PI*2,reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* ---------- parts (mm, axis of the assembly = X, units from drawing ZZP-04-00) ---------- */
+function box(m,x0,x1,y0,y1,z0,z1,col){
+ plane(m,"x",x0,[y0,y1,z0,z1],-1,col);plane(m,"x",x1,[y0,y1,z0,z1],1,col);
+ plane(m,"y",y0,[x0,x1,z0,z1],-1,col);plane(m,"y",y1,[x0,x1,z0,z1],1,col);
+ plane(m,"z",z0,[x0,x1,y0,y1],-1,col);plane(m,"z",z1,[x0,x1,y0,y1],1,col);
+}
+var PARTS=[],byKey={};
+function part(key,pos,id,pal,mesh,ax,pv){var p={key:key,pos:pos,id:id,pal:pal,mesh:mesh,ax:ax,pv:pv};
+ var mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9],P=mesh.P;
+ for(var i=0;i<P.length;i+=3){for(var k=0;k<3;k++){mn[k]=Math.min(mn[k],P[i+k]);mx[k]=Math.max(mx[k],P[i+k]);}}
+ p.mn=mn;p.mx=mx;PARTS.push(p);byKey[key]=p;return p;}
+var m;
+/* 1 body */
+m=new Mesh();
+plane(m,"y",6.2,[0,17,-11,11],1,0);plane(m,"y",6.2,[33,49,-11,11],1,0);
+[11,-11].forEach(function(z){var s=z>0?1:-1;plane(m,"z",z,[0,49,-13.2,-5.2],s,0);plane(m,"z",z,[0,17,-5.2,6.2],s,0);plane(m,"z",z,[33,49,-5.2,6.2],s,0);});
+rectHole(m,"y",-13.2,[0,49,-11,11],{c:[29,0],r:3.9},-1,0);
+rectHole(m,"y",-5.2,[17,33,-11,11],{c:[29,0],r:3.9},1,0);
+cyl(m,{ax:"y",c:[29,0],r:3.9,u0:-13.2,u1:-5.2,n:24,inner:true,col:1});
+rectHole(m,"x",0,[-13.2,6.2,-11,11],{c:[0,0],r:4.95},-1,0);
+rectHole(m,"x",49,[-13.2,6.2,-11,11],{c:[0,0],r:3.9},1,0);
+rectHole(m,"x",17,[-5.2,6.2,-11,11],{c:[0,0],r:4.95},1,0);
+rectHole(m,"x",33,[-5.2,6.2,-11,11],{c:[0,0],r:3.9},-1,0);
+cyl(m,{ax:"x",c:[0,0],r:4.95,u0:0,u1:17,n:32,inner:true,col:1});
+cyl(m,{ax:"x",c:[0,0],r:3.9,u0:33,u1:49,n:32,inner:true,col:1});
+part("body",1,1,[[127,143,166],[60,68,82]],m,"x",[0,0,0]);
+/* 2 bolt M10-24 */
+m=new Mesh();
+prism(m,{ax:"x",c:[0,0],R:9.8,u0:-6.4,u1:0,ns:6,rot:0,col:0});
+cyl(m,{ax:"x",c:[0,0],r:4.9,u0:0,u1:22,n:28,col:0,col2:1,pitch:1.5});
+ring(m,"x",22,[0,0],1.8,4.9,1,0);
+cyl(m,{ax:"x",c:[0,0],r:1.8,u0:8,u1:22,n:16,inner:true,col:2});
+disc(m,"x",8,[0,0],1.8,1,2,16);
+part("bolt",2,2,[[198,106,43],[150,76,28],[30,22,18]],m,"x",[0,0,0]);
+/* 3 screw M8-43 with the cross-drilled head */
+m=new Mesh();
+cyl(m,{ax:"x",c:[0,0],r:3.9,u0:33,u1:63,n:24,col:0,col2:1,pitch:1.25});
+cyl(m,{ax:"x",c:[0,0],r:6,u0:63,u1:76,n:32,col:0,caps:[true,true]});
+ring(m,"x",33,[0,0],1.55,3.9,-1,0);
+cyl(m,{ax:"x",c:[0,0],r:1.55,u0:33,u1:52,n:16,inner:true,col:2});
+disc(m,"x",52,[0,0],1.55,-1,2,16);
+disc(m,"y",6.03,[69.4,0],3.05,1,2,24);disc(m,"y",-6.03,[69.4,0],3.05,-1,2,24);
+part("screw",3,3,[[47,143,131],[28,98,90],[20,22,26]],m,"x",[0,0,0]);
+/* 4 arm */
+m=new Mesh();
+cyl(m,{ax:"y",c:[29,0],r:3.8,u0:-25,u1:-5.2,n:24,col:0,col2:1,pitch:1.25});
+cyl(m,{ax:"y",c:[29,0],r:3.8,u0:-38,u1:-25,n:24,col:0});
+cyl(m,{ax:"y",c:[29,0],r:4.4,u0:-68.2,u1:-38,n:24,col:0,col2:1,checker:1.4});
+ring(m,"y",-38,[29,0],3.8,4.4,1,0,24);ring(m,"y",-68.2,[29,0],3.8,4.4,-1,0,24);
+cyl(m,{ax:"y",c:[29,0],r:3.8,u0:-73.2,u1:-68.2,n:24,col:0,caps:[true,false]});
+cyl(m,{ax:"y",c:[29,0],r:3.8,r1:2.4,u0:-5.2,u1:-3.8,n:24,col:0,caps:[false,true]});
+part("arm",4,4,[[123,95,176],[84,62,130]],m,"y",[29,0,0]);
+/* 5 pull bar */
+m=new Mesh();cyl(m,{ax:"y",c:[69.4,0],r:3,u0:-49.8,u1:51,n:20,col:0,caps:[true,true]});
+part("rod",5,5,[[170,178,190]],m,"x",[0,0,0]);
+/* 6 caps */
+m=new Mesh();cyl(m,{ax:"y",c:[69.4,0],r:3.5,u0:44.4,u1:51.4,n:20,col:0,caps:[false,true]});ring(m,"y",44.4,[69.4,0],2.9,3.5,-1,1,20);
+part("capT",6,6,[[43,47,54],[85,90,100]],m,"x",[0,0,0]);
+m=new Mesh();cyl(m,{ax:"y",c:[69.4,0],r:3.5,u0:-50.2,u1:-43.2,n:20,col:0,caps:[true,false]});ring(m,"y",-43.2,[69.4,0],2.9,3.5,1,1,20);
+part("capB",6,6,[[43,47,54],[85,90,100]],m,"x",[0,0,0]);
+/* 7 pin 3x30 */
+m=new Mesh();cyl(m,{ax:"x",c:[0,0],r:1.45,u0:22,u1:52,n:14,col:0,caps:[true,true]});
+part("pin",7,7,[[214,177,31]],m,"x",[0,0,0]);
+/* test chain: two outer plates, three pins */
+m=new Mesh();
+box(m,23,24.2,-3.2,3.2,-7.5,7.5,0);box(m,30.8,32,-3.2,3.2,-7.5,7.5,0);
+[7,-7].forEach(function(z){cyl(m,{ax:"x",c:[0,z],r:1.45,u0:22.8,u1:32.2,n:12,col:1,caps:[true,true]});});
+part("chain",8,8,[[170,175,185],[120,124,132]],m,"x",[0,0,0]);
+m=new Mesh();cyl(m,{ax:"x",c:[0,0],r:1.45,u0:23.3,u1:31.7,n:14,col:0,caps:[true,true]});
+part("cpin",8,9,[[226,228,235]],m,"x",[0,0,0]);
+/* ---------- pose of every part for a given step and progress ---------- */
+function pose(s,A){
+ var o={body:[0,0,0],bolt:[-40,0,0],screw:[40,0,0],pin:[14,24,0],rod:[0,72,0],capT:[0,90,0],capB:[0,-40,0],arm:[0,-45,0],chain:[0,0,50],cpin:[0,0,50]};
+ var rot={},vis={chain:false,cpin:false},extra={};
+ function p(n){return s>n?1:s===n?A:0;}
+ var p2=p(2);
+ if(p2>0){o.pin=[14+26*ease((p2-.4)/.6),24*(1-ease(p2/.4)),0];}
+ o.bolt[0]=-40*(1-ease(p(3)));
+ var sx=40*(1-ease(p(4)));o.screw[0]=sx;if(s>2){o.pin=[sx,0,0];}
+ o.rod[1]=72*(1-ease(p(5)));
+ var e6=ease(p(6));o.capT[1]=90*(1-e6);o.capB[1]=-40*(1-e6);
+ o.arm[1]=-45*(1-ease(p(7)));
+ var ox=0;
+ if(s===8){
+  var a=A;ox=a<.2?14*ease(a/.2):a<.45?14:14*(1-ease((a-.45)/.55));
+  vis.chain=vis.cpin=a>=.18;var z=50*(1-ease((a-.2)/.25));o.chain=[0,0,z];o.cpin=[0,0,z];
+  var tip=22+ox,push=Math.min(0,tip-31.7);o.cpin[0]=push;extra.push=-push;
+ }
+ if(s>8){}
+ ["screw","pin","rod","capT","capB"].forEach(function(k){o[k][0]+=(k==="screw"||k==="pin")?0:0;});
+ o.screw[0]+=ox;o.pin[0]+=ox;o.rod[0]+=ox;o.capT[0]+=ox;o.capB[0]+=ox;
+ var sOff=o.screw[0];
+ rot.bolt=o.bolt[0]*TAU/1.5;rot.screw=sOff*TAU/1.25;rot.pin=0;
+ var rrod=(s>=5)?sOff*TAU/1.25:0;rot.rod=rrod;rot.capT=(s>=6)?sOff*TAU/1.25:0;rot.capB=rot.capT;
+ rot.arm=o.arm[1]*TAU/4;
+ return {o:o,rot:rot,vis:vis,extra:extra};
+}
+/* highlighted parts per step */
+var ORDER=[["body"],["bolt"],["screw"],["arm"],["rod"],["capT","capB"],["pin"]];
+function hlSet(s,A){
+ var h={};
+ function add(){for(var i=0;i<arguments.length;i++)h[arguments[i]]=1;}
+ if(s===1){var idx=Math.min(6,Math.floor(A*7));ORDER[idx].forEach(function(k){h[k]=1;});}
+ else if(s===2)add("pin","screw");
+ else if(s===3)add("bolt","body");
+ else if(s===4)add("screw","pin","bolt");
+ else if(s===5)add("rod","screw");
+ else if(s===6)add("capT","capB","rod");
+ else if(s===7)add("arm","body");
+ return h;
+}
+/* ---------- TP text ---------- */
+var NAMES=["Těleso","Šroub M10-24","Šroub M8-43","Rameno","Táhlo","Krytky K/PE6 (2 ks)","Kolík 3 × 30"];
+var CHIP=["--p1","--p2","--p3","--p4","--p5","--p6","--p7"];
+var OPS=[
+ {d:"Zkontrolovat a přeměřit dle výkresu sestavy ZZP-04-00 součásti pol. 1 až 7.",t:"posuvné měřítko",pos:[1,2,3,4,5,6,7],why:"Před montáží se ověří, že všechny díly odpovídají výkresu a nejsou poškozené. Vadný díl se musí vyřadit dřív, než se začne sestavovat.",cap:"Kontrola součástí: postupně se zvýrazňují pozice 1 až 7. Zatím jsou rozložené.",ti:"Kontrola součástí",dur:7000},
+ {d:"Slícovat pol. 7 kolík 3 × 30 do pol. 3 Šroub M8-43.",t:"posuvné měřítko, kladívko, ruční lis",pos:[7,3],why:"Kolík se zalisuje do čela šroubu pol. 3 s přesahem (lícované uložení), aby držel pevně. Dělá se jako první, dokud je šroub samostatný a lépe se upíná.",cap:"Kolík pol. 7 se nejdřív vyrovná k čelu šroubu a pak se zasune do otvoru.",ti:"Zalícování kolíku",dur:3800},
+ {d:"Promazat závit, zlehka našroubovat pol. 2 šroub M10-24 do tělesa pol. 1.",t:"mazací tuk",pos:[2,1],why:"Tuk na závitu usnadní chod a brání zadírání. Zlehka znamená bez dotahování silou, šroub se jen zašroubuje.",cap:"Šroub M10 se otáčí a zašroubovává do levého žebra tělesa. Závit je vyznačen šroubovicí.",ti:"Šroub M10 do tělesa",dur:4200},
+ {d:"Zkontrolovat souosost pol. 7 kolíku šroubu M8 ve vyvrtaném otvoru šroubu M10 pol. 2.",t:"",pos:[7,3,2],why:"Kolík musí ležet přesně v ose otvoru ve šroubu M10. Při nesouososti by se kolík při práci ohnul nebo zlomil. Zde se šroub pol. 3 zašroubuje do tělesa a zkontroluje se osa.",cap:"Šroub M8 s kolíkem se zašroubuje do tělesa. Čerchovaná osa ukáže, že kolík míří do otvoru šroubu M10.",ti:"Kontrola souososti",dur:4600},
+ {d:"Provléct otvorem ve šroubu M8 pol. 5 táhlo.",t:"",pos:[5,3],why:"Táhlo je příčná rukojeť. Prochází příčným otvorem v hlavě šroubu M8 a umožňuje šroubem otáčet.",cap:"Táhlo pol. 5 se zasune příčným otvorem v hlavě šroubu M8 (tmavé kroužky na hlavě).",ti:"Provlečení táhla",dur:2800},
+ {d:"Nasunout na táhlo pol. 5 krytky K/PE6 pol. 6.",t:"",pos:[6,5],why:"Krytky na koncích táhla chrání ruce a drží táhlo v otvoru. Nasouvají se z obou stran.",cap:"Dvě krytky pol. 6 se nasunou na konce táhla.",ti:"Nasunutí krytek",dur:2800},
+ {d:"Našroubovat do tělesa pol. 1 rameno pol. 4.",t:"mazací tuk",pos:[4,1],why:"Rameno se zašroubuje do tělesa zespodu a slouží jako držadlo rozpojovače. Závit se stejně jako dříve promaže.",cap:"Rameno pol. 4 se otáčí a zašroubovává zespodu do tělesa.",ti:"Rameno do tělesa",dur:4200},
+ {d:"Zkontrolovat správnou funkci rozpojovače.",t:"cvičný Gallův řetěz",pos:[7],why:"Funkce se ověří na cvičném řetězu. Šroub se povolí, řetěz se vloží do drážky a otáčením táhla kolík vytlačí čep řetězu.",cap:"Funkční zkouška: řetěz se vloží do drážky a kolík vytlačí jeho čep do otvoru šroubu M10.",ti:"Funkční zkouška",dur:7000}
+];
+var N=OPS.length;
+/* ---------- state, camera, rendering ---------- */
+var S={step:0,a:1,playing:false,nums:true};
+var cv=$("cv"),ctx=cv.getContext("2d"),cam={yaw:-0.55,pitch:0.38,sc:3,cx:0,cy:0,thr:3},user={yaw:-0.55,pitch:0.38,zoom:1};
+var DEF={yaw:-0.55,pitch:0.38};
+var anim=null,raf=0,idleT=0,quality=1,cssW=0,cssH=0,lastQ=0;
+var fit={sc:0,cx:0,cy:0,init:false};
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function hex(h){h=h.trim();if(h[0]!=="#")return [200,200,200];var v=parseInt(h.slice(1,7),16);return [(v>>16)&255,(v>>8)&255,v&255];}
+function resize(){
+ var r=cv.getBoundingClientRect();cssW=Math.max(40,Math.round(r.width));cssH=Math.max(40,Math.round(r.height));lastQ=0;invalidate();
+}
+function setQuality(q){
+ var dpr=window.devicePixelRatio||1,sc=q?Math.min(dpr,1.6):1;
+ var w=Math.round(cssW*sc),h=Math.round(cssH*sc);
+ if(w*h>1500000){var k=Math.sqrt(1500000/(w*h));w=Math.round(w*k);h=Math.round(h*k);}
+ if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+ MT.setSize(w,h);quality=q;return w/cssW;
+}
+function projPt(p,res){ /* world -> css px, after fit */
+ var cy=Math.cos(cam.yaw),sy=Math.sin(cam.yaw),cp=Math.cos(cam.pitch),sp=Math.sin(cam.pitch);
+ var x1=p[0]*cy+p[2]*sy,z1=-p[0]*sy+p[2]*cy,y2=p[1]*cp-z1*sp;
+ return [(cam.cx+x1*cam.sc)/res,(cam.cy-y2*cam.sc)/res];
+}
+function xfOf(p,po){return {o:po.o[p.key],rot:po.rot[p.key]||0,ax:p.ax,pv:p.pv};}
+function applyXf(pt,xf){
+ var rx=pt[0]-xf.pv[0],ry=pt[1]-xf.pv[1],rz=pt[2]-xf.pv[2],c=Math.cos(xf.rot),s=Math.sin(xf.rot),t;
+ if(xf.rot){if(xf.ax==="x"){t=ry*c-rz*s;rz=ry*s+rz*c;ry=t;}else{t=rx*c+rz*s;rz=-rx*s+rz*c;rx=t;}}
+ return [rx+xf.pv[0]+xf.o[0],ry+xf.pv[1]+xf.o[1],rz+xf.pv[2]+xf.o[2]];
+}
+function draw(){
+ if(!cssW)return;
+ var res=setQuality(quality);
+ var po=pose(S.step,S.a),hs=hlSet(S.step,S.a),visible=[];
+ PARTS.forEach(function(p){if(p.key==="chain"||p.key==="cpin"){if(!po.vis[p.key])return;}visible.push(p);});
+ /* fit to everything on screen */
+ var cy=Math.cos(user.yaw),sy=Math.sin(user.yaw),cp=Math.cos(user.pitch),sp=Math.sin(user.pitch);
+ var x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+ visible.forEach(function(p){
+  var xf=xfOf(p,po);
+  for(var i=0;i<8;i++){
+   var pt=[i&1?p.mx[0]:p.mn[0],i&2?p.mx[1]:p.mn[1],i&4?p.mx[2]:p.mn[2]],w=applyXf(pt,xf);
+   var xa=w[0]*cy+w[2]*sy,za=-w[0]*sy+w[2]*cy,ya=w[1]*cp-za*sp;
+   x0=Math.min(x0,xa);x1=Math.max(x1,xa);y0=Math.min(y0,ya);y1=Math.max(y1,ya);
+  }
+ });
+ var bw=Math.max(40,x1-x0)*1.18,bh=Math.max(40,y1-y0)*1.2;
+ var tsc=Math.min(cssW*res/bw,cssH*res/bh)*user.zoom,tcx=(x0+x1)/2,tcy=(y0+y1)/2;
+ if(!fit.init||reduce){fit.sc=tsc;fit.cx=tcx;fit.cy=tcy;fit.init=true;}
+ else{var k=quality?1:.14;fit.sc+=(tsc-fit.sc)*k;fit.cx+=(tcx-fit.cx)*k;fit.cy+=(tcy-fit.cy)*k;}
+ cam.yaw=user.yaw;cam.pitch=user.pitch;cam.sc=fit.sc;cam.cx=MT.R.W/2-fit.cx*fit.sc;cam.cy=MT.R.H/2+fit.cy*fit.sc;cam.thr=3.2;
+ var stage=hex(cssVar("--stage")),items=[];
+ visible.forEach(function(p){
+  var h=!!hs[p.key],dim=Object.keys(hs).length>0&&!h,t=dim?[stage[0],stage[1],stage[2],.62]:null;
+  items.push({mesh:p.mesh,pal:p.pal,xf:xfOf(p,po),id:p.id,tint:t,edge:h?[255,196,30]:(dim?[stage[0]*.6,stage[1]*.6,stage[2]*.6]:[24,28,36])});
+ });
+ var img=MT.render(items,cam,stage);
+ ctx.setTransform(1,0,0,1,0,0);ctx.putImageData(img,0,0);
+ ctx.setTransform(res,0,0,res,0,0);
+ overlay(po,hs,res,visible);
+ var settled=Math.abs(tsc-fit.sc)<tsc*.004&&Math.abs(tcx-fit.cx)<.15&&Math.abs(tcy-fit.cy)<.15;
+ return settled;
+}
+function overlay(po,hs,res,visible){
+ var f='600 12px "IBM Plex Mono",ui-monospace,monospace';
+ ctx.font=f;ctx.textAlign="center";ctx.textBaseline="middle";
+ function P(w){return projPt(w,res);}
+ if(S.nums){
+  var chk=-1;if(S.step===1)chk=Math.min(6,Math.floor(S.a*7));
+  visible.forEach(function(p){
+   if(p.key==="chain"||p.key==="cpin")return;
+   var xf=xfOf(p,po),c=[(p.mn[0]+p.mx[0])/2,(p.mn[1]+p.mx[1])/2,(p.mn[2]+p.mx[2])/2],w=applyXf(c,xf),q=P(w);q=[q[0]+(p.pos===1?-26:20),q[1]-22];
+   var col=cssVar(CHIP[p.pos-1]),on=S.step===1?(p.pos-1<=chk):false;
+   ctx.beginPath();ctx.arc(q[0],q[1],11,0,TAU);ctx.fillStyle=cssVar("--panel");ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle=col;ctx.stroke();
+   ctx.fillStyle=cssVar("--ink");ctx.fillText(String(p.pos),q[0],q[1]+.5);
+   if(on&&S.step===1&&p.pos-1<chk){ctx.fillStyle=cssVar("--ok");ctx.fillText("✓",q[0]+17,q[1]);}
+  });
+ }
+ if(S.step===4&&S.a>.55){
+  var a=clamp((S.a-.55)/.3,0,1),A=P([-12,0,0]),B=P([62,0,0]);
+  ctx.save();ctx.globalAlpha=a;ctx.setLineDash([9,4,2,4]);ctx.strokeStyle=cssVar("--hi");ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(B[0],B[1]);ctx.stroke();ctx.setLineDash([]);
+  if(S.a>.88){var m1=P([26,0,0]);var t="souosost ✓";ctx.font='600 13px "IBM Plex Sans",system-ui,sans-serif';
+   ctx.lineWidth=4;ctx.strokeStyle=cssVar("--stage");ctx.strokeText(t,m1[0],m1[1]-26);ctx.fillStyle=cssVar("--ok");ctx.fillText(t,m1[0],m1[1]-26);}
+  ctx.restore();
+ }
+ if(S.step===8&&po.extra.push>8){
+  var m2=P([18,0,0]);ctx.font='600 13px "IBM Plex Sans",system-ui,sans-serif';var t2="čep řetězu vytlačen";
+  ctx.lineWidth=4;ctx.strokeStyle=cssVar("--stage");ctx.strokeText(t2,m2[0],m2[1]-60);ctx.fillStyle=cssVar("--ok");ctx.fillText(t2,m2[0],m2[1]-60);
+ }
+}
+function invalidate(){quality=0;idleT=performance.now();if(!raf)raf=requestAnimationFrame(tick);}
+function tick(now){
+ raf=0;
+ if(anim){
+  if(anim.t0===null)anim.t0=now;
+  var u=clamp((now-anim.t0)/anim.dur,0,1);S.a=u;
+  if(u>=1){anim=null;S.a=1;if(S.playing)schedule();}
+ }
+ var settled=draw();
+ if(anim||!settled){raf=requestAnimationFrame(tick);idleT=now;}
+ else if(!quality){quality=1;raf=requestAnimationFrame(function(n){raf=0;draw();});}
+}
+/* ---------- UI ---------- */
+var opsEl=$("ops"),emptyEl=$("empty"),pillsEl=$("pills"),capEl=$("cap"),rendered=0,timer=0;
+function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
+function card(i){
+ var o=OPS[i],li=mk("li","op");li.tabIndex=0;
+ li.appendChild(mk("div","no",String(i+1)));
+ var b=mk("div");b.appendChild(mk("p","desc",o.d));
+ var dl=mk("dl");dl.appendChild(mk("dt",null,"Nářadí, nástroje, měřidla"));dl.appendChild(mk("dd",null,o.t||"–"));b.appendChild(dl);
+ var tg=mk("div","tags");
+ o.pos.forEach(function(p){var s=mk("span","tg");var d=mk("i");d.style.background="var("+CHIP[p-1]+")";s.appendChild(d);s.appendChild(document.createTextNode("pol. "+p+" "+NAMES[p-1]));tg.appendChild(s);});
+ b.appendChild(tg);b.appendChild(mk("p","why",o.why));li.appendChild(b);
+ li.addEventListener("click",function(){stop();go(i+1);});
+ li.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();stop();go(i+1);}});
+ return li;
+}
+function pills(){
+ pillsEl.textContent="";
+ for(var i=0;i<=N;i++){(function(i){var p=mk("button","pill",String(i));p.type="button";p.setAttribute("aria-label",i?"Operace "+i+": "+OPS[i-1].ti:"Rozložená sestava");p.addEventListener("click",function(){stop();go(i);});pillsEl.appendChild(p);})(i);}
+}
+function sync(){
+ var st=S.step,i;
+ while(rendered>st){opsEl.removeChild(opsEl.lastChild);rendered--;}
+ while(rendered<st){opsEl.appendChild(card(rendered));rendered++;}
+ var cs=opsEl.children;for(i=0;i<cs.length;i++)cs[i].classList.toggle("cur",i===st-1);
+ emptyEl.hidden=st>0;
+ var ps=pillsEl.children;for(i=0;i<ps.length;i++){ps[i].classList.toggle("done",i<st);if(i===st)ps[i].setAttribute("aria-current","step");else ps[i].removeAttribute("aria-current");}
+ $("mtitle").textContent=st?OPS[st-1].ti:"Rozložená sestava";
+ $("mstep").textContent=st?"Operace "+st+" z "+N:"Výchozí stav";
+ capEl.textContent=st?OPS[st-1].cap:"Rozložený rozpojovač řetězů: sedm pozic podle výkresu ZZP-04-00. Čísla označují pozice.";
+ $("prev").disabled=st===0;$("next").disabled=st===N;
+ var on={1:st>=1,2:st>=1,3:st>=1,4:st>=N};
+ Array.prototype.forEach.call(document.querySelectorAll("#rules li"),function(li){li.classList.toggle("on",!!on[li.dataset.r]);});
+ var cur=opsEl.lastChild;if(cur&&st>0&&!reduce){try{cur.scrollIntoView({block:"nearest",behavior:"smooth"});}catch(e){}}
+}
+function go(n,instant){
+ n=clamp(n,0,N);S.step=n;sync();
+ if(instant||reduce||n===0){S.a=1;anim=null;if(S.playing&&n>0)schedule();}
+ else{S.a=0;anim={t0:null,dur:OPS[n-1].dur};}
+ invalidate();
+}
+function schedule(){clearTimeout(timer);timer=setTimeout(function(){if(!S.playing)return;if(S.step>=N){stop();return;}go(S.step+1);},reduce?1800:1100);}
+function stop(){S.playing=false;clearTimeout(timer);$("play").textContent="▶ Přehrát vše";$("play").setAttribute("aria-pressed","false");}
+$("next").addEventListener("click",function(){stop();go(S.step+1);});
+$("prev").addEventListener("click",function(){stop();go(S.step-1,true);});
+$("reset").addEventListener("click",function(){stop();go(0,true);});
+$("play").addEventListener("click",function(){
+ if(S.playing){stop();return;}
+ S.playing=true;$("play").textContent="❚❚ Pauza";$("play").setAttribute("aria-pressed","true");
+ if(S.step>=N)go(0,true);
+ if(anim)return;schedule();
+});
+$("dims").addEventListener("change",function(){S.nums=this.checked;invalidate();});
+$("camReset").addEventListener("click",function(){user.yaw=DEF.yaw;user.pitch=DEF.pitch;user.zoom=1;invalidate();});
+var drag=null;cv.style.touchAction="none";cv.style.cursor="grab";
+cv.addEventListener("pointerdown",function(e){drag={x:e.clientX,y:e.clientY,yaw:user.yaw,pitch:user.pitch};try{cv.setPointerCapture(e.pointerId);}catch(_){}cv.style.cursor="grabbing";});
+cv.addEventListener("pointermove",function(e){if(!drag)return;user.yaw=drag.yaw+(e.clientX-drag.x)*.008;user.pitch=clamp(drag.pitch+(e.clientY-drag.y)*.006,-1.35,1.35);invalidate();});
+function up(){drag=null;cv.style.cursor="grab";}
+cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+cv.addEventListener("wheel",function(e){e.preventDefault();user.zoom=clamp(user.zoom*(e.deltaY<0?1.08:1/1.08),.6,2.4);invalidate();},{passive:false});
+cv.tabIndex=0;
+cv.addEventListener("keydown",function(e){var k=e.key,h=true;if(k==="ArrowLeft")user.yaw-=.12;else if(k==="ArrowRight")user.yaw+=.12;else if(k==="ArrowUp")user.pitch=clamp(user.pitch-.1,-1.35,1.35);else if(k==="ArrowDown")user.pitch=clamp(user.pitch+.1,-1.35,1.35);else h=false;if(h){e.preventDefault();invalidate();}});
+document.addEventListener("keydown",function(e){if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName||"")||e.target===cv)return;if(e.key==="ArrowRight"){stop();go(S.step+1);}else if(e.key==="ArrowLeft"){stop();go(S.step-1,true);}});
+var lg=$("legend");NAMES.forEach(function(n,i){var li=mk("li");var d=mk("i");d.style.background="var("+CHIP[i]+")";li.appendChild(d);li.appendChild(document.createTextNode(String(i+1)+" "+n));lg.appendChild(li);});
+if(window.ResizeObserver)new ResizeObserver(resize).observe(cv);window.addEventListener("resize",resize);
+try{window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",invalidate);}catch(_){}
+new MutationObserver(invalidate).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+pills();sync();resize();
+window.__go=function(n,a){stop();S.step=n;S.a=a;anim=null;sync();fit.init=false;invalidate();};
+})();
+</script>
+
+</body></html>
