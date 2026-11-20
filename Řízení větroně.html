@@ -1,0 +1,736 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Řízení větroně</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: technický výkres. Úzká stránka, popisky v mono, každý prvek má v celé stránce svou barvu:
+   nástroj = ocelově modrá, obrobek = jantarová, brusivo = karmínová, pohyb a síla = zelená. */
+:root{
+  --bg:#EDF1F4; --surface:#FFFFFF; --ink:#10212B; --muted:#4E6272; --line:#C9D4DB;
+  --lap:#5C7B93; --lap-ink:#FFFFFF; --groove:#A8BFCF;
+  --work:#E3AE40; --work-edge:#8A5A0B; --work-ink:#2B1E04;
+  --abr:#C42D49; --abr-edge:#7E1428; --abr-soft:#F7DCE2;
+  --move:#0B8366; --ring:#B7C3CC; --ring-line:#6B7D8A; --load:#3B4C59; --load-ink:#F3F7FA;
+  --f-head:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E171D; --surface:#152229; --ink:#E6EEF2; --muted:#9DB0BD; --line:#2A3B46;
+    --lap:#6F93AD; --lap-ink:#0B1419; --groove:#3E5A70;
+    --work:#E8B54F; --work-edge:#FFE0A0; --work-ink:#1B1303;
+    --abr:#FF6A84; --abr-edge:#FFB3C0; --abr-soft:#3A1F28;
+    --move:#3FD0A8; --ring:#4A5C69; --ring-line:#9DB0BD; --load:#5B7081; --load-ink:#F3F7FA;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E171D; --surface:#152229; --ink:#E6EEF2; --muted:#9DB0BD; --line:#2A3B46;
+  --lap:#6F93AD; --lap-ink:#0B1419; --groove:#3E5A70;
+  --work:#E8B54F; --work-edge:#FFE0A0; --work-ink:#1B1303;
+  --abr:#FF6A84; --abr-edge:#FFB3C0; --abr-soft:#3A1F28;
+  --move:#3FD0A8; --ring:#4A5C69; --ring-line:#9DB0BD; --load:#5B7081; --load-ink:#F3F7FA;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--f-body);
+  padding-block:0 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-head);font-weight:600;line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.4rem,7vw,3.6rem);letter-spacing:-.01em}
+h2{font-size:1.65rem;margin-top:44px}
+h3{font-size:1.1rem}
+p{margin:0}
+.eyebrow{font:500 12px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+header{padding-top:28px;display:grid;gap:12px}
+.lead{max-width:66ch;font-size:1.08rem}
+.key{display:flex;flex-wrap:wrap;gap:8px 18px;margin:6px 0 0;padding:0;list-style:none;font:500 13px/1.2 var(--f-mono)}
+.key li{display:flex;align-items:center;gap:7px}
+.sw{width:16px;height:12px;border-radius:2px;display:inline-block;border:1px solid var(--ink)}
+.sw.lap{background:var(--lap)} .sw.work{background:var(--work)} .sw.ring{background:var(--ring)} .sw.load{background:var(--load)}
+.sw.abr{width:12px;height:12px;border-radius:50%;background:var(--abr)}
+.sw.mv{border:0;height:0;border-top:3px solid var(--move);width:20px;border-radius:0;position:relative}
+.ctrl{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line);margin-top:18px;padding:10px 0;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+button{font:500 14px/1 var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--ink);border-radius:4px;padding:9px 14px;cursor:pointer}
+button:hover{background:var(--line)}
+button[aria-pressed="true"].seg{background:var(--ink);color:var(--bg)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--move);outline-offset:2px}
+.speed{display:flex;align-items:center;gap:10px;font:500 13px var(--f-mono)}
+input[type=range]{accent-color:var(--move);width:150px}
+output{min-width:3ch;display:inline-block}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,430px),1fr));gap:16px;margin-top:16px;align-items:start}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:12px 12px 14px;min-width:0}
+.figh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font:500 12px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.segs{display:flex;gap:0}
+.segs .seg{border-radius:0;padding:6px 10px;font-size:12px}
+.segs .seg:first-child{border-radius:4px 0 0 4px}
+.segs .seg:last-child{border-radius:0 4px 4px 0;border-left:0}
+figcaption,.cap{font-size:.92rem;color:var(--muted);margin-top:8px;max-width:68ch}
+.motions{margin:16px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px 18px}
+.motions li{padding-left:12px;border-left:3px solid var(--move);font-size:.95rem}
+.motions b{font-family:var(--f-mono);font-weight:500;font-size:.88rem}
+svg{display:block;width:100%;height:auto;max-width:100%}
+.s-lap{fill:var(--lap)}
+.s-work{fill:var(--work);stroke:var(--work-edge);stroke-width:1.2}
+.s-abr{fill:var(--abr)}
+.s-grain{fill:var(--abr);stroke:var(--abr-edge);stroke-width:1}
+.s-chip{fill:var(--work);stroke:var(--work-edge);stroke-width:.6}
+.s-carrier{fill:var(--abr-soft)}
+.s-load{fill:var(--load)}
+.s-ringbg{fill:var(--ring)}
+.s-hatch{stroke:var(--ring-line);stroke-width:1.2}
+.s-ringline{stroke:var(--ring-line);stroke-width:1.2}
+.s-ring{fill:url(#hRingB);stroke:var(--ring-line);stroke-width:1.4}
+.s-ringside{fill:url(#hRingA);stroke:var(--ring-line);stroke-width:1.2}
+.s-move{stroke:var(--move);stroke-width:2.4;fill:none}
+.s-movefill{fill:var(--move)}
+.s-tick{stroke:var(--lap-ink);stroke-opacity:.6;stroke-width:3;fill:none}
+.s-groove{stroke:var(--groove);stroke-width:1.4;fill:none}
+.s-hub{fill:var(--lap);stroke:var(--groove);stroke-width:1.4}
+.s-mark{fill:var(--lap-ink)}
+.s-notch{fill:var(--work-ink)}
+.s-leader{stroke:var(--muted);stroke-width:1;fill:none}
+.s-dot{fill:var(--muted)}
+.s-pdot{stroke:var(--surface);stroke-width:.7;fill:var(--abr)}
+.s-lapfill{fill:var(--lap-ink)}
+.s-lapstroke{stroke:var(--lap-ink);stroke-width:1.6;fill:none}
+.t{font:500 13px var(--f-mono);fill:var(--ink)}
+.t-sm{font-size:12px}
+.t-in{fill:var(--lap-ink)}
+.t-work{fill:var(--work-ink)}
+.t-load{fill:var(--load-ink)}
+.t-mv{fill:var(--move)}
+.t-halo{paint-order:stroke;stroke:var(--surface);stroke-width:4;stroke-linejoin:round}
+.meter{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-top:10px;font:500 12px var(--f-mono);color:var(--muted)}
+.bar{height:8px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--move)}
+.legrows{margin:12px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px 18px}
+.legrows li{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:.95rem;align-items:start}
+.legrows svg{width:22px;height:22px;margin-top:2px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:16px;margin-top:16px}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:14px 16px;display:grid;gap:6px;align-content:start;min-width:0}
+.col .eyebrow{color:var(--move)}
+.tablewrap{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.95rem}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-mono);font-size:.9rem;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
+.chips li{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:7px 12px;font-size:.95rem}
+dl.pit{margin:16px 0 0;display:grid;gap:12px}
+dl.pit div{display:grid;grid-template-columns:minmax(0,15rem) 1fr;gap:4px 18px;padding-top:12px;border-top:1px solid var(--line)}
+dl.pit dt{font-weight:600}
+dl.pit dd{margin:0;color:var(--muted)}
+@media (max-width:640px){dl.pit div{grid-template-columns:1fr}}
+details{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:10px 14px;margin-top:10px}
+summary{cursor:pointer;font-weight:500}
+details p{margin-top:8px;color:var(--muted)}
+.note{font-size:.88rem;color:var(--muted);margin-top:10px;max-width:70ch}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font:500 13px/1.5 var(--f-mono);color:var(--muted)}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+<style>
+:root{--c-roll:#D9700B;--c-pitch:#2563C9;--c-yaw:#0E9F6E;--sc1:#B9D3E8;--sc2:#E6EFF6;--sc-ink:#16303F}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--c-roll:#FFA033;--c-pitch:#6AA0FF;--c-yaw:#3FD0A8;--sc1:#1E3446;--sc2:#0D1822;--sc-ink:#DCE8F0}}
+:root[data-theme="dark"]{--c-roll:#FFA033;--c-pitch:#6AA0FF;--c-yaw:#3FD0A8;--sc1:#1E3446;--sc2:#0D1822;--sc-ink:#DCE8F0}
+.sw.roll{background:var(--c-roll)} .sw.pitch{background:var(--c-pitch)} .sw.yaw{background:var(--c-yaw)}
+.bar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:16px}
+.bar .segs button{padding:8px 12px}
+.tg{padding:8px 12px}
+.tg[aria-pressed="true"],.segs button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.stage{position:relative;margin-top:12px;border:1px solid var(--ink);border-radius:4px;overflow:hidden;background:var(--surface);outline-offset:3px}
+.stage canvas{display:block;width:100%;height:clamp(300px,52vw,540px);touch-action:pan-y;cursor:grab}
+.stage canvas:active{cursor:grabbing}
+.hint{position:absolute;left:10px;bottom:8px;font:500 12px var(--f-mono);color:var(--sc-ink);opacity:.8;pointer-events:none;max-width:calc(100% - 20px)}
+.cockpit{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px 20px;margin-top:16px;align-items:start}
+@media (max-width:780px){.cockpit{grid-template-columns:minmax(0,1fr)}}
+.ctrls{display:flex;flex-wrap:wrap;gap:16px 22px}
+.ck{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:12px 14px;min-width:0}
+.ck h3{font-size:1rem;margin-bottom:8px}
+.pad{position:relative;width:200px;height:200px;max-width:100%;border:1px solid var(--ink);border-radius:6px;touch-action:none;cursor:pointer;
+  background:linear-gradient(var(--line),var(--line)) center/1px 100% no-repeat,linear-gradient(var(--line),var(--line)) center/100% 1px no-repeat,var(--bg)}
+.pad .l{position:absolute;font:500 11px/1.2 var(--f-mono);color:var(--muted);pointer-events:none}
+.pad .t{top:6px;left:0;right:0;text-align:center} .pad .b{bottom:6px;left:0;right:0;text-align:center}
+.pad .le{left:6px;top:50%;transform:translateY(-50%);max-width:34px} .pad .r{right:6px;top:50%;transform:translateY(-50%);max-width:34px;text-align:right}
+.knob{position:absolute;left:50%;top:50%;width:34px;height:34px;border-radius:50%;background:var(--ink);border:3px solid var(--bg);box-shadow:0 0 0 1px var(--ink);transform:translate(-50%,-50%);pointer-events:none}
+.pedal{position:relative;width:240px;height:70px;max-width:100%;border:1px solid var(--ink);border-radius:6px;touch-action:none;cursor:pointer;
+  background:linear-gradient(var(--line),var(--line)) center/1px 100% no-repeat,var(--bg)}
+.pedal .l{position:absolute;bottom:5px;font:500 11px var(--f-mono);color:var(--muted);pointer-events:none}
+.pedal .knob{width:44px;height:30px;border-radius:6px;top:38%}
+.live{display:grid;gap:8px}
+.lrow{border-left:5px solid var(--line);padding:6px 10px;background:var(--bg);opacity:.62}
+.lrow.on{opacity:1;background:var(--surface)}
+.lrow b{display:block;font:600 1rem/1.2 var(--f-head)}
+.lrow span{font-size:.92rem;color:var(--muted)}
+.lrow.roll{border-left-color:var(--c-roll)} .lrow.pitch{border-left-color:var(--c-pitch)} .lrow.yaw{border-left-color:var(--c-yaw)}
+.att{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.att div{border-top:4px solid var(--line);padding-top:4px;font:500 12px var(--f-mono);color:var(--muted)}
+.att b{display:block;font:600 1.5rem/1.1 var(--f-head);color:var(--ink)}
+.att .a1{border-top-color:var(--c-roll)} .att .a2{border-top-color:var(--c-pitch)} .att .a3{border-top-color:var(--c-yaw)}
+.demos{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.demos .eyebrow{margin-right:4px}
+.demos button{padding:8px 12px}
+.icard{display:grid;gap:8px}
+.icard svg{width:100%;max-width:170px;height:auto}
+.icard .ln{stroke:var(--ink);stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.icard .fl{fill:var(--ink)}
+.ar{fill:none;stroke-width:3.5;stroke-linecap:round}
+.ar.roll{stroke:var(--c-roll)} .ar.pitch{stroke:var(--c-pitch)} .ar.yaw{stroke:var(--c-yaw)}
+.ah.roll{fill:var(--c-roll)} .ah.pitch{fill:var(--c-pitch)} .ah.yaw{fill:var(--c-yaw)}
+.icard .tag{font:600 12px var(--f-mono);letter-spacing:.04em;text-transform:uppercase}
+.icard.roll .tag{color:var(--c-roll)} .icard.pitch .tag{color:var(--c-pitch)} .icard.yaw .tag{color:var(--c-yaw)}
+.icard ul{margin:0;padding-left:1.1em;font-size:.95rem}
+.mn{background:var(--surface);border:1px solid var(--ink);border-radius:4px;padding:14px 16px;margin-top:16px;display:grid;gap:6px;font-size:1.05rem}
+.mn b{font-family:var(--f-head);font-size:1.15rem}
+</style>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Letecký mechanik · základy aerodynamiky · pomůcka č. 1</div>
+  <h1>Řízení větroně</h1>
+  <p class="lead">Větroň nemá motor, a proto je na něm řízení vidět nejčistěji. Pilot má tři ovládací prvky a každý z nich otáčí letadlo kolem jedné osy. Vezmi páku, pedály a vyzkoušej si, co která plocha udělá. Letadlo se otáčí kolem těžiště, jako by viselo na třech navzájem kolmých tyčích.</p>
+  <ul class="key" aria-label="Barevný klíč">
+    <li><span class="sw roll"></span>křidélka · klonění · podélná osa</li>
+    <li><span class="sw pitch"></span>výškovka · klopení · příčná osa</li>
+    <li><span class="sw yaw"></span>směrovka · zatáčení · svislá osa</li>
+  </ul>
+</header>
+
+<h2>Vyzkoušej si to</h2>
+<div class="bar">
+  <span class="segs" role="group" aria-label="Režim"><button id="mPlace" class="seg" type="button" aria-pressed="true">Model na místě</button><button id="mFly" class="seg" type="button" aria-pressed="false">Let</button></span>
+  <button id="tAxes" class="tg" type="button" aria-pressed="true">Osy</button>
+  <button id="tForce" class="tg" type="button" aria-pressed="true">Síly</button>
+  <button id="tArcs" class="tg" type="button" aria-pressed="true">Šipky otáčení</button>
+  <button id="bReset" type="button">Vynulovat polohu</button>
+</div>
+<div class="stage" id="stage" tabindex="0" aria-label="3D model větroně, ovládání šipkami a klávesami A a D">
+  <canvas id="cv" role="img" aria-label="3D model větroně s osami a vychylovanými řídicími plochami"></canvas>
+  <div class="hint" id="hint">Táhni myší, otočíš pohled. Klávesy: šipky = páka, A a D = pedály.</div>
+</div>
+
+<div class="cockpit">
+  <div class="ctrls">
+    <div class="ck">
+      <h3>Řídicí páka</h3>
+      <div class="pad" id="pad"><span class="l t">od sebe, nos dolů</span><span class="l b">k sobě, nos nahoru</span><span class="l le">vlevo</span><span class="l r">vpravo</span><div class="knob" id="knob"></div></div>
+    </div>
+    <div class="ck">
+      <h3>Pedály</h3>
+      <div class="pedal" id="pedal"><span class="l" style="left:8px">levý</span><span class="l" style="right:8px">pravý</span><div class="knob" id="pknob"></div></div>
+      <p class="cap" style="margin-top:8px">Pustíš-li páku nebo pedály, vrátí se do neutrálu.</p>
+    </div>
+  </div>
+  <div class="ck">
+    <h3>Co se právě děje</h3>
+    <div class="live">
+      <div class="lrow roll" id="rRoll"><b>Křidélka</b><span id="tRoll"></span></div>
+      <div class="lrow pitch" id="rPitch"><b>Výškovka</b><span id="tPitch"></span></div>
+      <div class="lrow yaw" id="rYaw"><b>Směrovka</b><span id="tYaw"></span></div>
+    </div>
+    <div class="att">
+      <div class="a1">náklon (klonění)<b id="aRoll">0°</b></div>
+      <div class="a2">sklon (klopení)<b id="aPitch">0°</b></div>
+      <div class="a3">kurs (zatáčení)<b id="aYaw">0°</b></div>
+    </div>
+  </div>
+</div>
+<div class="demos" role="group" aria-label="Ukázky">
+  <span class="eyebrow">ukázky</span>
+  <button class="demo" data-d="roll" type="button">Klonění</button>
+  <button class="demo" data-d="pitch" type="button">Klopení</button>
+  <button class="demo" data-d="yaw" type="button">Zatáčení</button>
+  <button class="demo" data-d="turn" type="button">Zatáčka, vše dohromady</button>
+</div>
+
+<h2>Tři osy, tři otočení</h2>
+<div class="cols">
+  <div class="col icard roll">
+    <svg viewBox="0 0 170 100" role="img" aria-label="Pohled zepředu: křídla a šipka otáčení kolem podélné osy"><rect class="fl" x="20" y="49" width="130" height="6" rx="3"/><ellipse class="fl" cx="85" cy="52" rx="9" ry="11"/><rect class="fl" x="82" y="22" width="6" height="28"/><path class="ar roll" d="M36 34 A62 62 0 0 1 128 30"/><polygon class="ah roll" points="140,40 124,36 134,24"/></svg>
+    <span class="tag">podélná osa</span><h3>Klonění (roll)</h3>
+    <ul><li>Osa vede od nosu k ocasu.</li><li>Plocha: křidélka na zadní hraně křídel.</li><li>Pilot: páka doleva nebo doprava.</li><li>Výsledek: jedno křídlo jde dolů, druhé nahoru.</li></ul>
+  </div>
+  <div class="col icard pitch">
+    <svg viewBox="0 0 170 100" role="img" aria-label="Pohled z boku: trup a šipka otáčení kolem příčné osy"><ellipse class="fl" cx="85" cy="56" rx="56" ry="8"/><polygon class="fl" points="36,54 26,28 36,28 48,52"/><rect class="fl" x="26" y="52" width="24" height="4"/><rect class="fl" x="78" y="48" width="18" height="4"/><path class="ar pitch" d="M132 82 A46 46 0 0 0 140 30"/><polygon class="ah pitch" points="142,18 150,34 132,32"/></svg>
+    <span class="tag">příčná osa</span><h3>Klopení (pitch)</h3>
+    <ul><li>Osa vede od jednoho křídla ke druhému.</li><li>Plocha: výškovka na vodorovné ocasní ploše.</li><li>Pilot: páka dopředu nebo dozadu.</li><li>Výsledek: nos jde nahoru nebo dolů.</li></ul>
+  </div>
+  <div class="col icard yaw">
+    <svg viewBox="0 0 170 100" role="img" aria-label="Pohled shora: letadlo a šipka otáčení kolem svislé osy"><rect class="fl" x="30" y="47" width="100" height="7" rx="3.5"/><rect class="fl" x="78" y="12" width="10" height="77" rx="3"/><rect class="fl" x="32" y="34" width="7" height="34"/><path class="ar yaw" d="M138 20 A50 50 0 0 1 138 82"/><polygon class="ah yaw" points="136,92 132,76 148,80"/></svg>
+    <span class="tag">svislá osa</span><h3>Zatáčení (yaw)</h3>
+    <ul><li>Osa vede svisle nahoru a dolů.</li><li>Plocha: směrovka na svislé ocasní ploše.</li><li>Pilot: pedály vlevo nebo vpravo.</li><li>Výsledek: nos se stáčí doleva nebo doprava jako ručička kompasu.</li></ul>
+  </div>
+</div>
+<div class="mn">
+  <b>Jak si to zapamatovat</b>
+  <span>Páka doprava, pravé křídlo jde dolů.</span>
+  <span>Páka k sobě, nos jde nahoru.</span>
+  <span>Pravý pedál, nos se stáčí doprava.</span>
+</div>
+
+<h2>Proč se letadlo otáčí</h2>
+<dl class="pit">
+  <div><dt>1. Pilot vychýlí ovládací prvek</dt><dd>Přes tyče nebo lanka se vychýlí řídicí plocha. Je připojená k nosné ploše kloubem (závěsem) a otáčí se kolem něj.</dd></div>
+  <div><dt>2. Změní se obtékání</dt><dd>Vychýlená plocha vychýlí proud vzduchu. Na ploše vznikne aerodynamická síla, ve 3D modelu ji ukazují barevné šipky.</dd></div>
+  <div><dt>3. Síla má rameno od těžiště</dt><dd>Plocha je daleko od těžiště, třeba na konci ocasu. Síla krát vzdálenost je moment, který letadlo roztáčí.</dd></div>
+  <div><dt>4. Letadlo se otáčí kolem těžiště</dt><dd>Otáčí se tak dlouho, dokud je plocha vychýlená. Pilot ji vrátí do neutrálu a otáčení se zastaví. Proto se v modelu pohyb zastaví, když pustíš páku.</dd></div>
+</dl>
+
+<h3 style="margin-top:28px">Přehled</h3>
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Ovládací prvek</th><th>Řídicí plocha</th><th>Pohyb letadla</th><th>Osa</th></tr></thead>
+  <tbody>
+    <tr><td>páka vlevo a vpravo</td><td>křidélka (opačně na obou křídlech)</td><td>klonění (roll)</td><td>podélná</td></tr>
+    <tr><td>páka vpřed a vzad</td><td>výškovka</td><td>klopení (pitch)</td><td>příčná</td></tr>
+    <tr><td>pedály vlevo a vpravo</td><td>směrovka</td><td>zatáčení (yaw)</td><td>svislá</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="cols" style="margin-top:20px">
+  <div class="col"><span class="eyebrow">Zatáčka</span><h3>Není jen směrovka</h3><p>Letadlo zatáčí hlavně tím, že se nakloní. Vztlak se tím nakloní do strany a táhne letadlo po oblouku. Pilot proto zatáčku začne křidélky, pak podtáhne výškovkou a směrovkou udržuje koordinaci, tedy čistý let bez bočního skluzu. Zkus ukázku Zatáčka v režimu Let.</p></div>
+  <div class="col"><span class="eyebrow">Pro zvídavé</span><h3>Záporný zatáčivý moment</h3><p>Křidélko dolů zvětšuje odpor křídla, které jde nahoru. Nos se proto na začátku zatáčky stočí na špatnou stranu. Pilot to vyrovná pedálem na stranu zatáčky. Úlohou výrobců je tento jev omezit tvarem křidélek.</p></div>
+  <div class="col"><span class="eyebrow">Pro mechanika</span><h3>Kontrola řízení</h3><p>Po opravě nebo seřízení se vždy kontroluje směr vychýlení každé plochy a velikost výchylky. Páka doprava musí zvednout pravé křidélko. Záměna lanek nebo tyčí je nebezpečná. Vůle, zajištění šroubů a pojištění závěsů se kontrolují také.</p></div>
+</div>
+
+<h2>Na co si dát pozor</h2>
+<dl class="pit">
+  <div><dt>Směrovka není volant</dt><dd>Letadlo se netočí jako auto. Směrovka stáčí nos, ale letadlo samo od sebe nezatáčí. Zatáčku vytváří náklon.</dd></div>
+  <div><dt>Křidélka se pohybují opačně</dt><dd>Když je jedno křidélko nahoru, druhé je dolů. Proto se křídla naklánějí proti sobě.</dd></div>
+  <div><dt>Páka k sobě znamená nos nahoru</dt><dd>Výškovka jde nahoru, ocas se tlačí dolů a nos se zvedne. Začátečníci to často mají obráceně.</dd></div>
+  <div><dt>Otáčí se kolem těžiště</dt><dd>Letadlo se neotáčí kolem nosu ani kolem křídla, ale kolem těžiště. Všechny tři osy se v něm protínají.</dd></div>
+  <div><dt>Model je zjednodušený</dt><dd>Skutečné letadlo má stabilitu, odpor vzduchu a vztlak, které se v modelu nepočítají. Model ukazuje princip, ne přesný let.</dd></div>
+</dl>
+
+<h2>Zkus si odpovědět</h2>
+<details><summary>Kolem které osy se letadlo otáčí při vychýlení křidélek?</summary><p>Kolem podélné osy, která vede od nosu k ocasu. Pohyb se jmenuje klonění.</p></details>
+<details><summary>Jak se pohybují křidélka při páce vpravo?</summary><p>Pravé křidélko jde nahoru, levé dolů. Pravé křídlo klesá, levé stoupá a letadlo se kloní doprava.</p></details>
+<details><summary>Proč výškovka nahoru zvedne nos?</summary><p>Vychýlená výškovka vytvoří sílu směřující dolů. Ta tlačí ocas dolů a nos se zvedne kolem příčné osy.</p></details>
+<details><summary>Co udělá pravý pedál?</summary><p>Směrovka se vychýlí doprava, síla působí na ocas doleva a nos se stočí doprava kolem svislé osy.</p></details>
+<details><summary>Co musí mechanik zkontrolovat po seřízení řízení?</summary><p>Správný směr a velikost výchylky každé plochy při pohybu páky a pedálů, volnost chodu, vůle a pojištění spojů.</p></details>
+
+<footer>Další díly pomůcky: vztlak a odpor · stabilita letadla · konstrukce křídla · pohon.</footer>
+</div>
+<script>
+(function(){
+'use strict';
+function $(id){return document.getElementById(id);}
+var PI=Math.PI,D2R=PI/180,R2D=180/PI;
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function add(a,b){return [a[0]+b[0],a[1]+b[1],a[2]+b[2]];}
+function sub(a,b){return [a[0]-b[0],a[1]-b[1],a[2]-b[2]];}
+function mul(a,s){return [a[0]*s,a[1]*s,a[2]*s];}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
+function norm(a){var l=Math.sqrt(dot(a,a))||1;return [a[0]/l,a[1]/l,a[2]/l];}
+function qmul(a,b){return [a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2]];}
+function qaxis(ax,ang){var s=Math.sin(ang/2);return [ax[0]*s,ax[1]*s,ax[2]*s,Math.cos(ang/2)];}
+function qnorm(q){var l=Math.sqrt(q[0]*q[0]+q[1]*q[1]+q[2]*q[2]+q[3]*q[3]);return [q[0]/l,q[1]/l,q[2]/l,q[3]/l];}
+function qrot(q,v){var qv=[q[0],q[1],q[2]],t=mul(cross(qv,v),2);return add(add(v,mul(t,q[3])),cross(qv,t));}
+
+/* ---- barvy a téma ---- */
+var TH={};
+function loadTheme(){
+  var cs=getComputedStyle(document.documentElement);
+  function g(n){return cs.getPropertyValue(n).trim();}
+  TH.sc1=g('--sc1');TH.sc2=g('--sc2');TH.ink=g('--sc-ink');TH.roll=g('--c-roll');TH.pitch=g('--c-pitch');TH.yaw=g('--c-yaw');
+}
+var C={wing:[232,238,243],fus:[246,248,250],can:[142,201,238],roll:[242,140,40],pitch:[59,130,246],yaw:[16,185,129]};
+
+/* ---- model větroně: plošky v souřadnicích x dopředu, y nahoru, z vpravo ---- */
+var FACES=[],WY=0.30;
+var PARTS={1:{o:[-0.2,WY,0],ax:'z'},2:{o:[-0.2,WY,0],ax:'z'},3:{o:[-4.25,0.14,0],ax:'z'},4:{o:[-4.2,0,0],ax:'y'}};
+function face(p,c,part,bias,a,ne){FACES.push({p:p,c:c,part:part||0,bias:bias||0,a:a===undefined?1:a,ne:ne});}
+function fatten(st){return st.map(function(q){return [q[0],q[1]*1.15];});}
+function lathe(st,N,cy,rz,col,half,bias){
+  var i,j,a0,a1,x0,x1,r0,r1,s0=half?-PI/2:0,step=(half?PI:2*PI)/N;
+  for(i=0;i<st.length-1;i++){
+    x0=st[i][0];r0=st[i][1];x1=st[i+1][0];r1=st[i+1][1];
+    for(j=0;j<N;j++){
+      a0=s0+j*step;a1=a0+step;
+      face([[x0,cy+r0*Math.cos(a0),r0*rz*Math.sin(a0)],[x1,cy+r1*Math.cos(a0),r1*rz*Math.sin(a0)],[x1,cy+r1*Math.cos(a1),r1*rz*Math.sin(a1)],[x0,cy+r0*Math.cos(a1),r0*rz*Math.sin(a1)]],col,0,bias,1,true);
+    }
+  }
+}
+lathe(fatten([[2.25,0],[2.15,0.09],[2.0,0.16],[1.6,0.30],[1.0,0.42],[0.2,0.46],[-0.6,0.42],[-1.6,0.30],[-2.8,0.18],[-3.8,0.11],[-4.6,0.06]]),14,0,0.9,C.fus,false,0);
+lathe([[1.45,0],[1.25,0.2],[0.8,0.33],[0.1,0.33],[-0.5,0.24],[-0.95,0]],10,0.24,0.8,C.can,true,0.02);
+function LE(z){return 0.5-0.5*(z-0.30)/4.7;}
+[-1,1].forEach(function(s){
+  var zs=[0.30,1.2,2.0,2.7,3.85,5.0],i,z0,z1,te;
+  for(i=0;i<zs.length-1;i++){
+    z0=zs[i];z1=zs[i+1];te=z0>=2.7?-0.2:-0.5;
+    face([[LE(z0),WY,s*z0],[LE(z1),WY,s*z1],[te,WY,s*z1],[te,WY,s*z0]],C.wing,0,0);
+  }
+  face([[0,0,s*2.7],[0,0,s*5.0],[-0.3,0,s*5.0],[-0.3,0,s*2.7]],C.roll,s<0?1:2,0.05);
+  face([[-3.7,0.14,s*0.12],[-4.05,0.14,s*1.5],[-4.25,0.14,s*1.5],[-4.25,0.14,s*0.12]],C.wing,0,0);
+  face([[0,0,s*0.12],[0,0,s*1.5],[-0.35,0,s*1.5],[-0.35,0,s*0.12]],C.pitch,3,0.05);
+});
+face([[-3.5,0.08,0],[-4.1,1.35,0],[-4.2,1.35,0],[-4.2,0.08,0]],C.wing,0,0);
+face([[0,0.08,0],[0,1.35,0],[-0.4,1.28,0],[-0.4,0.08,0]],C.yaw,4,0.05);
+function xf(p,part,ang){
+  var x=p[0],y=p[1],z=p[2],P,a,c,s,nx,ny,nz;
+  if(part){
+    P=PARTS[part];a=ang[part];c=Math.cos(a);s=Math.sin(a);
+    if(P.ax==='z'){nx=x*c-y*s;ny=x*s+y*c;nz=z;}else{nx=x*c+z*s;ny=y;nz=-x*s+z*c;}
+    x=nx+P.o[0];y=ny+P.o[1];z=nz+P.o[2];
+  }
+  return [x,y,z];
+}
+
+/* ---- stav ---- */
+var S={mode:'place',Q:[0,0,0,1],POS:[0,0,0],inp:{ail:0,ele:0,rud:0},show:{axes:true,force:true,arcs:true},
+  az:0.62,el:0.30,dist:19,eye:[-12,5,8],head:[1,0,0]};
+var ANG=[0,0,0,0,0];
+var cam={pos:[0,0,0],f:[1,0,0],r:[0,0,1],u:[0,1,0]};
+var cv=$('cv'),ctx=cv.getContext('2d'),W=800,H=450,F=600,dpr=1;
+function setCam(eye,tgt){cam.pos=eye;cam.f=norm(sub(tgt,eye));cam.r=norm(cross(cam.f,[0,1,0]));cam.u=cross(cam.r,cam.f);}
+function proj(p){var d=sub(p,cam.pos),z=dot(d,cam.f);return {x:W/2+F*dot(d,cam.r)/z,y:H/2-F*dot(d,cam.u)/z,z:z};}
+function resize(){
+  var w=cv.clientWidth,h=cv.clientHeight;
+  dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);W=w;H=h;F=H/(2*Math.tan(20*D2R));
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+function seg3(a,b){
+  var za=dot(sub(a,cam.pos),cam.f),zb=dot(sub(b,cam.pos),cam.f),N=0.5,t,pa,pb;
+  if(za<N&&zb<N){return;}
+  if(za<N){t=(N-za)/(zb-za);a=add(a,mul(sub(b,a),t));}
+  else if(zb<N){t=(N-zb)/(za-zb);b=add(b,mul(sub(a,b),t));}
+  pa=proj(a);pb=proj(b);ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);
+}
+
+/* ---- scenérie letu ---- */
+var GY=-30,TREES=[],CLOUDS=[],seed=7;
+function rnd(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
+var i;
+for(i=0;i<120;i++){TREES.push({x:rnd()*600-300,z:rnd()*600-300,h:7+rnd()*9,t:rnd()});}
+for(i=0;i<18;i++){CLOUDS.push({x:rnd()*900-450,y:10+rnd()*50,z:rnd()*900-450,s:9+rnd()*14});}
+function wrap(v,c,P){return v+P*Math.round((c-v)/P);}
+
+var LIGHT=norm([-0.3,1,0.4]);
+function faceItems(Qx,Px,ang,items,ghost){
+  var n,k,f,wp,sp,ok,zs,pr,w,nr,sh;
+  for(n=0;n<FACES.length;n++){
+    f=FACES[n];wp=[];sp=[];ok=true;zs=0;
+    for(k=0;k<f.p.length;k++){
+      w=add(qrot(Qx,xf(f.p[k],f.part,ang)),Px);pr=proj(w);
+      if(pr.z<0.4){ok=false;break;}
+      wp.push(w);sp.push(pr);zs+=pr.z;
+    }
+    if(!ok){continue;}
+    if(ghost){items.push({k:3,sp:sp});continue;}
+    nr=norm(cross(sub(wp[1],wp[0]),sub(wp[2],wp[0])));
+    if(dot(nr,sub(cam.pos,wp[0]))<0){nr=mul(nr,-1);}
+    sh=0.58+0.42*Math.max(0,dot(nr,LIGHT));
+    items.push({k:0,z:zs/f.p.length-f.bias,sp:sp,a:f.a,ne:f.ne,
+      col:'rgb('+Math.round(f.c[0]*sh)+','+Math.round(f.c[1]*sh)+','+Math.round(f.c[2]*sh)+')'});
+  }
+}
+function drawPoly(sp){ctx.beginPath();ctx.moveTo(sp[0].x,sp[0].y);for(var k=1;k<sp.length;k++){ctx.lineTo(sp[k].x,sp[k].y);}ctx.closePath();}
+function drawTree(it){
+  var b=it.b,t=it.t,h=b.y-t.y,w;
+  if(h<2){return;}
+  w=h*0.34;ctx.globalAlpha=it.al;
+  ctx.fillStyle='#6B4A2B';ctx.fillRect(b.x-h*0.04,b.y-h*0.22,h*0.08,h*0.22);
+  ctx.fillStyle='#2F7D4F';ctx.beginPath();ctx.moveTo(b.x,t.y+h*0.22);ctx.lineTo(b.x+w,b.y-h*0.18);ctx.lineTo(b.x-w,b.y-h*0.18);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#3E9B63';ctx.beginPath();ctx.moveTo(b.x,t.y);ctx.lineTo(b.x+w*0.78,t.y+h*0.52);ctx.lineTo(b.x-w*0.78,t.y+h*0.52);ctx.closePath();ctx.fill();
+  ctx.globalAlpha=1;
+}
+function drawCloud(it){
+  var r=it.r;ctx.fillStyle='rgba(255,255,255,0.93)';
+  [[-0.9,0.1,0.7],[0,-0.15,1],[0.95,0.1,0.75]].forEach(function(c){ctx.beginPath();ctx.ellipse(it.p.x+c[0]*r,it.p.y+c[1]*r*0.6,r*c[2],r*c[2]*0.55,0,0,2*PI);ctx.fill();});
+}
+function loc2w(p){return add(qrot(S.Q,p),S.POS);}
+function pill(text,x,y,col){
+  var w,h=20;
+  ctx.font='600 12px ui-monospace,Menlo,Consolas,monospace';w=ctx.measureText(text).width+14;
+  x=clamp(x-w/2,4,W-w-4);y=clamp(y-h/2,4,H-h-4);
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x+6,y);ctx.arcTo(x+w,y,x+w,y+h,6);ctx.arcTo(x+w,y+h,x,y+h,6);ctx.arcTo(x,y+h,x,y,6);ctx.arcTo(x,y,x+w,y,6);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#fff';ctx.textBaseline='middle';ctx.fillText(text,x+7,y+h/2+0.5);
+}
+function head2(pa,pb,col,sz){
+  var dx=pb.x-pa.x,dy=pb.y-pa.y,l=Math.sqrt(dx*dx+dy*dy)||1,ux=dx/l,uy=dy/l;
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(pb.x+ux*sz*0.6,pb.y+uy*sz*0.6);ctx.lineTo(pb.x-ux*sz*0.7-uy*sz*0.55,pb.y-uy*sz*0.7+ux*sz*0.55);ctx.lineTo(pb.x-ux*sz*0.7+uy*sz*0.55,pb.y-uy*sz*0.7-ux*sz*0.55);ctx.closePath();ctx.fill();
+}
+function arrow3(a,b,col,w){
+  var pa=proj(a),pb=proj(b);
+  if(pa.z<0.5||pb.z<0.5){return;}
+  ctx.lineCap='round';
+  ctx.strokeStyle='rgba(255,255,255,0.75)';ctx.lineWidth=w+3;ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);ctx.stroke();
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);ctx.stroke();
+  head2(pa,pb,col,w*3.2);
+}
+var AXES=[{k:'roll',a:[-5.2,0,0],b:[3.6,0,0],t:'podélná osa · klonění'},{k:'pitch',a:[0,0,-5.9],b:[0,0,5.9],t:'příčná osa · klopení'},{k:'yaw',a:[0,-2.4,0],b:[0,2.3,0],t:'svislá osa · zatáčení'}];
+var ARCS={
+  roll:function(a){return [3.2,1.15*Math.cos(a),1.15*Math.sin(a)];},
+  pitch:function(a){return [1.15*Math.cos(a),1.15*Math.sin(a),5.9];},
+  yaw:function(a){return [1.15*Math.cos(a),2.35,-1.15*Math.sin(a)];}
+};
+var FORCES=[
+  {k:'roll',o:[-0.35,WY,-3.85],d:function(i){return [0,i.ail,0];}},
+  {k:'roll',o:[-0.35,WY,3.85],d:function(i){return [0,-i.ail,0];}},
+  {k:'pitch',o:[-4.42,0.14,0],d:function(i){return [0,-i.ele,0];}},
+  {k:'yaw',o:[-4.42,0.7,0],d:function(i){return [0,0,-i.rud];}}
+];
+function rates(){return {roll:S.inp.ail*45,pitch:S.inp.ele*25,yaw:-S.inp.rud*20};}
+function drawOverlay(){
+  var inp=S.inp,r=rates(),i,j,k,pts,a,pa,pb,sg,act,col,aa,m,p0;
+  ctx.lineJoin='round';ctx.lineCap='round';
+  if(S.show.arcs){
+    ['roll','pitch','yaw'].forEach(function(key){
+      sg=r[key]>=0?1:-1;act=Math.min(1,Math.abs(r[key])/14);col=TH[key];
+      ctx.globalAlpha=0.28+0.72*act;ctx.strokeStyle=col;ctx.lineWidth=3+2*act;
+      ctx.beginPath();aa=[];
+      for(i=0;i<=40;i++){a=-2.4+i*4.8/40;aa.push(loc2w(ARCS[key](a)));}
+      for(i=0;i<aa.length-1;i++){seg3(aa[i],aa[i+1]);}
+      ctx.stroke();
+      m=sg>0?aa.length-1:0;p0=proj(aa[m]);pb=proj(aa[sg>0?m-1:1]);
+      if(p0.z>0.5&&pb.z>0.5){head2(pb,p0,col,13);}
+      ctx.globalAlpha=1;
+    });
+  }
+  if(S.show.axes){
+    AXES.forEach(function(ax){
+      pa=loc2w(ax.a);pb=loc2w(ax.b);
+      ctx.strokeStyle=TH[ax.k];ctx.lineWidth=2;ctx.globalAlpha=0.85;ctx.setLineDash([7,5]);
+      ctx.beginPath();seg3(pa,pb);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+      var q=proj(pb),pc0=proj(S.POS),dx=q.x-pc0.x,dy=q.y-pc0.y,ll=Math.sqrt(dx*dx+dy*dy)||1;if(q.z>0.5){pill(ax.t,q.x+dx/ll*80,q.y+dy/ll*22,TH[ax.k]);}
+    });
+  }
+  if(S.show.force){
+    FORCES.forEach(function(f){
+      var d=f.d(inp),mag=Math.abs(d[0])+Math.abs(d[1])+Math.abs(d[2]);
+      if(mag<0.05){return;}
+      var o=loc2w(f.o),e=loc2w(add(f.o,mul(d,2.2)));
+      arrow3(o,e,TH[f.k],4);
+    });
+  }
+}
+function render(){
+  var items=[],ghost=[],it,k,z,hy,g,pk,cx,cz,base,c0,p,pb,pt,cl,al,Qi=[0,0,0,1],Zang=[0,0,0,0,0];
+  ctx.clearRect(0,0,W,H);
+  if(S.mode==='place'){
+    g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,TH.sc1);g.addColorStop(1,TH.sc2);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle=TH.ink;ctx.lineWidth=1;ctx.globalAlpha=0.2;ctx.beginPath();
+    [3.5,7,10.5].forEach(function(R){for(k=0;k<64;k++){seg3([R*Math.cos(k/64*2*PI),-4.6,R*Math.sin(k/64*2*PI)],[R*Math.cos((k+1)/64*2*PI),-4.6,R*Math.sin((k+1)/64*2*PI)]);}});
+    for(k=0;k<12;k++){seg3([0,-4.6,0],[10.5*Math.cos(k/12*2*PI),-4.6,10.5*Math.sin(k/12*2*PI)]);}
+    ctx.stroke();ctx.setLineDash([6,5]);ctx.globalAlpha=0.35;ctx.beginPath();
+    for(k=0;k<64;k++){seg3([6.5*Math.cos(k/64*2*PI),0,6.5*Math.sin(k/64*2*PI)],[6.5*Math.cos((k+1)/64*2*PI),0,6.5*Math.sin((k+1)/64*2*PI)]);}
+    ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+    ctx.fillStyle='rgba(20,40,55,0.13)';pk=[];
+    for(k=0;k<20;k++){pk.push(proj([3.6*Math.cos(k/20*2*PI),-4.6,3.6*Math.sin(k/20*2*PI)*0.9]));}
+    drawPoly(pk);ctx.fill();
+    faceItems(Qi,[0,0,0],Zang,ghost,true);
+    ctx.strokeStyle=TH.ink;ctx.globalAlpha=0.28;ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ghost.forEach(function(gi){drawPoly(gi.sp);ctx.stroke();});
+    ctx.setLineDash([]);ctx.globalAlpha=1;
+  }else{
+    hy=H/2+F*Math.tan(Math.asin(clamp(cam.f[1],-1,1)));
+    g=ctx.createLinearGradient(0,0,0,Math.max(60,hy));g.addColorStop(0,'#4F8FD0');g.addColorStop(1,'#CFE6F5');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    if(hy<H){
+      g=ctx.createLinearGradient(0,hy,0,hy+H*0.35);g.addColorStop(0,'#CFE3D2');g.addColorStop(1,'#6FA763');
+      ctx.fillStyle=g;ctx.fillRect(0,Math.max(0,hy),W,H-Math.max(0,hy));
+    }
+    cx=Math.round(S.POS[0]/30)*30;cz=Math.round(S.POS[2]/30)*30;
+    ctx.strokeStyle='rgba(255,255,255,0.32)';ctx.lineWidth=1;ctx.beginPath();
+    for(k=-15;k<=15;k++){seg3([cx-450,GY,cz+30*k],[cx+450,GY,cz+30*k]);seg3([cx+30*k,GY,cz-450],[cx+30*k,GY,cz+450]);}
+    ctx.stroke();
+    pk=[];for(k=0;k<20;k++){pk.push(proj([S.POS[0]+4*Math.cos(k/20*2*PI),GY+0.05,S.POS[2]+4*Math.sin(k/20*2*PI)]));}
+    if(pk.every(function(q){return q.z>0.5;})){ctx.fillStyle='rgba(10,30,20,0.28)';drawPoly(pk);ctx.fill();}
+    TREES.forEach(function(t){
+      var x=wrap(t.x,S.POS[0],600),zz=wrap(t.z,S.POS[2],600),b=proj([x,GY,zz]),tp=proj([x,GY+t.h,zz]);
+      if(b.z<2||b.z>430){return;}
+      items.push({k:1,z:b.z,b:b,t:tp,al:clamp(1.3-b.z/330,0.2,1)});
+    });
+    CLOUDS.forEach(function(c){
+      var x=wrap(c.x,S.POS[0],900),zz=wrap(c.z,S.POS[2],900),pc=proj([x,GY+30+c.y,zz]);
+      if(pc.z<3||pc.z>700){return;}
+      items.push({k:2,z:pc.z,p:pc,r:F*c.s/pc.z});
+    });
+  }
+  faceItems(S.Q,S.POS,ANG,items,false);
+  items.sort(function(a,b){return b.z-a.z;});
+  ctx.lineJoin='round';
+  for(k=0;k<items.length;k++){
+    it=items[k];
+    if(it.k===0){
+      ctx.globalAlpha=it.a;ctx.fillStyle=it.col;drawPoly(it.sp);ctx.fill();
+      ctx.globalAlpha=1;ctx.strokeStyle=it.ne?'rgba(15,28,38,0.22)':'rgba(15,28,38,0.55)';ctx.lineWidth=1;ctx.stroke();
+    }else if(it.k===1){drawTree(it);}
+    else if(it.k===2){drawCloud(it);}
+  }
+  drawOverlay();
+}
+
+/* ---- vstupy ---- */
+var pad={x:0,y:0,on:false},ped={x:0,on:false},keys={},demo=null,stage=$('stage'),hover=false;
+function bindPad(el,two,obj){
+  function set(ev){
+    var r=el.getBoundingClientRect();
+    obj.x=clamp(((ev.clientX-r.left)/r.width-0.5)/0.42,-1,1);
+    if(two){obj.y=clamp(((ev.clientY-r.top)/r.height-0.5)/0.42,-1,1);}
+  }
+  function end(){obj.on=false;obj.x=0;if(two){obj.y=0;}}
+  el.addEventListener('pointerdown',function(ev){obj.on=true;demo=null;try{el.setPointerCapture(ev.pointerId);}catch(e){}set(ev);ev.preventDefault();});
+  el.addEventListener('pointermove',function(ev){if(obj.on){set(ev);}});
+  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+}
+bindPad($('pad'),true,pad);bindPad($('pedal'),false,ped);
+function kd(p,n){return (keys[p]?1:0)-(keys[n]?1:0);}
+window.addEventListener('keydown',function(ev){
+  var k=ev.key.toLowerCase(),tg=ev.target&&ev.target.tagName;
+  if(tg==='INPUT'||tg==='TEXTAREA'){return;}
+  if(!(hover||document.activeElement===stage)){return;}
+  if(['arrowleft','arrowright','arrowup','arrowdown','a','d'].indexOf(k)<0){return;}
+  keys[k]=true;demo=null;ev.preventDefault();
+});
+window.addEventListener('keyup',function(ev){keys[ev.key.toLowerCase()]=false;});
+window.addEventListener('blur',function(){keys={};});
+stage.addEventListener('mouseenter',function(){hover=true;});
+stage.addEventListener('mouseleave',function(){hover=false;keys={};});
+
+/* ---- ukázky ---- */
+var DEMOS={
+  roll:{mode:'place',len:5.8,ail:[[0,0],[0.25,1],[1.45,1],[1.7,0],[3.2,0],[3.45,-1],[4.65,-1],[4.9,0]]},
+  pitch:{mode:'place',len:10.6,ele:[[0,0],[0.25,1],[1.65,1],[1.9,0],[3.2,0],[3.45,-1],[6.25,-1],[6.5,0],[7.8,0],[8.05,1],[9.45,1],[9.7,0]]},
+  yaw:{mode:'place',len:11,rud:[[0,0],[0.25,1],[1.75,1],[2,0],[3.3,0],[3.55,-1],[6.55,-1],[6.8,0],[8.1,0],[8.35,1],[9.85,1],[10.1,0]]},
+  turn:{mode:'fly',len:13,ail:[[0,0],[0.3,0.8],[1.3,0.8],[1.6,0],[7.5,0],[7.8,-0.8],[8.8,-0.8],[9.1,0]],rud:[[0,0],[0.5,0.25],[8,0.25],[8.6,0]]}
+};
+function kf(a,t){
+  var i;
+  if(!a){return 0;}
+  if(t<=a[0][0]){return a[0][1];}
+  for(i=0;i<a.length-1;i++){
+    if(t<a[i+1][0]){return a[i][1]+(a[i+1][1]-a[i][1])*(t-a[i][0])/(a[i+1][0]-a[i][0]);}
+  }
+  return a[a.length-1][1];
+}
+function resetPose(){S.Q=[0,0,0,1];S.POS=[0,0,0];S.head=[1,0,0];S.eye=[-11,3.6,0];}
+function runDemo(name){
+  var d=DEMOS[name];
+  setMode(d.mode);resetPose();demo={d:d,t:0};
+}
+
+/* ---- režimy a pohyb ---- */
+function setMode(m){
+  S.mode=m;
+  $('mPlace').setAttribute('aria-pressed',String(m==='place'));$('mFly').setAttribute('aria-pressed',String(m==='fly'));
+  S.POS=[0,0,0];
+  if(m==='fly'){
+    var f=qrot(S.Q,[1,0,0]),l=Math.hypot(f[0],f[2])||1;
+    S.head=l>0.2?[f[0]/l,0,f[2]/l]:[1,0,0];S.eye=add(sub(S.POS,mul(S.head,11)),[0,3.6,0]);
+  }
+  $('hint').textContent=m==='fly'?'Let: pohled za letadlem. Klávesy: šipky = páka, A a D = pedály.':'Táhni myší, otočíš pohled. Klávesy: šipky = páka, A a D = pedály.';
+}
+function targets(dt){
+  var t={ail:0,ele:0,rud:0};
+  if(demo){
+    demo.t+=dt;
+    t.ail=kf(demo.d.ail,demo.t);t.ele=kf(demo.d.ele,demo.t);t.rud=kf(demo.d.rud,demo.t);
+    if(demo.t>demo.d.len){demo=null;}
+  }else{
+    t.ail=clamp(pad.x+kd('arrowright','arrowleft'),-1,1);
+    t.ele=clamp(pad.y+kd('arrowdown','arrowup'),-1,1);
+    t.rud=clamp(ped.x+kd('d','a'),-1,1);
+  }
+  return t;
+}
+function update(dt){
+  var t=targets(dt),k=1-Math.exp(-dt*9),r,dq,rg,bank,wy,f,hf,l,kh,eyeT,tgt;
+  S.inp.ail+=(t.ail-S.inp.ail)*k;S.inp.ele+=(t.ele-S.inp.ele)*k;S.inp.rud+=(t.rud-S.inp.rud)*k;
+  ANG[1]=S.inp.ail*25*D2R;ANG[2]=-S.inp.ail*25*D2R;ANG[3]=-S.inp.ele*25*D2R;ANG[4]=S.inp.rud*30*D2R;
+  r=rates();
+  dq=qmul(qmul(qaxis([1,0,0],r.roll*D2R*dt),qaxis([0,0,1],r.pitch*D2R*dt)),qaxis([0,1,0],r.yaw*D2R*dt));
+  S.Q=qnorm(qmul(S.Q,dq));
+  if(S.mode==='fly'){
+    rg=qrot(S.Q,[0,0,1]);bank=Math.asin(clamp(-rg[1],-1,1));
+    wy=-0.35*Math.tan(clamp(bank,-70*D2R,70*D2R));
+    S.Q=qnorm(qmul(qaxis([0,1,0],wy*dt),S.Q));
+    f=qrot(S.Q,[1,0,0]);
+    S.POS=add(S.POS,mul(f,20*dt));
+    if(S.POS[1]<GY+5){S.POS[1]=GY+5;}
+    hf=[f[0],0,f[2]];l=Math.sqrt(hf[0]*hf[0]+hf[2]*hf[2]);kh=1-Math.exp(-dt*3);
+    if(l>0.25){S.head=norm(add(mul(S.head,1-kh),mul([hf[0]/l,0,hf[2]/l],kh)));}
+    eyeT=add(sub(S.POS,mul(S.head,11)),[0,3.6,0]);
+    S.eye=add(S.eye,mul(sub(eyeT,S.eye),1-Math.exp(-dt*4)));
+    setCam(S.eye,add(S.POS,add(mul(f,3),[0,0.3,0])));
+  }else{
+    tgt=[0,0.3,0];
+    setCam([tgt[0]-S.dist*Math.cos(S.el)*Math.cos(S.az),tgt[1]+S.dist*Math.sin(S.el),tgt[2]+S.dist*Math.cos(S.el)*Math.sin(S.az)],tgt);
+  }
+}
+
+/* ---- zobrazení stavu ---- */
+var lastTxt={};
+function setTxt(id,s){if(lastTxt[id]!==s){lastTxt[id]=s;$(id).textContent=s;}}
+function ui(){
+  var i=S.inp,a=Math.round(Math.abs(i.ail)*25),e=Math.round(Math.abs(i.ele)*25),y=Math.round(Math.abs(i.rud)*30),f,rr,roll,pitch,head;
+  $('knob').style.left=(50+i.ail*42)+'%';$('knob').style.top=(50+i.ele*42)+'%';$('pknob').style.left=(50+i.rud*42)+'%';
+  setTxt('tRoll',Math.abs(i.ail)<0.06?'Neutrál. Obě křidélka jsou v rovině křídla.':
+    i.ail>0?'Pravé křidélko nahoru '+a+'°, levé dolů '+a+'°. Pravé křídlo klesá, levé stoupá: klonění doprava kolem podélné osy.':
+    'Levé křidélko nahoru '+a+'°, pravé dolů '+a+'°. Levé křídlo klesá, pravé stoupá: klonění doleva kolem podélné osy.');
+  setTxt('tPitch',Math.abs(i.ele)<0.06?'Neutrál. Výškovka je v rovině ocasní plochy.':
+    i.ele>0?'Výškovka nahoru '+e+'°. Síla tlačí ocas dolů a nos stoupá: klopení nahoru kolem příčné osy.':
+    'Výškovka dolů '+e+'°. Síla zvedá ocas a nos klesá: klopení dolů kolem příčné osy.');
+  setTxt('tYaw',Math.abs(i.rud)<0.06?'Neutrál. Směrovka je v rovině ocasní plochy.':
+    i.rud>0?'Směrovka doprava '+y+'°. Síla tlačí ocas doleva a nos se stáčí doprava: zatáčení kolem svislé osy.':
+    'Směrovka doleva '+y+'°. Síla tlačí ocas doprava a nos se stáčí doleva: zatáčení kolem svislé osy.');
+  $('rRoll').className='lrow roll'+(Math.abs(i.ail)>=0.06?' on':'');
+  $('rPitch').className='lrow pitch'+(Math.abs(i.ele)>=0.06?' on':'');
+  $('rYaw').className='lrow yaw'+(Math.abs(i.rud)>=0.06?' on':'');
+  f=qrot(S.Q,[1,0,0]);rr=qrot(S.Q,[0,0,1]);
+  roll=Math.round(Math.asin(clamp(-rr[1],-1,1))*R2D);pitch=Math.round(Math.asin(clamp(f[1],-1,1))*R2D);
+  head=Math.round((Math.atan2(f[2],f[0])*R2D+360)%360);
+  setTxt('aRoll',Math.abs(roll)+'°'+(roll>0?' vpravo':roll<0?' vlevo':''));
+  setTxt('aPitch',Math.abs(pitch)+'°'+(pitch>0?' nahoru':pitch<0?' dolů':''));
+  setTxt('aYaw',head+'°');
+}
+
+/* ---- ovládací prvky stránky ---- */
+function tog(id,key){
+  $(id).addEventListener('click',function(){S.show[key]=!S.show[key];$(id).setAttribute('aria-pressed',String(S.show[key]));});
+}
+tog('tAxes','axes');tog('tForce','force');tog('tArcs','arcs');
+$('mPlace').addEventListener('click',function(){setMode('place');});
+$('mFly').addEventListener('click',function(){setMode('fly');});
+$('bReset').addEventListener('click',function(){demo=null;resetPose();setMode(S.mode);});
+Array.prototype.forEach.call(document.querySelectorAll('.demo'),function(b){b.addEventListener('click',function(){runDemo(b.getAttribute('data-d'));});});
+var drag=null;
+cv.addEventListener('pointerdown',function(ev){drag={x:ev.clientX,y:ev.clientY};try{cv.setPointerCapture(ev.pointerId);}catch(e){}stage.focus({preventScroll:true});});
+cv.addEventListener('pointermove',function(ev){
+  if(!drag||S.mode!=='place'){return;}
+  S.az+=(ev.clientX-drag.x)*0.008;S.el=clamp(S.el+(ev.clientY-drag.y)*0.006,-0.15,1.25);
+  drag={x:ev.clientX,y:ev.clientY};
+});
+cv.addEventListener('pointerup',function(){drag=null;});cv.addEventListener('pointercancel',function(){drag=null;});
+cv.addEventListener('wheel',function(ev){if(S.mode==='place'){S.dist=clamp(S.dist*(1+ev.deltaY*0.001),10,30);ev.preventDefault();}},{passive:false});
+
+/* ---- smyčka ---- */
+var last=0;
+function frame(ts){
+  if(!last){last=ts;}
+  var dt=Math.min((ts-last)/1000,0.05);last=ts;
+  update(dt);render();ui();
+  window.requestAnimationFrame(frame);
+}
+try{new ResizeObserver(function(){resize();}).observe(cv);}catch(e){window.addEventListener('resize',resize);}
+loadTheme();
+try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',loadTheme);}catch(e){}
+try{new MutationObserver(loadTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});}catch(e){}
+resize();update(0.016);render();ui();
+var reduceMotion=false;try{reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
+if(!reduceMotion){demo={d:DEMOS.roll,t:0};}
+window.requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
