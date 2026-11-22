@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generátor mechanických písemek</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#17212e;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}main{max-width:980px;margin:38px auto;padding:0 20px 50px}h1{margin:0 0 8px}h2{margin:0 0 16px}.lead{color:#5d6b7c;margin:0 0 24px}.layout{display:grid;grid-template-columns:340px 1fr;gap:18px}.card{background:#fff;border:1px solid #dbe3ed;border-radius:12px;padding:18px}.field{display:grid;gap:6px;margin:12px 0}.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-size:.9rem;font-weight:650}input,textarea{width:100%;border:1px solid #bcc7d6;border-radius:8px;padding:9px;font:inherit}textarea{min-height:86px;resize:vertical}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}button{border:1px solid #9aa8ba;border-radius:8px;background:#fff;padding:10px 13px;cursor:pointer;font:inherit}button.primary{background:#174a86;border-color:#174a86;color:#fff}button:hover{filter:brightness(.96)}.preview{min-height:420px}.variant{border-bottom:1px solid #e4e8ef;padding:12px 0}.variant:last-child{border:0}.variant h3{margin:0 0 8px}.solution{background:#f5f8fc;border-radius:8px;padding:10px;margin-top:10px}.actions button{flex:1}.notice{color:#65748a;font-size:.9rem}@media(max-width:760px){.layout{grid-template-columns:1fr}.card{padding:14px}}@media print{main{margin:0;max-width:none}.layout{display:block}.settings,.actions,.notice{display:none}.card{border:0}.preview{min-height:0}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Generátor mechanických písemek</h1>
+  <p class="lead">Vytvoří varianty podobného mechanického příkladu a řešení ve formátu vhodném pro tisk nebo Word.</p>
+  <div class="layout">
+    <section class="card settings">
+      <h2>Nastavení</h2>
+      <div class="field"><label for="count">Počet variant</label><input id="count" type="number" min="1" max="30" value="6"></div>
+      <div class="field"><label for="title">Název písemky</label><input id="title" value="Písemka – řezná rychlost"></div>
+      <div class="field"><label for="question">Zadání pro každou variantu</label><textarea id="question">Jaké otáčky nástroje soustruhu je třeba nastavit, je-li průměr obrobku D = {D} mm a doporučená řezná rychlost v = {v} m/min?</textarea></div>
+      <div class="field-row">
+        <div class="field"><label for="d0">Průměr od (mm)</label><input id="d0" type="number" value="40"></div>
+        <div class="field"><label for="d1">Průměr do (mm)</label><input id="d1" type="number" value="180"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="v0">Řezná rychlost od</label><input id="v0" type="number" value="80"></div>
+        <div class="field"><label for="v1">Řezná rychlost do</label><input id="v1" type="number" value="220"></div>
+      </div>
+      <div class="field"><label><input id="solutions" type="checkbox" checked style="width:auto"> Vygenerovat řešení</label></div>
+      <div class="actions">
+        <button class="primary" id="generate">Vygenerovat varianty</button>
+        <button id="download">Stáhnout .doc</button>
+        <button id="print">Tisk</button>
+      </div>
+      <p class="notice">Výchozí vzorec: n = 1000 · v / (π · D). Hodnoty se zobrazují zaokrouhlené na celé otáčky/min.</p>
+    </section>
+    <section class="card preview">
+      <h2>Náhled</h2>
+      <div id="output"></div>
+    </section>
+  </div>
+</main>
+<script>
+let variants=[];
+function randomInt(min,max,step=1){
+  const a=Math.ceil(min/step)*step;
+  const b=Math.floor(max/step)*step;
+  return a+Math.floor(Math.random()*((b-a)/step+1))*step;
+}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function makeVariants(){
+  const count=Math.min(30,Math.max(1,+document.getElementById('count').value||6));
+  const d0=+document.getElementById('d0').value,d1=+document.getElementById('d1').value;
+  const v0=+document.getElementById('v0').value,v1=+document.getElementById('v1').value;
+  if(d0<=0||d1<d0||v0<=0||v1<v0){alert('Zkontrolujte intervaly průměru a řezné rychlosti.');return}
+  variants=[];
+  for(let i=0;i<count;i++){
+    const D=randomInt(d0,d1,5),v=randomInt(v0,v1,5);
+    const n=Math.round(1000*v/(Math.PI*D));
+    variants.push({D,v,n});
+  }
+  render();
+}
+function questionText(v){
+  return document.getElementById('question').value.replaceAll('{D}',v.D).replaceAll('{v}',v.v);
+}
+function render(){
+  const out=document.getElementById('output');
+  const show=document.getElementById('solutions').checked;
+  out.innerHTML=variants.map((v,i)=>`
+    <article class="variant">
+      <h3>Varianta ${i+1}</h3>
+      <p>${escapeHtml(questionText(v))}</p>
+      <p>Jméno a příjmení: ____________________________</p>
+      ${show?`<div class="solution"><strong>Řešení:</strong><br>n = 1000 · v / (π · D)<br>n = 1000 · ${v.v} / (π · ${v.D}) = <strong>${v.n} ot/min</strong></div>`:''}
+    </article>`).join('') || '<p>Stiskněte „Vygenerovat varianty“.</p>';
+}
+function docContent(){
+  const show=document.getElementById('solutions').checked;
+  const title=escapeHtml(document.getElementById('title').value);
+  let body=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${title}</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt}.variant{page-break-after:always}.variant:last-child{page-break-after:auto}.solution{background:#eee;padding:8pt;border:1pt solid #ddd}h1{font-size:18pt}h2{font-size:13pt}</style></head><body><h1>${title}</h1>`;
+  variants.forEach((v,i)=>{body+=`<div class="variant"><h2>Varianta ${i+1}</h2><p>Jméno a příjmení: ____________________________</p><p>${escapeHtml(questionText(v))}</p><p>Výpočet:<br><br>.....................................................................<br><br>.....................................................................</p>${show?`<div class="solution"><b>Řešení</b><br>n = 1000 · v / (π · D)<br>n = 1000 · ${v.v} / (π · ${v.D}) = ${v.n} ot/min</div>`:''}</div>`});
+  return body+'</body></html>';
+}
+document.getElementById('generate').addEventListener('click',makeVariants);
+document.getElementById('print').addEventListener('click',()=>window.print());
+document.getElementById('download').addEventListener('click',()=>{
+  if(!variants.length)makeVariants();
+  const blob=new Blob(['\ufeff',docContent()],{type:'application/msword'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=(document.getElementById('title').value||'Pisemka').replace(/[\\/:*?"<>|]/g,'')+'.doc';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+makeVariants();
+</script>
+</body>
+</html>
