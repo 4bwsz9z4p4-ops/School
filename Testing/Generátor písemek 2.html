@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generátor písemek 2 – strojní čas</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#17212e;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}main{max-width:980px;margin:38px auto;padding:0 20px 50px}h1{margin:0 0 8px}h2{margin:0 0 16px}.lead{color:#5d6b7c;margin-bottom:24px}.layout{display:grid;grid-template-columns:340px 1fr;gap:18px}.card{background:#fff;border:1px solid #dbe3ed;border-radius:12px;padding:18px}.field{display:grid;gap:6px;margin:12px 0}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-size:.9rem;font-weight:650}input,textarea{width:100%;border:1px solid #bcc7d6;border-radius:8px;padding:9px;font:inherit}textarea{min-height:82px}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}button{border:1px solid #9aa8ba;border-radius:8px;background:#fff;padding:10px 13px;cursor:pointer;font:inherit}button.primary{background:#174a86;border-color:#174a86;color:#fff}.variant{padding:12px 0;border-bottom:1px solid #e4e8ef;break-inside:avoid}.identity{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}.work{height:100px;margin-top:12px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 27px,#cbd3de 28px)}.solutions{break-before:page;page-break-before:always}.answer{padding:9px 0;border-bottom:1px solid #ddd}@media(max-width:760px){.layout{grid-template-columns:1fr}}@page{size:A4;margin:18mm 17mm}@media print{html,body{background:#fff!important}.settings,.lead,main>h1,.preview>h2,.actions{display:none!important}main{margin:0;padding:0}.layout{display:block}.card{border:0;padding:0}.variant{border:0}.solutions{break-before:page}}
+  </style>
+</head>
+<body>
+<main>
+<h1>Generátor písemek 2</h1>
+<p class="lead">Strojní čas při soustružení válcové plochy.</p>
+<div class="layout">
+<section class="card settings">
+<h2>Nastavení</h2>
+<div class="field"><label for="count">Počet variant</label><input id="count" type="number" min="1" max="30" value="6"></div>
+<div class="field"><label for="title">Název písemky</label><input id="title" value="Písemka – strojní čas soustružení"></div>
+<div class="field"><label for="question">Zadání</label><textarea id="question">Vypočítejte strojní čas tₛ při soustružení délky {l} mm válcové plochy. Plochu budeme 2× hrubovat a 1× dokončovat. Bezpečná délka náběhu a výjezdu nože ze záběru je v obou případech {a} mm. Otáčky jsou nastaveny {n} ot/min a posuv na otáčku {f} mm/ot.</textarea></div>
+<div class="row"><div class="field"><label>Délka od–do (mm)</label><input id="l0" type="number" value="50"><input id="l1" type="number" value="100"></div><div class="field"><label>Náběh od–do (mm)</label><input id="a0" type="number" value="5"><input id="a1" type="number" value="5"></div></div>
+<div class="row"><div class="field"><label>Otáčky od–do</label><input id="n0" type="number" value="400"><input id="n1" type="number" value="800"></div><div class="field"><label>Posuv od–do (mm/ot)</label><input id="f0" type="number" value="0.15" step="0.05"><input id="f1" type="number" value="0.35" step="0.05"></div></div>
+<div class="actions"><button class="primary" id="generate">Vygenerovat varianty</button><button id="download">Stáhnout .doc</button><button id="print">Tisk</button></div>
+</section>
+<section class="card preview"><h2>Náhled</h2><div id="output"></div></section>
+</div>
+</main>
+<script>
+let variants=[];
+const $=id=>document.getElementById(id);
+function rand(min,max,step){const lo=Math.ceil(min/step)*step,hi=Math.floor(max/step)*step;return +(lo+Math.floor(Math.random()*((hi-lo)/step+1))*step).toFixed(4)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function make(){const count=Math.min(30,Math.max(1,+$('count').value||6));const l0=+$('l0').value,l1=+$('l1').value,a0=+$('a0').value,a1=+$('a1').value,n0=+$('n0').value,n1=+$('n1').value,f0=+$('f0').value,f1=+$('f1').value;if(l0<=0||l1<l0||a0<0||a1<a0||n0<=0||n1<n0||f0<=0||f1<f0)return;variants=[];for(let i=0;i<count;i++){const l=rand(l0,l1,5),a=rand(a0,a1,1),n=rand(n0,n1,50),f=rand(f0,f1,.05);const minutes=3*(l+2*a)/(n*f);variants.push({l,a,n,f,minutes,minutesText:minutes.toFixed(2)})}render()}
+function text(v){return $('question').value.replaceAll('{l}',v.l).replaceAll('{a}',v.a).replaceAll('{n}',v.n).replaceAll('{f}',v.f)}
+function identity(){return '<div class="identity"><span>Jméno a příjmení: ____________________</span><span>Třída: ________</span><span>Datum: ________</span></div>'}
+function render(){ $('output').innerHTML=variants.map((v,i)=>`<article class="variant"><h3>Varianta ${i+1}</h3>${identity()}<p>${esc(text(v))}</p><b>Postup výpočtu:</b><div class="work"></div></article>`).join('')+`<section class="solutions"><h2>Řešení</h2>${variants.map((v,i)=>`<div class="answer"><b>Varianta ${i+1}:</b> tₛ = 3 · (${v.l} + 2 · ${v.a}) / (${v.n} · ${v.f}) = <b>${v.minutesText} min</b></div>`).join('')}</section>`}
+function doc(){let s=`<html><head><meta charset="utf-8"><style>@page{size:A4;margin:18mm 17mm}body{font-family:Calibri,Arial;font-size:11pt}.variant{page-break-inside:avoid;margin-bottom:12mm}.identity span{margin-right:12pt}.work{height:78pt;background:repeating-linear-gradient(to bottom,transparent 0,transparent 25pt,#ccc 26pt)}.solutions{page-break-before:always}.answer{padding:8pt;border-bottom:1px solid #ddd}</style></head><body><h1>${esc($('title').value)}</h1>`;variants.forEach((v,i)=>{s+=`<div class="variant"><h2>Varianta ${i+1}</h2><div class="identity"><span>Jméno a příjmení: ____________________</span><span>Třída: ________</span><span>Datum: ________</span></div><p>${esc(text(v))}</p><b>Postup výpočtu:</b><div class="work">&nbsp;</div></div>`});s+=`<div class="solutions"><h1>Řešení</h1>${variants.map((v,i)=>`<div class="answer"><b>Varianta ${i+1}:</b> tₛ = 3 · (${v.l} + 2 · ${v.a}) / (${v.n} · ${v.f}) = ${v.minutesText} min</div>`).join('')}</div></body></html>`;return s}
+$('generate').onclick=make;$('print').onclick=()=>print();$('download').onclick=()=>{if(!variants.length)make();const b=new Blob(['\ufeff',doc()],{type:'application/msword'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=$('title').value.replace(/[\\/:*?"<>|]/g,'')+'.doc';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};make();
+</script>
+</body>
+</html>
