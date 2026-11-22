@@ -1,0 +1,201 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Generátor variant zadání</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#EEF1F5; --panel:#FFFFFF; --soft:#F5F7FA; --stage:#F4F7FA; --ink:#18202B; --muted:#566273;
+  --rule:#D5DCE5; --rule-strong:#9FACBD; --steel:#8793A6; --load:#2F6FDB; --f:#D4571A; --ok:#12795C; --loss:#C23B32;
+  --on-ink:#FFFFFF; --focus:#2B59C9; --hi:#E0A100;
+  --font-display:'Archivo','Arial Narrow',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F141B; --panel:#171E28; --soft:#1C2531; --stage:#121921; --ink:#E7ECF2; --muted:#9AA7B8;
+    --rule:#2A3441; --rule-strong:#4A5A72; --steel:#8E9BB0; --load:#6FA0FF; --f:#FF9055; --ok:#5ED6B0; --loss:#FF7B72;
+    --on-ink:#0F141B; --focus:#7DA2FF; --hi:#FFC933; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --panel:#171E28; --soft:#1C2531; --stage:#121921; --ink:#E7ECF2; --muted:#9AA7B8;
+  --rule:#2A3441; --rule-strong:#4A5A72; --steel:#8E9BB0; --load:#6FA0FF; --f:#FF9055; --ok:#5ED6B0; --loss:#FF7B72;
+  --on-ink:#0F141B; --focus:#7DA2FF; --hi:#FFC933; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.wrap{max-width:1200px;margin-inline:auto}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(26px,4.4vw,40px);line-height:1.1;letter-spacing:-.01em;margin:0 0 8px;text-wrap:balance}
+.lead{margin:0 0 18px;color:var(--muted);max-width:72ch}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:14px;min-width:0}
+.panel h2{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+.stage{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:grid;gap:10px;border-color:var(--rule-strong)}
+canvas{display:block;width:100%;border-radius:8px;background:var(--stage)}
+canvas#cv{aspect-ratio:520/440}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:14px;padding:8px 14px;min-height:40px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--ink)} .btn.primary{background:var(--ink);color:var(--on-ink);border-color:var(--ink);font-weight:600}
+.btn:focus-visible,input:focus-visible,.step:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.live{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:8px}
+.live div{background:var(--soft);border-radius:8px;padding:6px 10px}
+.live span{display:block;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.live b{font-family:var(--font-mono);font-weight:500;font-size:16px}
+.bar{display:flex;height:26px;border-radius:6px;overflow:hidden;background:var(--soft);border:1px solid var(--rule-strong)}
+.bar i{display:block;height:100%;transition:width .08s}
+.bar .e{background:var(--ok)} .bar .l{background:var(--loss)}
+.barl{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;margin-top:4px}
+.barl .e{color:var(--ok)} .barl .l{color:var(--loss)}
+.rng{display:grid;gap:2px;margin-top:10px}
+.rng label{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.rng output{font-family:var(--font-mono);font-weight:500}
+input[type=range]{width:100%;accent-color:var(--ink);min-height:28px}
+.inputs{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.step{border:1px solid var(--rule);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--panel);cursor:pointer;display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px}
+.step.cur{border:2px solid var(--ink);padding:11px}
+.step .no{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--rule-strong);display:grid;place-items:center;font:600 13px var(--font-mono)}
+.step.cur .no{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.step h3{margin:0 0 4px;font-size:15px}
+.step p{margin:0 0 6px;font-size:14px;color:var(--muted)} .step p:last-child{margin-bottom:0}
+.eq{font-family:var(--font-mono);font-size:15px;padding:8px 10px;background:var(--soft);border-radius:8px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:6px 0;overflow-x:auto}
+.eq b{font-weight:600}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25}
+.fr>span:first-child{padding:0 4px 2px;border-bottom:1.5px solid var(--ink)} .fr>span:last-child{padding:2px 4px 0}
+.hl{color:var(--f);font-weight:600} .ok{color:var(--ok)} .ls{color:var(--loss)}
+.res{font-family:var(--font-mono);font-size:22px;font-weight:600;color:var(--f)}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{padding:6px 8px;border-bottom:1px solid var(--rule);text-align:left} th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.n{font-family:var(--font-mono);text-align:right}
+.chk{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chk input[type=number]{font:inherit;font-family:var(--font-mono);width:110px;padding:8px;border:1.5px solid var(--rule-strong);border-radius:8px;background:var(--panel);color:var(--ink)}
+.fb{margin:8px 0 0;font-size:14px;min-height:1.5em}
+.note{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.right{display:grid;gap:14px;min-width:0}
+@media (max-width:920px){.layout{display:block}.stage{position:static}.right{margin-top:14px}}
+@media (max-width:520px){.inputs{grid-template-columns:1fr}}
+
+.layout{grid-template-columns:minmax(0,360px) minmax(0,1fr)}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+.fld{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.fld label{font-size:13px;color:var(--muted);display:grid;gap:3px}
+input[type=number]{font:inherit;font-family:var(--font-mono);width:100%;padding:7px 8px;border:1.5px solid var(--rule-strong);border-radius:8px;background:var(--panel);color:var(--ink)}
+.grp{margin-top:14px} .grp>b{display:block;font-size:14px}
+.eta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.eta label{display:flex;gap:6px;align-items:center;border:1.5px solid var(--rule-strong);border-radius:8px;padding:5px 10px;font-family:var(--font-mono);font-size:13px;cursor:pointer}
+.eta input{accent-color:var(--ink);margin:0}
+.tg{display:flex;gap:8px;align-items:center;font-size:14px;margin-top:10px;cursor:pointer}
+.tg input{width:17px;height:17px;accent-color:var(--ink);margin:0}
+.paper{background:#fff;color:#111;border:1px solid var(--rule-strong);border-radius:6px;padding:18px 22px;font-family:Calibri,Arial,sans-serif;font-size:15px}
+.hd{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.hd h2{margin:0}
+.msg{font-size:13.5px;min-height:1.4em;margin:6px 0 0;color:var(--ok)}
+.warn{color:var(--loss)}
+.sp{display:flex;flex-direction:column;gap:14px;min-width:0}
+</style>
+<div class="wrap">
+<header>
+ <h1>Generátor variant zadání</h1>
+ <p class="lead">Šroubový zvedák, síla na klice při jedné otáčce. Stoupání šroubu zůstává P = 6 mm, mění se hmotnost břemene m, délka kliky R a účinnost η. Hotový text zkopírujete i s formátováním a vložíte do Wordu.</p>
+</header>
+<div class="layout">
+ <section class="panel">
+  <h2>Nastavení</h2>
+  <div class="grp"><b>Počet variant</b><div class="fld"><label>Počet<input type="number" id="cnt" min="1" max="20" value="6"></label></div></div>
+  <div class="grp"><b>Hmotnost břemene m [kg]</b><div class="fld"><label>od<input type="number" id="m0" min="50" max="3000" step="50" value="300"></label><label>do<input type="number" id="m1" min="50" max="3000" step="50" value="1500"></label></div></div>
+  <div class="grp"><b>Délka kliky R [mm]</b><div class="fld"><label>od<input type="number" id="r0" min="50" max="500" step="10" value="150"></label><label>do<input type="number" id="r1" min="50" max="500" step="10" value="300"></label></div></div>
+  <div class="grp"><b>Účinnost η</b><div class="eta" id="eta"></div></div>
+  <div class="grp"><b>Přijatelná síla na klice F [N]</b><div class="fld"><label>od<input type="number" id="f0" value="40"></label><label>do<input type="number" id="f1" value="250"></label></div></div>
+  <label class="tg"><input type="checkbox" id="cg" checked>Uvést g = 9,81 m·s⁻² v zadání</label>
+  <label class="tg"><input type="checkbox" id="cw" checked>Přidat k řešení práce W<sub>ef</sub> a W<sub>vl</sub></label>
+  <div class="ctl" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+   <button class="btn primary" id="gen" type="button">Vytvořit nové zadání</button>
+   <button class="btn" id="rst" type="button">Výchozí nastavení</button>
+  </div>
+  <p class="note">Hodnoty se volí po 50 kg a po 10 mm. Do zadání se dostanou jen kombinace, u kterých vyjde síla v zadaném rozmezí. Pro samosvorný šroub bývá účinnost kolem 0,25 až 0,45.</p>
+ </section>
+ <div class="sp">
+  <section class="panel">
+   <div class="hd"><h2>Zadání pro žáky</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="cZ" type="button">Kopírovat zadání</button><button class="btn" id="cZp" type="button">Jako prostý text</button></div></div>
+   <div class="paper" id="outZ"></div>
+  </section>
+  <section class="panel">
+   <div class="hd"><h2>Řešení pro učitele</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="cR" type="button">Kopírovat řešení</button><button class="btn" id="cA" type="button">Zadání i řešení</button></div></div>
+   <div class="paper" id="outR"></div>
+   <p class="msg" id="msg" aria-live="polite"></p>
+  </section>
+ </div>
+</div>
+</div>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+function fx(x,d){return (+x).toFixed(d).replace(".",",");}
+var P=6,G=9.81,PI=3.14,ETAS=[0.25,0.3,0.35,0.4,0.45],LET="ABCDEFGHIJKLMNOPQRST";
+var DEF={cnt:6,m0:300,m1:1500,r0:150,r1:300,f0:40,f1:250};
+var etaEl=$("eta");
+ETAS.forEach(function(e){var l=document.createElement("label");l.innerHTML='<input type="checkbox" value="'+e+'" checked>'+fx(e,2);etaEl.appendChild(l);});
+function rnd(){return Math.random();}
+function F(m,R,e){return m*G*P/(2*PI*R*e);}
+var cur=null;
+function opts(){
+ var o={};["cnt","m0","m1","r0","r1","f0","f1"].forEach(function(k){o[k]=+$(k).value;});
+ o.eta=Array.prototype.filter.call(etaEl.querySelectorAll("input"),function(i){return i.checked;}).map(function(i){return +i.value;});
+ return o;
+}
+function gen(){
+ var o=opts(),msg=$("msg");msg.className="msg";
+ var ms=[],rs=[],a,b;
+ a=Math.ceil(Math.min(o.m0,o.m1)/50)*50;b=Math.floor(Math.max(o.m0,o.m1)/50)*50;for(;a<=b;a+=50)ms.push(a);
+ a=Math.ceil(Math.min(o.r0,o.r1)/10)*10;b=Math.floor(Math.max(o.r0,o.r1)/10)*10;for(;a<=b;a+=10)rs.push(a);
+ var pool=[];
+ ms.forEach(function(m){rs.forEach(function(R){o.eta.forEach(function(e){var f=F(m,R,e);if(f>=o.f0&&f<=o.f1)pool.push({m:m,R:R,e:e,F:f});});});});
+ if(!pool.length){cur=[];render();msg.className="msg warn";msg.textContent="Pro toto nastavení nevychází žádná vhodná kombinace. Rozšiřte rozsahy nebo rozmezí síly.";return;}
+ for(var i=pool.length-1;i>0;i--){var j=Math.floor(rnd()*(i+1)),t=pool[i];pool[i]=pool[j];pool[j]=t;}
+ var n=Math.max(1,Math.min(20,o.cnt));cur=pool.slice(0,n);render();
+ msg.textContent=cur.length<n?"Pro toto nastavení existuje jen "+cur.length+" různých kombinací.":"";
+ if(cur.length<n)msg.className="msg warn";
+}
+var FS='font-family:Calibri,Arial,sans-serif;font-size:11pt;';
+function zad(v,i){
+ var g=$("cg").checked?' Tíhové zrychlení g = 9,81 m·s<sup>-2</sup>.':'';
+ return '<p style="'+FS+'margin:0 0 2pt"><b>Příklad '+(i+1)+' (varianta '+LET[i]+')</b></p>'
+  +'<p style="'+FS+'margin:0 0 10pt">Vypočtěte velikost síly pro zvedání břemene u šroubového zvedáku při jedné otáčce kliky. <i>Dáno:</i> hmotnost břemene m = '+v.m+' kg, délka ramene kliky R = '+v.R+' mm, stoupání šroubu P = '+P+' mm, účinnost η = '+fx(v.e,2).replace(/0$/,'')+'.'+g+'</p>';
+}
+function res(v,i){
+ var we=v.m*G*P/1000,wv=we/v.e,w=$("cw").checked?'<br>W<sub>ef</sub> = m·g·P = '+v.m+' · 9,81 · 0,006 = '+fx(we,1)+' J, W<sub>vl</sub> = W<sub>ef</sub> / η = '+fx(wv,1)+' J':'';
+ return '<p style="'+FS+'margin:0 0 2pt"><b>Příklad '+(i+1)+' (varianta '+LET[i]+')</b></p>'
+  +'<p style="'+FS+'margin:0 0 10pt">F = m·g·P / (2·π·R·η) = '+v.m+' · 9,81 · '+P+' / (2 · 3,14 · '+v.R+' · '+fx(v.e,2).replace(/0$/,'')+') = <b>'+fx(v.F,1)+' N</b>'+w+'</p>';
+}
+function render(){
+ $("outZ").innerHTML=cur.map(zad).join("")||"<i>Žádné zadání</i>";
+ $("outR").innerHTML=(cur.length?cur.map(res).join('')+'<p style="'+FS+'margin:0;color:#555"><i>Počítáno s π = 3,14 a g = 9,81 m·s<sup>-2</sup>, výsledek zaokrouhlen na desetiny newtonu.</i></p>':"<i>Žádné řešení</i>");
+}
+function say(t,bad){var m=$("msg");m.className="msg"+(bad?" warn":"");m.textContent=t;}
+function copyHtml(html,plain,label){
+ function fallback(){
+  var d=document.createElement("div");d.innerHTML=html;d.style.cssText="position:fixed;left:-9999px;top:0;background:#fff;color:#000";document.body.appendChild(d);
+  var r=document.createRange();r.selectNodeContents(d);var s=getSelection();s.removeAllRanges();s.addRange(r);
+  var ok=false;try{ok=document.execCommand("copy");}catch(e){}s.removeAllRanges();document.body.removeChild(d);
+  say(ok?label+" zkopírováno. Vložte do Wordu (Ctrl+V).":"Kopírování se nepovedlo. Označte text ručně a zkopírujte ho.",!ok);
+ }
+ if(navigator.clipboard&&window.ClipboardItem){
+  try{navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([plain],{type:"text/plain"})})]).then(function(){say(label+" zkopírováno. Vložte do Wordu (Ctrl+V).");},fallback);return;}catch(e){}
+ }
+ fallback();
+}
+function txt(el){return el.innerText.replace(/\n{3,}/g,"\n\n").trim();}
+$("cZ").addEventListener("click",function(){copyHtml($("outZ").innerHTML,txt($("outZ")),"Zadání");});
+$("cZp").addEventListener("click",function(){copyHtml("<pre>"+txt($("outZ")).replace(/</g,"&lt;")+"</pre>",txt($("outZ")),"Zadání jako text");});
+$("cR").addEventListener("click",function(){copyHtml($("outR").innerHTML,txt($("outR")),"Řešení");});
+$("cA").addEventListener("click",function(){copyHtml($("outZ").innerHTML+'<p style="'+FS+'"><b>Řešení</b></p>'+$("outR").innerHTML,txt($("outZ"))+"\n\nŘešení\n"+txt($("outR")),"Zadání i řešení");});
+$("gen").addEventListener("click",gen);
+$("rst").addEventListener("click",function(){Object.keys(DEF).forEach(function(k){$(k).value=DEF[k];});Array.prototype.forEach.call(etaEl.querySelectorAll("input"),function(i){i.checked=true;});$("cg").checked=true;$("cw").checked=true;gen();});
+$("cg").addEventListener("change",function(){if(cur)render();});$("cw").addEventListener("change",function(){if(cur)render();});
+gen();
+})();
+</script>
+
+</body></html>
