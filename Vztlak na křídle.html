@@ -1,0 +1,691 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Vztlak na křídle</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap">
+<style>
+/* Layout: širší měřicí „aerodynamický tunel“ s ovládáním pod ním, výklad po kroích vpravo, tři početní karty dole. */
+:root{
+  --bg:#F2F5F6; --surface:#FFFFFF; --ink:#11222B; --ink2:#50636D; --line:#D3DCE1; --stage:#E8EEF1;
+  --flow:#0E7C8A; --wing:#1C2D36; --wing-edge:#0A141A;
+  --press:#D3412C; --suct:#2563D6; --lift:#B86E00; --tube:#6D3FD0;
+  --accent:#0E7C8A; --accent-ink:#FFFFFF;
+  --f-head:'Space Grotesk','Inter',system-ui,sans-serif;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-math:'STIX Two Text','Cambria Math','Times New Roman',serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C151A; --surface:#121E25; --ink:#E8F0F3; --ink2:#9DB1BB; --line:#25353E; --stage:#0A1318;
+    --flow:#7FD6E0; --wing:#DCE6EB; --wing-edge:#FFFFFF;
+    --press:#FF6A50; --suct:#5B9CFF; --lift:#FFB938; --tube:#B796FF;
+    --accent:#4CC3D1; --accent-ink:#06222A; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C151A; --surface:#121E25; --ink:#E8F0F3; --ink2:#9DB1BB; --line:#25353E; --stage:#0A1318;
+  --flow:#7FD6E0; --wing:#DCE6EB; --wing-edge:#FFFFFF;
+  --press:#FF6A50; --suct:#5B9CFF; --lift:#FFB938; --tube:#B796FF;
+  --accent:#4CC3D1; --accent-ink:#06222A; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 40px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-head);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(1.9rem,4.5vw,2.8rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:1.45rem;font-weight:600}
+h3{font-size:1.05rem;font-weight:600}
+p{margin:0}
+.eyebrow{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:6px}
+.lede{color:var(--ink2);max-width:62ch;margin-top:8px}
+.eq{font-family:var(--f-math);font-size:1.45rem;line-height:1.3;padding:10px 14px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.eq i{font-style:italic}
+.eq-s{font-family:var(--f-math);font-size:1.1rem}
+.eq-s i,.mi{font-style:italic;font-family:var(--f-math)}
+
+/* kroky */
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.steps button{display:flex;align-items:center;gap:10px;font:inherit;font-weight:500;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line);padding:8px 14px 8px 8px;border-radius:999px;cursor:pointer;min-height:44px}
+.steps button .n{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--bg);border:1px solid var(--line);
+  font-family:var(--f-head);font-weight:600;font-size:.85rem}
+.steps button[aria-current="step"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.steps button[aria-current="step"] .n{background:color-mix(in srgb,var(--accent-ink) 18%,transparent);border-color:transparent;color:var(--accent-ink)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* laboratoř */
+.lab{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(280px,1fr);gap:20px;align-items:start}
+.stage{position:relative;aspect-ratio:16/9;background:var(--stage);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;margin-top:14px}
+.ctl label{display:flex;justify-content:space-between;align-items:baseline;font-weight:500;margin-bottom:4px}
+.ctl output{font-family:var(--f-head);font-weight:600;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.ctl small{display:block;color:var(--ink2);font-size:.78rem;margin-top:2px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:var(--track,var(--line))}
+input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:var(--track,var(--line))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid var(--surface);margin-top:-8px;box-shadow:0 0 0 1px var(--accent)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--accent)}
+#alpha{--track:linear-gradient(to right,var(--line) 0 86.4%,color-mix(in srgb,var(--lift) 70%,var(--line)) 86.4% 100%)}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.btn,.chip{font:inherit;font-size:.9rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer;min-height:38px}
+.chip[aria-pressed="true"],.btn[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 16%,var(--surface));border-color:var(--accent);font-weight:600}
+.chip .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:-1px;background:var(--ink2)}
+
+/* výklad */
+.story{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.story .tip{font-size:.9rem;color:var(--ink2);border-top:1px solid var(--line);padding-top:12px}
+.story .tip b{color:var(--ink);font-weight:600}
+
+/* karty */
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.card .sub{color:var(--ink2);font-size:.88rem}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.9rem}
+th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:500;color:var(--ink2);font-size:.78rem}
+td.k{font-weight:600}
+.big{font-family:var(--f-head);font-size:1.6rem;font-weight:600;font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kv div span{display:block;color:var(--ink2);font-size:.78rem}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+svg text{fill:var(--ink2);font-family:var(--f-body);font-size:10px}
+.note{color:var(--ink2);font-size:.82rem;max-width:90ch}
+
+@media (max-width:980px){
+  .lab{grid-template-columns:minmax(0,1fr)}
+  .cards{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:620px){
+  .stage{aspect-ratio:4/3}
+  .controls{grid-template-columns:1fr}
+  .steps button{padding-right:12px}
+  .steps button .lbl{font-size:.9rem}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">Aerodynamika · profil křídla v řezu</p>
+    <h1>Vztlak na křídle</h1>
+    <p class="lede">Model obtékání profilu s vypočtenými proudnicemi a tlaky. Měňte úhel náběhu a rychlost, procházejte kroky výkladu a sledujte, odkud se bere rozdíl tlaků pod a nad křídlem.</p>
+  </header>
+
+  <ol class="steps" id="steps" aria-label="Kroky výkladu"></ol>
+
+  <section class="lab">
+    <div>
+      <div class="stage"><canvas id="cv" role="img" aria-label="Animace proudění vzduchu kolem profilu křídla s proudnicemi, rozložením tlaku a vztlakem"></canvas></div>
+      <div class="controls">
+        <div class="ctl">
+          <label for="alpha"><span>Úhel náběhu <span class="mi">α</span></span><output id="alphaOut">6,0°</output></label>
+          <input id="alpha" type="range" min="-4" max="18" step="0.5" value="6">
+          <small>Žlutá část dráhy: za kritickým úhlem (≈ 15°) křídlo ztrácí vztlak.</small>
+        </div>
+        <div class="ctl">
+          <label for="speed"><span>Rychlost letu <span class="mi">v</span></span><output id="speedOut">50 m/s</output></label>
+          <input id="speed" type="range" min="20" max="100" step="5" value="50">
+          <small id="speedKmh">180 km/h</small>
+        </div>
+      </div>
+      <div class="row" id="chips" role="group" aria-label="Zobrazené vrstvy"></div>
+      <div class="row">
+        <button class="btn" id="play" type="button">Pauza</button>
+        <button class="btn" id="slow" type="button" aria-pressed="false">Zpomalit</button>
+        <button class="btn" id="sweep" type="button" aria-pressed="false">Automaticky měnit α</button>
+      </div>
+    </div>
+
+    <aside class="story" aria-live="polite" id="story"></aside>
+  </section>
+
+  <section class="cards">
+    <article class="card" id="card-cont">
+      <h3>Rovnice kontinuity</h3>
+      <div class="eq"><i>S</i><sub>1</sub> · <i>v</i><sub>1</sub> = <i>S</i><sub>2</sub> · <i>v</i><sub>2</sub></div>
+      <p class="sub">Průřez <i class="mi">S</i> = výška proudové trubice × 1 m rozpětí křídla. Měří se kolmo na proudění.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Průřez</th><th>S [m²]</th><th>v [m/s]</th><th>S · v [m³/s]</th></tr></thead>
+        <tbody>
+          <tr><td>S₁ před křídlem</td><td id="c1S">–</td><td id="c1v">–</td><td class="k" id="c1Q">–</td></tr>
+          <tr><td>S₂ nad křídlem</td><td id="c2S">–</td><td id="c2v">–</td><td class="k" id="c2Q">–</td></tr>
+        </tbody>
+      </table></div>
+      <p class="sub" id="contSum"></p>
+    </article>
+
+    <article class="card" id="card-bern">
+      <h3>Bernoulliho rovnice</h3>
+      <div class="eq"><i>p</i> + ½ · <i>ρ</i> · <i>v</i>² = konst.</div>
+      <p class="sub">Body H (nad profilem) a D (pod profilem) leží na povrchu ve 30 % hloubky profilu. Každý leží na jiné proudnici, která přichází z nerušeného proudu.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Bod</th><th>v [m/s]</th><th>p [Pa]</th><th>½ρv² [Pa]</th><th>součet [Pa]</th></tr></thead>
+        <tbody>
+          <tr><td><span class="dot" style="background:var(--suct)"></span>H nad</td><td id="hv">–</td><td id="hp">–</td><td id="hq">–</td><td class="k" id="hs">–</td></tr>
+          <tr><td><span class="dot" style="background:var(--press)"></span>D pod</td><td id="dv">–</td><td id="dp">–</td><td id="dq">–</td><td class="k" id="ds">–</td></tr>
+        </tbody>
+      </table></div>
+      <p class="sub" id="bernSum"></p>
+    </article>
+
+    <article class="card" id="card-lift">
+      <h3>Vztlak</h3>
+      <div class="eq"><i>F</i><sub>L</sub> = ½ · <i>ρ</i> · <i>v</i>² · <i>S</i> · <i>c</i><sub>L</sub></div>
+      <div class="kv">
+        <div><span>součinitel vztlaku <i class="mi">c</i><sub>L</sub></span><b class="big" id="cl">–</b></div>
+        <div><span>vztlak na 1 m rozpětí</span><b class="big" id="lv">–</b></div>
+        <div><span>to udrží hmotnost</span><b class="big" id="lm">–</b></div>
+        <div><span>nese horní strana</span><b class="big" id="lsh">–</b></div>
+      </div>
+      <svg id="chart" viewBox="0 0 300 152" role="img" aria-label="Graf závislosti součinitele vztlaku na úhlu náběhu"></svg>
+    </article>
+  </section>
+
+  <p class="note">Model: nestlačitelné proudění bez tření (Žukovského profil tloušťky 12 %, Kuttova podmínka na odtokové hraně). Tětiva 1,5 m, hustota vzduchu 1,225 kg/m³, tlak okolí 101 325 Pa. Tlaky a síly jsou počítané z modelu. Skutečné křídlo má navíc odpor a při velkém úhlu náběhu proudění odtrhne, což model neukazuje.</p>
+</main>
+
+<script>
+(function(){
+'use strict';
+var TAU=Math.PI*2, RHO=1.225, P0=101325, CHORD_M=1.5;
+
+/* ---------- model: Žukovského profil, potenciální proudění, Kuttova podmínka ---------- */
+var c=1, X0=-0.10, Y0=0.07;
+var A=Math.hypot(c-X0,Y0), BETA=Math.atan2(Y0,c-X0);
+var al=0, ca=1, sa=0, G=0;
+function csqrt(x,y){var r=Math.hypot(x,y),re=Math.sqrt((r+x)/2),im=Math.sqrt(Math.max(0,(r-x)/2));return [re,y<0?-im:im];}
+function cmul(a,b,p,q){return [a*p-b*q,a*q+b*p];}
+function cdiv(a,b,p,q){var d=p*p+q*q;return [(a*p+b*q)/d,(b*p-a*q)/d];}
+function invZ(x,y){
+  var s1=csqrt(x-2*c,y), s2=csqrt(x+2*c,y), s=cmul(s1[0],s1[1],s2[0],s2[1]);
+  var za0=(x+s[0])/2, za1=(y+s[1])/2, zb0=(x-s[0])/2, zb1=(y-s[1])/2;
+  return Math.hypot(za0-X0,za1-Y0)>=Math.hypot(zb0-X0,zb1-Y0)?[za0,za1]:[zb0,zb1];
+}
+function velZ(zx,zy){
+  var wx=zx-X0, wy=zy-Y0, iw=cdiv(1,0,wx,wy), iw2=cmul(iw[0],iw[1],iw[0],iw[1]);
+  var t2=cmul(ca,sa,iw2[0],iw2[1]), k=G/TAU;
+  var dWx=ca-A*A*t2[0]-k*iw[1], dWy=-sa-A*A*t2[1]+k*iw[0];
+  var z2=cmul(zx,zy,zx,zy), q=cdiv(c*c,0,z2[0],z2[1]);
+  var r=cdiv(dWx,dWy,1-q[0],-q[1]);
+  return [r[0],-r[1]];
+}
+function psiZ(zx,zy){
+  var wx=zx-X0, wy=zy-Y0, r2=wx*wx+wy*wy;
+  return wy*ca-wx*sa + A*A*(sa*wx+ca*(-wy))/r2 + G/TAU*0.5*Math.log(r2);
+}
+/* geometrie nezávislá na úhlu: střed profilu a tětiva */
+var zm0=0, zm1=0, chordSim=4, LEx=0;
+(function(){
+  var mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
+  for(var i=0;i<720;i++){var th=(i+.5)*TAU/720,zx=X0+A*Math.cos(th),zy=Y0+A*Math.sin(th),q=1/(zx*zx+zy*zy),gx=zx+zx*q,gy=zy-zy*q;
+    mnx=Math.min(mnx,gx);mxx=Math.max(mxx,gx);mny=Math.min(mny,gy);mxy=Math.max(mxy,gy);}
+  zm0=(mnx+mxx)/2; zm1=(mny+mxy)/2; chordSim=mxx-mnx; LEx=mnx;
+})();
+var MPU=CHORD_M/chordSim; /* metrů na jednotku modelu */
+
+/* ---------- plátno ---------- */
+var cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+var W=800,H=450,dpr=1,ppu=70,cx=400,cy=225,xL=-5.5,xR=5.5,yTop=3.1;
+var heat=document.createElement('canvas'), hctx=heat.getContext('2d');
+function X(x){return cx+x*ppu;} function Y(y){return cy-y*ppu;}
+
+/* ---------- stav ---------- */
+var S={alpha:6,U:50,playing:true,slow:false,sweep:false,step:1,
+  layers:{stream:true,tube:false,pressure:false,arrows:false,lift:false,probes:false,names:true}};
+var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(reduce) S.playing=false;
+var T={};
+function hexRgb(h){h=h.trim().replace('#','');return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
+function readTheme(){
+  var cs=getComputedStyle(document.documentElement);
+  ['stage','flow','wing','wing-edge','press','suct','lift','tube','ink','ink2','line','accent'].forEach(function(k){T[k]=cs.getPropertyValue('--'+k).trim();});
+  T.pressRgb=hexRgb(T.press); T.suctRgb=hexRgb(T.suct); heatDirty=true;
+}
+var heatDirty=true, dirty=true;
+
+/* ---------- pole rychlostí v rovině obrazovky (proudění zleva doprava) ---------- */
+var F={u:0,v:0,V:0,inside:false};
+function toZ(px,py){return invZ(ca*px-sa*py+zm0, sa*px+ca*py+zm1);}
+function field(px,py){
+  var z=toZ(px,py), wx=z[0]-X0, wy=z[1]-Y0;
+  if(wx*wx+wy*wy<A*A){F.inside=true;F.u=F.v=0;F.V=0;return F;}
+  F.inside=false;
+  var v=velZ(z[0],z[1]);
+  F.u=ca*v[0]+sa*v[1]; F.v=-sa*v[0]+ca*v[1]; F.V=Math.hypot(v[0],v[1]);
+  return F;
+}
+function psiAt(px,py){var z=toZ(px,py);return psiZ(z[0],z[1]);}
+
+/* ---------- předpočet po změně úhlu ---------- */
+var N=260, bx=new Float32Array(N),by=new Float32Array(N),bnx=new Float32Array(N),bny=new Float32Array(N),
+    bcp=new Float32Array(N),bV=new Float32Array(N),bds=new Float32Array(N),bgx=new Float32Array(N);
+var iLE=0, cL=0, share=0, LEp=[0,0], TEp=[0,0], QCp=[0,0], probeH=null, probeD=null;
+var streams=[], streamPath=null, tube=null, cont=null;
+
+function toScreen(gx,gy){var dx=gx-zm0,dy=gy-zm1;return [ca*dx+sa*dy,-sa*dx+ca*dy];}
+
+function buildBoundary(){
+  var th0=-BETA, minx=1e9, upSum=0, loSum=0;
+  for(var i=0;i<N;i++){
+    var th=th0+(i+.5)*TAU/N, e0=Math.cos(th), e1=Math.sin(th);
+    var zx=X0+A*e0, zy=Y0+A*e1, r2=zx*zx+zy*zy;
+    var gx=zx+zx/r2, gy=zy-zy/r2, p=toScreen(gx,gy);
+    var v=velZ(zx,zy), cp=1-(v[0]*v[0]+v[1]*v[1]);
+    var z2=cmul(zx,zy,zx,zy), q=cdiv(1,0,z2[0],z2[1]), d0=1-q[0], d1=-q[1];
+    var n0=d0*e0-d1*e1, n1=d0*e1+d1*e0, nl=Math.hypot(n0,n1); n0/=nl; n1/=nl;
+    bx[i]=p[0]; by[i]=p[1]; bnx[i]=ca*n0+sa*n1; bny[i]=-sa*n0+ca*n1;
+    bcp[i]=cp; bV[i]=Math.hypot(v[0],v[1]); bds[i]=Math.hypot(d0,d1)*A*TAU/N; bgx[i]=gx;
+    if(gx<minx){minx=gx;iLE=i;}
+  }
+  for(var j=0;j<N;j++){var f=-bcp[j]*bny[j]*bds[j]; if(j<iLE) upSum+=f; else loSum+=f;}
+  cL=(upSum+loSum)/chordSim; share=upSum/(upSum+loSum);
+  LEp=[bx[iLE],by[iLE]]; TEp=toScreen(2*c,0); QCp=toScreen(LEx+0.25*chordSim,zm1);
+  var xt=LEx+0.30*chordSim, bu=-1,bd=-1,du=1e9,dd=1e9;
+  for(var k=0;k<N;k++){var dx=Math.abs(bgx[k]-xt); if(k<iLE){if(dx<du){du=dx;bu=k;}}else if(dx<dd){dd=dx;bd=k;}}
+  probeH=bu; probeD=bd;
+}
+
+function trace(x,y,ds,maxSteps){
+  var pts=[],i,f,mx,my;
+  for(i=0;i<maxSteps;i++){
+    f=field(x,y); if(f.inside||f.V<1e-3||!isFinite(f.V)) break;
+    pts.push(x,y);
+    mx=x+f.u/f.V*ds/2; my=y+f.v/f.V*ds/2;
+    f=field(mx,my); if(f.inside||f.V<1e-3||!isFinite(f.V)) break;
+    x+=f.u/f.V*ds; y+=f.v/f.V*ds;
+    if(x>xR+0.1||Math.abs(y)>yTop+0.5){pts.push(x,y);break;}
+  }
+  return pts;
+}
+function pathOf(pts){var p=new Path2D();for(var i=0;i<pts.length;i+=2){if(i===0)p.moveTo(X(pts[i]),Y(pts[i+1]));else p.lineTo(X(pts[i]),Y(pts[i+1]));}return p;}
+
+function buildStreams(){
+  var path=new Path2D(), y;
+  for(y=-yTop+0.1;y<=yTop;y+=0.3){
+    var pts=trace(xL,y,0.045,900);
+    for(var i=0;i<pts.length;i+=2){if(i===0)path.moveTo(X(pts[i]),Y(pts[i+1]));else path.lineTo(X(pts[i]),Y(pts[i+1]));}
+  }
+  streamPath=path;
+}
+
+function seedY(target){var lo=-yTop-1.5,hi=yTop+1.5;for(var i=0;i<40;i++){var m=(lo+hi)/2;if(psiAt(xL,m)<target)lo=m;else hi=m;}return (lo+hi)/2;}
+
+function findSection(P,psiA,psiB){
+  var f=field(P[0],P[1]); if(f.inside||f.V<1e-3) return null;
+  var d0=f.u/f.V, d1=f.v/f.V, n0=-d1, n1=d0;
+  function edge(dir,target){
+    var prev=0,s,k,ff,ps,lo,hi,m,pm,ok;
+    for(k=1;k<=140;k++){
+      s=dir*k*0.01; ff=field(P[0]+n0*s,P[1]+n1*s); if(ff.inside) return null;
+      ps=psiAt(P[0]+n0*s,P[1]+n1*s);
+      if((dir<0&&ps<=target)||(dir>0&&ps>=target)){
+        lo=prev;hi=s;
+        for(var it=0;it<30;it++){m=(lo+hi)/2;pm=psiAt(P[0]+n0*m,P[1]+n1*m);ok=(dir<0&&pm<=target)||(dir>0&&pm>=target);if(ok)hi=m;else lo=m;}
+        return (lo+hi)/2;
+      }
+      prev=s;
+    }
+    return null;
+  }
+  var sA=edge(-1,psiA), sB=edge(1,psiB); if(sA==null||sB==null) return null;
+  var h=sB-sA, sum=0, cnt=9;
+  for(var j=0;j<cnt;j++){var s2=sA+h*(j+.5)/cnt;sum+=field(P[0]+n0*s2,P[1]+n1*s2).V;}
+  return {a:[P[0]+n0*sA,P[1]+n1*sA],b:[P[0]+n0*sB,P[1]+n1*sB],h:h,v:sum/cnt};
+}
+function nearestX(pts,x){for(var i=0;i<pts.length;i+=2){if(pts[i]>=x)return [pts[i],pts[i+1]];}return null;}
+
+function buildTube(){
+  var psiS=G/TAU*Math.log(A), pa=psiS+0.10, pb=psiS+0.60, pm=(pa+pb)/2;
+  var ya=seedY(pa), yb=seedY(pb), ym=seedY(pm);
+  var ea=trace(xL,ya,0.04,900), eb=trace(xL,yb,0.04,900), em=trace(xL,ym,0.04,900);
+  var x1=xL+0.14*(xR-xL), x2=bx[probeH];
+  var p1=nearestX(em,x1), p2=nearestX(em,x2);
+  var s1=p1&&findSection(p1,pa,pb), s2=p2&&findSection(p2,pa,pb);
+  tube={ea:ea,eb:eb,ya:ya,yb:yb,s1:s1,s2:s2,pathA:pathOf(ea),pathB:pathOf(eb)};
+  /* výplň: horní hrana tam, dolní zpět */
+  var poly=new Path2D(), i, n=Math.min(ea.length,eb.length);
+  for(i=0;i<ea.length;i+=2){if(i===0)poly.moveTo(X(ea[i]),Y(ea[i+1]));else poly.lineTo(X(ea[i]),Y(ea[i+1]));}
+  for(i=eb.length-2;i>=0;i-=2){poly.lineTo(X(eb[i]),Y(eb[i+1]));}
+  poly.closePath(); tube.fill=poly;
+}
+
+/* ---------- tepelná mapa tlaku ---------- */
+function buildHeat(){
+  var gw=Math.max(60,Math.ceil(W/5)), gh=Math.max(40,Math.ceil(H/5));
+  heat.width=gw; heat.height=gh;
+  var img=hctx.createImageData(gw,gh), d=img.data, i,j,k,f,cp,al_,col,px,py;
+  for(j=0;j<gh;j++)for(i=0;i<gw;i++){
+    px=((i+.5)/gw*W-cx)/ppu; py=(cy-(j+.5)/gh*H)/ppu;
+    f=field(px,py); k=(j*gw+i)*4;
+    if(f.inside){d[k+3]=0;continue;}
+    cp=1-f.V*f.V;
+    if(cp>=0){col=T.pressRgb;al_=Math.pow(Math.min(1,cp),0.85)*0.9;}
+    else{col=T.suctRgb;al_=Math.pow(Math.min(1,-cp/1.9),0.8)*0.92;}
+    d[k]=col[0];d[k+1]=col[1];d[k+2]=col[2];d[k+3]=Math.round(255*al_);
+  }
+  hctx.putImageData(img,0,0); heatDirty=false;
+}
+
+/* ---------- čísla v kartách ---------- */
+function fmt(x,d){return x.toLocaleString('cs-CZ',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function $(id){return document.getElementById(id);}
+function updateNumbers(){
+  var U=S.U, q=0.5*RHO*U*U;
+  /* kontinuita */
+  var s1=tube&&tube.s1, s2=tube&&tube.s2;
+  if(s1&&s2){
+    var S1=s1.h*MPU, S2=s2.h*MPU, v1=s1.v*U, v2=s2.v*U;
+    $('c1S').textContent=fmt(S1,3); $('c1v').textContent=fmt(v1,1); $('c1Q').textContent=fmt(S1*v1,2);
+    $('c2S').textContent=fmt(S2,3); $('c2v').textContent=fmt(v2,1); $('c2Q').textContent=fmt(S2*v2,2);
+    $('contSum').textContent='Průřez se zúžil na '+fmt(100*S2/S1,0)+' % a rychlost vzrostla '+fmt(v2/v1,2)+'krát. Součin S · v zůstává stejný.';
+  }else{
+    ['c1S','c1v','c1Q','c2S','c2v','c2Q'].forEach(function(id){$(id).textContent='–';});
+    $('contSum').textContent='Při tomto nastavení trubice naráží na profil. Zmenšete úhel náběhu.';
+  }
+  /* Bernoulli */
+  function pr(i,ids){
+    var V=bV[i]*U, p=P0+q*(1-bV[i]*bV[i]), dyn=0.5*RHO*V*V;
+    $(ids[0]).textContent=fmt(V,1); $(ids[1]).textContent=fmt(p,0); $(ids[2]).textContent=fmt(dyn,0); $(ids[3]).textContent=fmt(p+dyn,0);
+    return p;
+  }
+  var pH=pr(probeH,['hv','hp','hq','hs']), pD=pr(probeD,['dv','dp','dq','ds']);
+  $('bernSum').textContent='Součet p + ½ρv² vychází v obou bodech stejně, tedy '+fmt(P0+q,0)+' Pa, stejně jako v nerušeném proudu. Tlak pod profilem je o '+fmt(pD-pH,0)+' Pa vyšší než nad ním.';
+  /* vztlak */
+  var L=cL*q*CHORD_M;
+  $('cl').textContent=fmt(cL,2);
+  $('lv').textContent=Math.abs(L)>=1000?fmt(L/1000,2)+' kN':fmt(L,0)+' N';
+  $('lm').textContent=fmt(L/9.81,0)+' kg';
+  $('lsh').textContent=fmt(share*100,0)+' %';
+  moveChartDot();
+}
+
+/* ---------- graf cL(α) ---------- */
+var CH={x0:34,x1:290,y0:116,y1:10,amin:-4,amax:18,cmin:-0.5,cmax:2.7};
+function cLof(deg){return 2*4*Math.PI*A*Math.sin(deg*Math.PI/180+BETA)/chordSim;}
+function cxA(a){return CH.x0+(a-CH.amin)/(CH.amax-CH.amin)*(CH.x1-CH.x0);}
+function cyC(v){return CH.y0-(v-CH.cmin)/(CH.cmax-CH.cmin)*(CH.y0-CH.y1);}
+function buildChart(){
+  var s='', a, d='M';
+  s+='<rect x="'+cxA(15)+'" y="'+CH.y1+'" width="'+(cxA(18)-cxA(15))+'" height="'+(CH.y0-CH.y1)+'" fill="var(--lift)" opacity=".22"/>';
+  for(var v=0;v<=2;v++){s+='<line x1="'+CH.x0+'" x2="'+CH.x1+'" y1="'+cyC(v)+'" y2="'+cyC(v)+'" stroke="var(--line)"/><text x="'+(CH.x0-6)+'" y="'+(cyC(v)+3)+'" text-anchor="end">'+v+'</text>';}
+  [0,5,10,15].forEach(function(t){s+='<line x1="'+cxA(t)+'" x2="'+cxA(t)+'" y1="'+CH.y0+'" y2="'+(CH.y0+3)+'" stroke="var(--ink2)"/><text x="'+cxA(t)+'" y="'+(CH.y0+13)+'" text-anchor="middle">'+t+'°</text>';});
+  for(a=CH.amin;a<=CH.amax;a+=0.5){d+=(a===CH.amin?'':'L')+cxA(a).toFixed(1)+' '+cyC(cLof(a)).toFixed(1);}
+  s+='<path d="'+d+'" fill="none" stroke="var(--accent)" stroke-width="2"/>';
+  s+='<text x="'+(CH.x0+2)+'" y="'+(CH.y1+6)+'">c_L</text><text x="'+((cxA(15)+cxA(18))/2)+'" y="'+(CH.y0-8)+'" text-anchor="middle">pád</text>';
+  s+='<circle id="cdot" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>';
+  s+='<text x="'+((CH.x0+CH.x1)/2)+'" y="148" text-anchor="middle">úhel náběhu α</text>';
+  $('chart').innerHTML=s;
+}
+function moveChartDot(){var d=$('cdot');if(!d)return;d.setAttribute('cx',cxA(S.alpha));d.setAttribute('cy',cyC(cL));}
+
+/* ---------- rebuild ---------- */
+function setAngle(){al=S.alpha*Math.PI/180;ca=Math.cos(al);sa=Math.sin(al);G=4*Math.PI*A*Math.sin(al+BETA);}
+function rebuild(){
+  setAngle(); buildBoundary(); buildStreams(); buildTube(); heatDirty=true; updateNumbers();
+}
+
+/* ---------- částice ---------- */
+var P=[];
+function spawn(p,anywhere){
+  p.tube=Math.random()<0.15&&tube;
+  p.x=anywhere?xL+Math.random()*(xR-xL):xL-Math.random()*0.4;
+  p.y=p.tube?tube.ya+Math.random()*(tube.yb-tube.ya):(Math.random()*2-1)*(yTop+0.1);
+}
+function initParticles(){
+  var n=Math.max(260,Math.round(W*H/1400)); P=[];
+  for(var i=0;i<n;i++){var p={x:0,y:0,tube:false};spawn(p,true);P.push(p);}
+}
+function stepParticles(dt){
+  var k=dt*2.3*(S.U/50)*(S.slow?0.25:1), i,p,f;
+  for(i=0;i<P.length;i++){
+    p=P[i]; f=field(p.x,p.y);
+    if(f.inside||!isFinite(f.V)){spawn(p,false);continue;}
+    p.x+=f.u*k; p.y+=f.v*k;
+    if(p.x>xR+0.3||Math.abs(p.y)>yTop+0.4) spawn(p,false);
+  }
+}
+
+/* ---------- kreslení ---------- */
+function arrow(x1,y1,x2,y2,col,lw,hd){
+  var a=Math.atan2(y2-y1,x2-x1);
+  ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*hd*0.6,y2-Math.sin(a)*hd*0.6);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hd*Math.cos(a-0.45),y2-hd*Math.sin(a-0.45));ctx.lineTo(x2-hd*Math.cos(a+0.45),y2-hd*Math.sin(a+0.45));ctx.closePath();ctx.fill();
+}
+function label(txt,x,y,o){
+  o=o||{};ctx.font=(o.w||500)+' '+(o.s||13)+'px Inter,system-ui,sans-serif';ctx.textAlign=o.al||'left';ctx.textBaseline='middle';
+  ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle=T.stage;ctx.strokeText(txt,x,y);
+  ctx.fillStyle=o.c||T.ink;ctx.fillText(txt,x,y);
+}
+function pill(txt,x,y,col){
+  ctx.font='600 12px Inter,system-ui,sans-serif';var w=ctx.measureText(txt).width+18;
+  ctx.fillStyle=col;ctx.globalAlpha=0.95;ctx.beginPath();ctx.roundRect?ctx.roundRect(x-w/2,y-12,w,24,12):ctx.rect(x-w/2,y-12,w,24);ctx.fill();ctx.globalAlpha=1;
+  ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,x,y+0.5);
+}
+function wingPath(){
+  var p=new Path2D();
+  for(var i=0;i<N;i++){if(i===0)p.moveTo(X(bx[i]),Y(by[i]));else p.lineTo(X(bx[i]),Y(by[i]));}
+  p.closePath();return p;
+}
+
+function draw(){
+  var L=S.layers, i, p;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle=T.stage;ctx.fillRect(0,0,W,H);
+
+  if(L.pressure){
+    if(heatDirty) buildHeat();
+    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(heat,0,0,W,H);
+  }
+  if(L.tube&&tube){ctx.fillStyle=T.tube;ctx.globalAlpha=0.2;ctx.fill(tube.fill);ctx.globalAlpha=1;}
+  if(L.stream){
+    ctx.lineWidth=1;ctx.strokeStyle=T.flow;ctx.globalAlpha=L.pressure?0.45:0.32;ctx.stroke(streamPath);ctx.globalAlpha=1;
+    /* částice jako úsečky: délka odpovídá rychlosti */
+    ctx.lineCap='round';ctx.lineWidth=2.2;ctx.strokeStyle=T.flow;ctx.globalAlpha=L.pressure?0.8:0.75;
+    ctx.beginPath();
+    for(i=0;i<P.length;i++){p=P[i];if(L.tube&&p.tube)continue;var f=field(p.x,p.y);if(f.inside)continue;
+      ctx.moveTo(X(p.x-f.u*0.11),Y(p.y-f.v*0.11));ctx.lineTo(X(p.x),Y(p.y));}
+    ctx.stroke();
+    if(L.tube){
+      ctx.lineWidth=3;ctx.strokeStyle=T.tube;ctx.globalAlpha=1;ctx.beginPath();
+      for(i=0;i<P.length;i++){p=P[i];if(!p.tube)continue;var g=field(p.x,p.y);if(g.inside)continue;
+        ctx.moveTo(X(p.x-g.u*0.11),Y(p.y-g.v*0.11));ctx.lineTo(X(p.x),Y(p.y));}
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  }
+  if(L.tube&&tube){
+    ctx.strokeStyle=T.tube;ctx.lineWidth=2.4;ctx.stroke(tube.pathA);ctx.stroke(tube.pathB);
+    [tube.s1,tube.s2].forEach(function(s,k){
+      if(!s)return;
+      ctx.strokeStyle=T.ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(s.a[0]),Y(s.a[1]));ctx.lineTo(X(s.b[0]),Y(s.b[1]));ctx.stroke();
+      var mx=(s.a[0]+s.b[0])/2,my=(s.a[1]+s.b[1])/2;
+      label('S'+(k?'₂':'₁'),X(mx)+0,Y(my)-ppu*(s.h/2)-16,{w:700,s:15,al:'center'});
+    });
+  }
+
+  /* křídlo */
+  var wp=wingPath();
+  ctx.fillStyle=T.wing;ctx.fill(wp);ctx.lineWidth=1.5;ctx.strokeStyle=T['wing-edge'];ctx.globalAlpha=0.5;ctx.stroke(wp);ctx.globalAlpha=1;
+
+  /* šipky tlaku */
+  if(L.arrows){
+    for(i=3;i<N;i+=6){
+      var cp=bcp[i], len=Math.min(Math.abs(cp),2.8)*0.3*ppu, sx=X(bx[i]),sy=Y(by[i]), nx=bnx[i], ny=-bny[i];
+      if(len<4)continue;
+      if(cp>0)arrow(sx+nx*len,sy+ny*len,sx+nx*3,sy+ny*3,T.press,2.2,8);
+      else arrow(sx+nx*3,sy+ny*3,sx+nx*len,sy+ny*len,T.suct,2.2,8);
+    }
+  }
+
+  /* úhel náběhu */
+  var tx=X(TEp[0]),ty=Y(TEp[1]),R=ppu*1.25;
+  ctx.setLineDash([6,5]);ctx.lineWidth=1.3;ctx.strokeStyle=T.ink2;
+  ctx.beginPath();ctx.moveTo(tx-ppu*0.2,ty);ctx.lineTo(tx+ppu*2.0,ty);ctx.stroke();
+  var cdx=TEp[0]-LEp[0],cdy=TEp[1]-LEp[1],cl_=Math.hypot(cdx,cdy);
+  ctx.beginPath();ctx.moveTo(X(LEp[0]),Y(LEp[1]));ctx.lineTo(tx+cdx/cl_*ppu*2.0,ty-cdy/cl_*ppu*2.0);ctx.stroke();ctx.setLineDash([]);
+  if(Math.abs(S.alpha)>0.7){
+    ctx.strokeStyle=T.accent;ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(tx,ty,R,0,al,al<0);ctx.stroke();
+    label('α',tx+Math.cos(al/2)*(R+14),ty+Math.sin(al/2)*(R+14),{w:700,s:16,al:'center',c:T.accent});
+  }
+
+  /* popisky částí */
+  if(L.names){
+    var lx=X(LEp[0]),ly=Y(LEp[1]);
+    ctx.strokeStyle=T.ink2;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(lx-2,ly);ctx.lineTo(lx-ppu*0.55,ly-ppu*0.75);ctx.stroke();
+    label('náběžná hrana',lx-ppu*0.6,ly-ppu*0.82,{al:'right'});
+    ctx.beginPath();ctx.moveTo(tx+2,ty);ctx.lineTo(tx+ppu*0.5,ty+ppu*0.7);ctx.stroke();
+    label('odtoková hrana',tx+ppu*0.55,ty+ppu*0.78,{al:'left'});
+  }
+
+  /* body H a D */
+  if(L.probes){
+    [[probeH,'H',T.suct],[probeD,'D',T.press]].forEach(function(q){
+      var i2=q[0],sx=X(bx[i2]),sy=Y(by[i2]),nx=bnx[i2],ny=-bny[i2],ox=sx+nx*ppu*0.55,oy=sy+ny*ppu*0.55;
+      ctx.strokeStyle=q[2];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ox,oy);ctx.stroke();
+      ctx.fillStyle=q[2];ctx.beginPath();ctx.arc(sx,sy,4,0,TAU);ctx.fill();
+      ctx.beginPath();ctx.arc(ox,oy,12,0,TAU);ctx.fillStyle=T.stage;ctx.fill();ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle=q[2];ctx.font='700 13px Inter,system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(q[1],ox,oy+0.5);
+    });
+  }
+
+  /* přetlak, podtlak */
+  if(L.pressure){
+    var py_=Math.min(ppu*2.15,cy-22);
+    pill('PODTLAK',cx+ppu*0.2,cy-py_,T.suct);
+    pill('PŘETLAK',cx+ppu*0.2,cy+py_,T.press);
+  }
+
+  /* vztlak */
+  if(L.lift){
+    var q0=toScreen(LEx+0.25*chordSim,zm1), qx=X(q0[0]),qy=Y(q0[1]), len2=Math.max(10,Math.min(Math.abs(cL)*ppu*0.95,Math.min(ppu*2.1,cy-40)))*(cL<0?-1:1);
+    arrow(qx,qy,qx,qy-len2,T.lift,5,16);
+    label('vztlak',qx+12,qy-len2/2-9,{w:700,s:15,c:T.lift});
+    label(fmt(Math.abs(cL)*0.5*RHO*S.U*S.U*CHORD_M/1000,2)+' kN na 1 m',qx+12,qy-len2/2+9,{w:500,s:12,c:T.lift});
+  }
+
+  /* proudění zleva */
+  arrow(16,24,16+46,24,T.ink2,2.2,9);
+  label('v∞ = '+S.U+' m/s ('+Math.round(S.U*3.6)+' km/h)',70,24,{w:500,s:13});
+
+  if(S.alpha>15){
+    pill(W<560?'Pád: model odtržení nezachytí':'Pozor: při tomto úhlu se proudění odtrhne a křídlo spadne. Model to nezachytí.',W/2,H-22,T.lift);
+  }
+  if(L.pressure){
+    var gx=W-150,gy=H-30,gr=ctx.createLinearGradient(gx,0,gx+120,0);
+    var s=T.suctRgb,r=T.pressRgb;
+    gr.addColorStop(0,'rgba('+s[0]+','+s[1]+','+s[2]+',0.95)');gr.addColorStop(0.5,'rgba('+s[0]+','+s[1]+','+s[2]+',0)');gr.addColorStop(0.62,'rgba('+r[0]+','+r[1]+','+r[2]+',0)');gr.addColorStop(1,'rgba('+r[0]+','+r[1]+','+r[2]+',0.95)');
+    ctx.fillStyle=gr;ctx.fillRect(gx,gy,120,9);ctx.strokeStyle=T.ink2;ctx.lineWidth=1;ctx.strokeRect(gx+.5,gy+.5,119,9);
+    label('podtlak',gx,gy-9,{s:11,c:T.ink2});label('přetlak',gx+120,gy-9,{s:11,al:'right',c:T.ink2});
+  }
+}
+
+/* ---------- smyčka ---------- */
+var last=0, sweepT=0;
+function frame(t){
+  var dt=Math.min(0.05,(t-last)/1000||0.016); last=t;
+  if(S.sweep){
+    sweepT+=dt; S.alpha=Math.round((6+8*Math.sin(sweepT*0.55))*10)/10; syncAlpha(); dirty=true;
+  }
+  if(dirty){rebuild();dirty=false;}
+  if(S.playing&&S.layers.stream) stepParticles(dt);
+  draw();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- velikost ---------- */
+function resize(){
+  var r=cv.getBoundingClientRect(); if(!r.width) return;
+  W=r.width;H=r.height;dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  var domW=W<560?6.4:9; ppu=W/domW; cx=W/2; cy=H/2;
+  xL=-cx/ppu; xR=(W-cx)/ppu; yTop=cy/ppu;
+  initParticles(); dirty=true;
+}
+
+/* ---------- ovládání ---------- */
+var STEPS=[
+ {t:'Vzduch obtéká profil',
+  p:'Z pohledu křídla vzduch proudí proti němu. Dráhy částic vzduchu se nazývají proudnice. Profil je proti proudění nakloněn o úhel náběhu α, což je úhel mezi tětivou profilu a směrem proudění. U náběžné hrany se proud rozdělí: část vzduchu jde nad profil, část pod něj.',
+  eq:null, tip:'Sledujte proudnice nad profilem. Jsou tam hustší než před křídlem a částice se tam pohybují rychleji (delší čárky).',
+  layers:{stream:true,tube:false,pressure:false,arrows:false,lift:false,probes:false,names:true}, card:null},
+ {t:'Rovnice kontinuity',
+  p:'Vzduch uvnitř proudové trubice se neztrácí ani nevzniká. Každým průřezem trubice proteče za sekundu stejné množství vzduchu. Když se trubice nad profilem zúží, musí tam vzduch proudit rychleji.',
+  eq:'<i>S</i><sub>1</sub> · <i>v</i><sub>1</sub> = <i>S</i><sub>2</sub> · <i>v</i><sub>2</sub>', tip:'<b>Zkuste:</b> zvětšujte úhel náběhu. Trubice se nad profilem zužuje víc a rychlost v₂ roste.',
+  layers:{stream:true,tube:true,pressure:false,arrows:false,lift:false,probes:false,names:false}, card:'card-cont'},
+ {t:'Bernoulliho rovnice',
+  p:'Součet statického tlaku <span class="mi">p</span> a dynamického tlaku ½ρv² je podél proudnice stálý. Kde vzduch proudí rychleji, je jeho statický tlak menší. Nad profilem je proto podtlak (modře) a pod profilem přetlak (červeně), vždy vzhledem k tlaku okolního vzduchu.',
+  eq:'<i>p</i> + ½ · <i>ρ</i> · <i>v</i>² = konst.', tip:'<b>Zkuste:</b> zapněte body H a D a porovnejte jejich rychlosti a tlaky v tabulce Bernoulliho rovnice.',
+  layers:{stream:true,tube:false,pressure:true,arrows:false,lift:false,probes:true,names:false}, card:'card-bern'},
+ {t:'Z rozdílu tlaků vzniká vztlak',
+  p:'Tlak působí na povrch profilu kolmo. Červené šipky profil tlačí dovnitř, modré ho nasávají ven. Většina těchto sil míří nahoru. Jejich součet ve směru kolmém na proudění je vztlak F<sub>L</sub>.',
+  eq:'<i>F</i><sub>L</sub> = ½ · <i>ρ</i> · <i>v</i>² · <i>S</i> · <i>c</i><sub>L</sub>', tip:'<b>Zkuste:</b> v kartě Vztlak sledujte, jakou část vztlaku nese horní strana. Rychlost letu zvyšuje vztlak s druhou mocninou.',
+  layers:{stream:false,tube:false,pressure:true,arrows:true,lift:true,probes:false,names:false}, card:'card-lift'},
+ {t:'Úhel náběhu a pád',
+  p:'S rostoucím úhlem náběhu se proudnice nad profilem víc zakřivují, podtlak roste a s ním i vztlak. Nad kritickým úhlem (u tohoto profilu asi 15°) se proudění od horní strany odtrhne a vztlak prudce klesne. Říká se tomu pád. Model proudění bez tření odtržení neukazuje, proto je ta oblast označena.',
+  eq:null, tip:'<b>Zkuste:</b> zapněte Automaticky měnit α a sledujte bod na grafu c<sub>L</sub>(α) i velikost šipky vztlaku.',
+  layers:{stream:true,tube:false,pressure:true,arrows:false,lift:true,probes:false,names:false}, card:'card-lift', sweep:true}
+];
+var CHIPS=[['stream','Proudnice','var(--flow)'],['tube','Proudová trubice','var(--tube)'],['pressure','Barevný tlak','var(--press)'],['arrows','Šipky tlaku','var(--suct)'],['lift','Vztlak','var(--lift)'],['probes','Body H a D','var(--ink2)'],['names','Popisky','var(--ink2)']];
+
+function renderSteps(){
+  var ol=$('steps');
+  STEPS.forEach(function(s,i){
+    var li=document.createElement('li'), b=document.createElement('button');
+    b.type='button'; b.innerHTML='<span class="n">'+(i+1)+'</span><span class="lbl">'+s.t+'</span>';
+    b.addEventListener('click',function(){setStep(i+1);});
+    li.appendChild(b); ol.appendChild(li);
+  });
+  var cr=$('chips');
+  CHIPS.forEach(function(c_){
+    var b=document.createElement('button');b.type='button';b.className='chip';b.dataset.k=c_[0];
+    b.innerHTML='<span class="sw" style="background:'+c_[2]+'"></span>'+c_[1];
+    b.addEventListener('click',function(){S.layers[c_[0]]=!S.layers[c_[0]];syncChips();});
+    cr.appendChild(b);
+  });
+}
+function syncChips(){
+  document.querySelectorAll('.chip').forEach(function(b){b.setAttribute('aria-pressed',S.layers[b.dataset.k]?'true':'false');});
+}
+function setStep(n){
+  S.step=n; var s=STEPS[n-1];
+  Object.keys(s.layers).forEach(function(k){S.layers[k]=s.layers[k];});
+  syncChips();
+  document.querySelectorAll('#steps button').forEach(function(b,i){if(i===n-1)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
+  $('story').innerHTML='<div><p class="eyebrow">Krok '+n+' z '+STEPS.length+'</p><h2>'+s.t+'</h2></div><p>'+s.p+'</p>'+(s.eq?'<div class="eq">'+s.eq+'</div>':'')+'<p class="tip">'+s.tip+'</p>';
+  ['card-cont','card-bern','card-lift'].forEach(function(id){$(id).classList.toggle('on',id===s.card);});
+  if(s.sweep!==undefined){}
+  if(n===2||n===3||n===4){S.sweep=false;syncSweep();}
+  dirty=true;
+}
+function syncAlpha(){
+  $('alpha').value=S.alpha; $('alphaOut').textContent=fmt(S.alpha,1)+'°';
+}
+function syncSweep(){$('sweep').setAttribute('aria-pressed',S.sweep?'true':'false');}
+
+function bind(){
+  $('alpha').addEventListener('input',function(e){S.alpha=parseFloat(e.target.value);S.sweep=false;syncSweep();syncAlpha();dirty=true;});
+  $('speed').addEventListener('input',function(e){S.U=parseInt(e.target.value,10);$('speedOut').textContent=S.U+' m/s';$('speedKmh').textContent=Math.round(S.U*3.6)+' km/h';dirty=true;});
+  $('play').addEventListener('click',function(){S.playing=!S.playing;this.textContent=S.playing?'Pauza':'Spustit';});
+  $('slow').addEventListener('click',function(){S.slow=!S.slow;this.setAttribute('aria-pressed',S.slow?'true':'false');});
+  $('sweep').addEventListener('click',function(){S.sweep=!S.sweep;if(S.sweep)sweepT=Math.asin((S.alpha-6)/8>1?1:((S.alpha-6)/8<-1?-1:(S.alpha-6)/8))/0.55;syncSweep();});
+  if(window.ResizeObserver){new ResizeObserver(function(){resize();}).observe(cv.parentElement);}else{window.addEventListener('resize',resize);}
+  var mq=window.matchMedia('(prefers-color-scheme: dark)');
+  var th=function(){readTheme();};
+  if(mq.addEventListener)mq.addEventListener('change',th);
+  new MutationObserver(th).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+}
+
+renderSteps(); bind(); readTheme(); buildChart(); syncAlpha();
+$('play').textContent=S.playing?'Pauza':'Spustit';
+setStep(1); resize(); requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
