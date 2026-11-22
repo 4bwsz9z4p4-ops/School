@@ -1,0 +1,272 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Třídy ocelí</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: horní lišta se záložkami (Tabulka, Kvíz 1–3), pod ní jedna karta obsahu; tabulka se na mobilu láme na karty tříd. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --fg: #172033;
+  --muted: #5b6577;
+  --line: #d5dbe5;
+  --accent: #1f4e79;
+  --accent-fg: #ffffff;
+  --accent-soft: #e3edf7;
+  --good: #1e7a46;
+  --good-soft: #e2f3e9;
+  --bad: #b3261e;
+  --bad-soft: #fbe7e5;
+  --tool: #8a5a00;
+  --tool-soft: #fdf0d5;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-head: "Space Grotesk", "Inter", system-ui, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1520; --surface: #182130; --fg: #e8edf5; --muted: #9aa6ba; --line: #2c384c;
+    --accent: #7fb2e5; --accent-fg: #0b1522; --accent-soft: #203a57;
+    --good: #5fcf8d; --good-soft: #17352a; --bad: #ff8f86; --bad-soft: #3d1f1d;
+    --tool: #f0c46a; --tool-soft: #3a2f14; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1520; --surface: #182130; --fg: #e8edf5; --muted: #9aa6ba; --line: #2c384c;
+  --accent: #7fb2e5; --accent-fg: #0b1522; --accent-soft: #203a57;
+  --good: #5fcf8d; --good-soft: #17352a; --bad: #ff8f86; --bad-soft: #3d1f1d;
+  --tool: #f0c46a; --tool-soft: #3a2f14; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.5;
+  padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1 { font-family: var(--font-head); font-size: clamp(1.5rem, 4.5vw, 2.1rem); line-height: 1.15; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 4px 0 0; font-size: .95rem; }
+nav { display: flex; gap: 8px; flex-wrap: wrap; }
+nav button { font: inherit; font-weight: 600; font-size: .95rem; padding: 10px 16px; min-height: 44px; border-radius: 10px; border: 1.5px solid var(--line);
+  background: var(--surface); color: var(--fg); cursor: pointer; }
+nav button[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+nav button:hover:not([aria-current="page"]) { border-color: var(--accent); }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: clamp(14px, 3vw, 28px); min-width: 0; }
+
+/* tabulka */
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+th, td { border: 1px solid var(--line); padding: 9px 11px; text-align: left; vertical-align: top; }
+thead th { background: var(--accent-soft); font-weight: 600; font-size: .9rem; }
+td.cls { text-align: center; font-family: var(--font-head); font-size: 1.25rem; font-weight: 700; background: var(--bg); width: 4.5rem; }
+td b { font-weight: 700; color: var(--accent); }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .82rem; font-weight: 600; background: var(--accent-soft); color: var(--accent); }
+.pill.tool { background: var(--tool-soft); color: var(--tool); }
+@media (max-width: 760px) {
+  table, tbody, tr, td { display: block; width: 100%; }
+  thead { display: none; }
+  tr { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  td { border: 0; border-top: 1px solid var(--line); padding: 8px 12px; }
+  td.cls { width: 100%; text-align: left; border-top: 0; background: var(--accent-soft); font-size: 1.15rem; }
+  td.cls::before { content: "Třída "; font-family: var(--font-body); font-size: .85rem; font-weight: 600; color: var(--muted); }
+  td[data-l]::before { content: attr(data-l); display: block; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+}
+
+/* menu kvízů */
+.menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
+.menu button { text-align: left; font: inherit; padding: 16px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; min-height: 88px; }
+.menu button:hover { border-color: var(--accent); }
+.menu strong { display: block; font-family: var(--font-head); font-size: 1.2rem; margin-bottom: 2px; }
+.menu span { color: var(--muted); font-size: .9rem; }
+
+/* kvíz */
+.qhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: .9rem; font-weight: 600; }
+.dots { display: flex; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; background: var(--line); }
+.dot.now { background: var(--accent); }
+.dot.ok { background: var(--good); }
+.dot.miss { background: var(--bad); }
+.question { background: var(--accent); color: var(--accent-fg); border-radius: 12px; padding: 18px 20px; margin: 12px 0 16px;
+  font-family: var(--font-head); font-size: clamp(1.25rem, 4.2vw, 1.8rem); line-height: 1.25; text-wrap: balance; }
+.question em { font-style: normal; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.opts { display: grid; gap: 10px; }
+.opt { display: flex; align-items: center; gap: 14px; text-align: left; font: inherit; font-size: 1.15rem; font-weight: 600; padding: 14px 16px; min-height: 60px; border-radius: 12px;
+  border: 2px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; width: 100%; }
+.opt .l { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: .95rem; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+.opt.right { border-color: var(--good); background: var(--good-soft); color: var(--good); }
+.opt:disabled { cursor: default; }
+.opt:disabled:not(.wrong):not(.right) { opacity: .55; }
+.fb { margin-top: 14px; border-radius: 12px; padding: 14px 16px; }
+.fb.bad { background: var(--bad-soft); color: var(--fg); border: 1px solid var(--bad); }
+.fb.good { background: var(--good-soft); color: var(--fg); border: 1px solid var(--good); }
+.fb h2 { margin: 0 0 4px; font-family: var(--font-head); font-size: 1.3rem; }
+.fb.bad h2 { color: var(--bad); } .fb.good h2 { color: var(--good); }
+.fb p { margin: 0; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.btn { font: inherit; font-weight: 600; padding: 12px 20px; min-height: 48px; border-radius: 10px; border: 1.5px solid var(--accent); background: var(--accent); color: var(--accent-fg); cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.score { font-family: var(--font-head); font-size: clamp(2.2rem, 9vw, 3.4rem); font-weight: 700; margin: 4px 0; color: var(--accent); }
+.res { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; }
+.res li { display: flex; gap: 10px; align-items: baseline; padding: 10px 12px; border-radius: 10px; background: var(--bg); }
+.res .m { font-weight: 700; flex: none; }
+.res .ok { color: var(--good); } .res .no { color: var(--bad); }
+.res small { display: block; color: var(--muted); }
+.note { color: var(--muted); font-size: .88rem; margin: 12px 0 0; }
+@media (prefers-reduced-motion: no-preference) { .opt, nav button, .btn { transition: border-color .15s, background .15s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Třídy ocelí</h1>
+    <p class="sub">Tabulka tříd 10–19 a tři kvízy: z jaké třídy oceli se výrobek vyrábí?</p>
+  </header>
+  <nav id="nav" aria-label="Části stránky"></nav>
+  <main class="card" id="view" aria-live="polite"></main>
+</div>
+
+<script>
+var ROWS = [
+ ["10","konstrukční","nelegované","Betonářská výztuž (roxory), lešení, zábradlí, ploty, méně namáhané nosníky.","Zaručeny jen mechanické vlastnosti (chemické složení se neuvádí)."],
+ ["11","konstrukční","nelegované","Běžné ocelové konstrukce (mosty, haly), šrouby, matice, nýty, plechy, trubky, nenáročné hřídele.","Zaručeny mechanické vlastnosti a obsah C, P, S (nejpoužívanější třída, např. 11 373)."],
+ ["12","konstrukční","nelegované","Kalené a zušlechtěné součásti, klikové a vačkové hřídele, ozubená kola, čepy, pera.","Zaručeno chemické složení (C, Mn, Si, P, S) – vhodné k tepelnému zpracování."],
+ ["13","konstrukční","nízkolegované","Silně namáhané hřídele, pružiny, ozubená kola, tlakové nádoby, svařované konstrukce.","Hlavní prvky: <b>Mn, Si</b> (příp. V)."],
+ ["14","konstrukční","nízkolegované","Ložiska (kuličková, válečková), silně namáhané pružiny, cementované součásti (čepy, kola).","Hlavní prvky: <b>Cr</b> (v kombinaci s Mn, Si, Al)."],
+ ["15","konstrukční","nízkolegované","Vysoce namáhané strojní součásti, díly pracující za zvýšených teplot (kotlové trubky, turbíny).","Hlavní prvky: <b>Mo, Cr, V</b> (příp. Mn, W)."],
+ ["16","konstrukční","nízko a středně legované","Nejtěžší a nejnamáhanější strojní díly, hřídele turbín, díly letadel a automobilů (vysoká houževnatost).","Hlavní prvky: <b>Ni</b> (často Cr-Ni, Cr-Ni-Mo)."],
+ ["17","konstrukční","středně a vysoce legované","Nerezové nádobí a příbory, potravinářské a chemické zařízení, lopatky turbín, žáruvzdorné díly.","Vysoký obsah <b>Cr</b> a <b>Ni</b> (korozivzdorné a žáruvzdorné oceli)."],
+ ["19","nástrojové","nelegované i legované","Řezné nástroje (vrtáky, frézy, pilové listy, nože), měřidla, razníky, formy na plasty, kovadla.","Zaručený obsah C, Mn, Si; u legovaných hlavně <b>Cr, W, V, Mo, Co</b>."]
+];
+var DESC = {
+  10: "nelegovaná konstrukční ocel – zaručeny jen mechanické vlastnosti",
+  11: "nelegovaná konstrukční ocel – nejpoužívanější třída (např. 11 373)",
+  12: "nelegovaná konstrukční ocel – zaručeno chemické složení, vhodná k tepelnému zpracování",
+  13: "nízkolegovaná konstrukční ocel – hlavní prvky Mn, Si",
+  14: "nízkolegovaná konstrukční ocel – hlavní prvek Cr",
+  15: "nízkolegovaná konstrukční ocel – hlavní prvky Mo, Cr, V, pro zvýšené teploty",
+  16: "nízko až středně legovaná konstrukční ocel – hlavní prvek Ni, vysoká houževnatost",
+  17: "středně až vysoce legovaná ocel – hodně Cr a Ni, korozivzdorná a žáruvzdorná",
+  19: "nástrojová ocel (nelegovaná i legovaná)"
+};
+// p = výrobek, o = nabízené třídy, ok = správná třída, h = nápověda
+var QUIZZES = [
+  [ {p:"betonářská výztuž (roxory)", o:[10,12,17], ok:10, h:"Jde o málo namáhaný výrobek – hledej třídu, kde se zaručují jen mechanické vlastnosti."},
+    {p:"vrtáky a frézy", o:[13,19,11], ok:19, h:"Řezné nástroje mají v tabulce vlastní skupinu – nástrojové oceli."},
+    {p:"šrouby a matice", o:[14,10,11], ok:11, h:"Je to nejpoužívanější třída – příklad 11 373."},
+    {p:"nerezové nádobí a příbory", o:[17,19,14], ok:17, h:"Hledej třídu s vysokým obsahem Cr a Ni."} ],
+  [ {p:"ložiska (kuličková, válečková)", o:[13,14,16], ok:14, h:"Hlavním prvkem je chrom (Cr)."},
+    {p:"klikové a vačkové hřídele", o:[12,10,15], ok:12, h:"Zaručeno chemické složení – vhodné k tepelnému zpracování (kalení, zušlechťování)."},
+    {p:"kotlové trubky", o:[14,10,15], ok:15, h:"Díly pracující za zvýšených teplot – prvky Mo, Cr, V."},
+    {p:"díly letadel a automobilů", o:[12,16,19], ok:16, h:"Vysoká houževnatost – hlavní prvek Ni."} ],
+  [ {p:"lešení a zábradlí", o:[13,15,10], ok:10, h:"Méně namáhané výrobky z nelegované oceli, zaručeny jen mechanické vlastnosti."},
+    {p:"tlakové nádoby", o:[11,13,17], ok:13, h:"Nízkolegovaná ocel s hlavními prvky Mn a Si."},
+    {p:"měřidla a razníky", o:[19,12,14], ok:19, h:"Tato třída patří nástrojovým ocelím."},
+    {p:"potravinářská a chemická zařízení", o:[12,19,17], ok:17, h:"Korozivzdorné oceli – vysoký obsah Cr a Ni."} ]
+];
+var MENU_SUB = ["betonářská výztuž, nástroje, šrouby, nerez", "ložiska, hřídele, trubky, letadla", "lešení, nádoby, měřidla, potraviny"];
+
+var nav = document.getElementById("nav"), view = document.getElementById("view");
+var state = { done: false, tab: "tabulka", q: 0, i: 0, miss: false, firstTry: [], order: [], wrong: [] };
+var TABS = [["tabulka", "Tabulka"], ["kviz1", "Kvíz 1"], ["kviz2", "Kvíz 2"], ["kviz3", "Kvíz 3"]];
+
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+function go(tab) {
+  state.tab = tab;
+  if (tab.indexOf("kviz") === 0) { state.q = +tab.slice(4) - 1; state.i = 0; state.firstTry = []; state.miss = false; state.done = false; state.wrong = []; state.order = shuffle(QUIZZES[state.q][0].o); }
+  try { history.replaceState(null, "", "#" + tab); } catch (e) {}
+  render();
+  window.scrollTo(0, 0);
+}
+
+function renderNav() {
+  nav.innerHTML = TABS.map(function (t) {
+    return '<button type="button" data-tab="' + t[0] + '"' + (state.tab === t[0] ? ' aria-current="page"' : "") + ">" + t[1] + "</button>";
+  }).join("");
+}
+nav.addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) go(b.dataset.tab); });
+
+function renderTable() {
+  var h = '<div class="tablewrap"><table><thead><tr><th>Třída oceli</th><th>Použití</th><th>Stupeň legování</th><th>Základní příklady použití</th><th>Stručná charakteristika a prvky</th></tr></thead><tbody>';
+  ROWS.forEach(function (r) {
+    h += '<tr><td class="cls">' + r[0] + '</td>' +
+      '<td data-l="Použití"><span class="pill' + (r[1] === "nástrojové" ? " tool" : "") + '">' + r[1] + "</span></td>" +
+      '<td data-l="Stupeň legování">' + r[2] + "</td>" +
+      '<td data-l="Příklady použití">' + r[3] + "</td>" +
+      '<td data-l="Charakteristika a prvky">' + r[4] + "</td></tr>";
+  });
+  h += "</tbody></table></div>";
+  h += '<h2 style="font-family:var(--font-head);margin:22px 0 0">Vyzkoušej se</h2><div class="menu">';
+  QUIZZES.forEach(function (q, k) {
+    h += '<button type="button" data-tab="kviz' + (k + 1) + '"><strong>Kvíz ' + (k + 1) + '</strong><span>' + MENU_SUB[k] + "</span></button>";
+  });
+  h += "</div>";
+  view.innerHTML = h;
+  view.querySelectorAll(".menu button").forEach(function (b) { b.onclick = function () { go(b.dataset.tab); }; });
+}
+
+function renderQuiz() {
+  var Q = QUIZZES[state.q];
+  if (state.i >= Q.length) return renderEnd();
+  var cur = Q[state.i];
+  var dots = Q.map(function (_, k) {
+    var c = k === state.i ? "now" : (state.firstTry[k] === true ? "ok" : (state.firstTry[k] === false ? "miss" : ""));
+    return '<span class="dot ' + c + '"></span>';
+  }).join("");
+  var h = '<div class="qhead"><span>Kvíz ' + (state.q + 1) + " · otázka " + (state.i + 1) + " ze " + Q.length + '</span><span class="dots" aria-hidden="true">' + dots + "</span></div>";
+  h += '<div class="question">Z jaké třídy oceli se vyrábí: <em>' + esc(cur.p) + "</em>?</div>";
+  h += '<div class="opts">';
+  state.order.forEach(function (c, k) {
+    var cls = state.wrong.indexOf(c) >= 0 ? " wrong" : (state.done && c === cur.ok ? " right" : "");
+    var dis = state.done || state.wrong.indexOf(c) >= 0 ? " disabled" : "";
+    h += '<button type="button" class="opt' + cls + '" data-c="' + c + '"' + dis + '><span class="l">' + "ABC"[k] + "</span>třída " + c + "</button>";
+  });
+  h += "</div>";
+  if (state.done) {
+    h += '<div class="fb good" role="status"><h2>✔ Správně!</h2><p>Třída ' + cur.ok + ": " + DESC[cur.ok] + ".</p></div>";
+    h += '<div class="actions"><button type="button" class="btn" id="next">' + (state.i + 1 < Q.length ? "Další otázka ▶" : "Dokončit kvíz ▶") + "</button></div>";
+  } else if (state.wrong.length) {
+    h += '<div class="fb bad" role="status"><h2>✘ Zkus to znovu</h2><p>Nápověda: ' + esc(cur.h) + "</p></div>";
+  }
+  view.innerHTML = h;
+  view.querySelectorAll(".opt").forEach(function (b) { b.onclick = function () { answer(+b.dataset.c); }; });
+  var n = document.getElementById("next");
+  if (n) { n.onclick = function () { state.firstTry[state.i] = !state.miss; state.i++; state.miss = false; state.done = false; state.wrong = []; if (state.i < Q.length) state.order = shuffle(Q[state.i].o); render(); window.scrollTo(0, 0); }; n.focus({ preventScroll: true }); }
+}
+function answer(c) {
+  var cur = QUIZZES[state.q][state.i];
+  if (c === cur.ok) { state.done = true; } else { state.miss = true; state.wrong.push(c); }
+  render();
+}
+
+function renderEnd() {
+  var Q = QUIZZES[state.q], n = state.firstTry.filter(Boolean).length;
+  var h = '<div class="qhead"><span>Kvíz ' + (state.q + 1) + ' hotov</span></div>';
+  h += '<div class="score">' + n + " z " + Q.length + '</div><p style="margin:0">správně hned napoprvé.</p>';
+  h += '<ul class="res">' + Q.map(function (q, k) {
+    var ok = state.firstTry[k];
+    return '<li><span class="m ' + (ok ? "ok" : "no") + '">' + (ok ? "✔" : "✘") + "</span><span>" + esc(q.p) + "<small>třída " + q.ok + "</small></span></li>";
+  }).join("") + "</ul>";
+  h += '<div class="actions"><button type="button" class="btn" id="again">↻ Zopakovat kvíz</button>';
+  if (state.q < 2) h += '<button type="button" class="btn ghost" data-tab="kviz' + (state.q + 2) + '">Kvíz ' + (state.q + 2) + " ▶</button>";
+  h += '<button type="button" class="btn ghost" data-tab="tabulka">Tabulka</button></div>';
+  view.innerHTML = h;
+  document.getElementById("again").onclick = function () { go("kviz" + (state.q + 1)); };
+  view.querySelectorAll("button[data-tab]").forEach(function (b) { b.onclick = function () { go(b.dataset.tab); }; });
+}
+
+function render() { renderNav(); if (state.tab === "tabulka") renderTable(); else renderQuiz(); }
+
+(function init() {
+  var h = (location.hash || "").replace("#", "");
+  var ok = TABS.some(function (t) { return t[0] === h; });
+  go(ok ? h : "tabulka");
+  window.scrollTo(0, 0);
+})();
+window.addEventListener("hashchange", function () {
+  var h = (location.hash || "").replace("#", "");
+  if (h !== state.tab && TABS.some(function (t) { return t[0] === h; })) go(h);
+});
+</script>
+
+</body></html>
