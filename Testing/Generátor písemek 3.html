@@ -47,7 +47,7 @@ function make(){
   }
   render();
 }
-function formatRatio(value){const g=gcd(Math.round(value*1000),1000);const n=Math.round(value*1000)/g,d=1000/g;return d===1?String(n):`${n}:${d}`}
+function reducedFraction(n,d){const g=gcd(n,d);return `${n/g}/${d/g}`}
 function diagram(v,i,mode='html'){
   const centerY=101,leftX=104,rightX=400,maxRadius=61;
   const radiusBig=maxRadius,radiusSmall=Math.max(16,maxRadius*v.d/v.D);
@@ -56,7 +56,7 @@ function diagram(v,i,mode='html'){
   return `<svg class="diagram" xmlns="http://www.w3.org/2000/svg" width="520" height="230" viewBox="0 0 520 230" role="img" aria-label="Nákres komolého kužele"><defs><marker id="${marker}" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse"><path d="M8 1 1 4l7 3" fill="none" stroke="#222" stroke-width="1.2"/></marker></defs><g fill="none" stroke="#222" stroke-width="1.4"><path d="M${leftX} ${topL}V${bottomL} M${rightX} ${topR}V${bottomR}" stroke-width="2.6"/><path d="M${leftX} ${topL}L${rightX} ${topR} M${leftX} ${bottomL}L${rightX} ${bottomR}" stroke-width="2.6"/><path d="M58 ${centerY}H452" stroke="#666" stroke-dasharray="9 4 2 4"/><path d="M${leftX} ${topL}H35 M${leftX} ${bottomL}H35 M35 ${topL}V${bottomL}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${rightX} ${topR}H485 M${rightX} ${bottomR}H485 M485 ${topR}V${bottomR}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${leftX} ${bottomL}V207 M${rightX} ${bottomR}V207 M${leftX} 207H${rightX}" marker-start="url(#${marker})" marker-end="url(#${marker})"/></g><g fill="#111" font-family="Arial,sans-serif" font-size="17"><text x="19" y="${centerY}" text-anchor="middle" transform="rotate(-90 19 ${centerY})">D = ${v.D}</text><text x="505" y="${centerY}" text-anchor="middle" transform="rotate(-90 505 ${centerY})">d = ${v.d}</text><text x="252" y="197" text-anchor="middle">L = ${v.L}</text></g></svg>`;
 }
 function identity(){return '<div class="identity"><span>Jméno a příjmení: _________________________</span><span>Třída: __________</span><span>Datum: __________</span></div>'}
-function solution(v,i){const delta=v.D-v.d;const kDen=v.L/delta;const sDen=2*v.L/delta;return `<div class="answer"><strong>Varianta ${i+1} – řešení</strong><br>K = (D − d) / L = (${v.D} − ${v.d}) / ${v.L} = ${delta}/${v.L} = 1:${formatRatio(kDen)}<br>S = K / 2 = 1:${formatRatio(sDen)}</div>`}
+function solution(v,i){const delta=v.D-v.d;const kReduced=reducedFraction(delta,v.L);const sReduced=reducedFraction(delta,2*v.L);return `<div class="answer"><strong>Varianta ${i+1} – řešení</strong><br>K = (D − d) / L = (${v.D} − ${v.d}) / ${v.L} = ${delta}/${v.L} = ${kReduced}<br>S = K / 2 = ${delta}/${2*v.L} = ${sReduced}</div>`}
 function question(v,i,mode='html'){
   return `<article class="variant"><h3>Varianta ${i+1}</h3>${identity()}<p class="prompt">Na obrázku je zobrazený komolý kužel s danými rozměry. Vypočítejte kuželovitost a sklon komolého kužele.</p>${diagram(v,i,mode)}<p>Výsledky zapište ve tvaru 1:x.</p></article>`;
 }
@@ -79,9 +79,12 @@ async function docContent(){
     image.className=svg.getAttribute('class')||'diagram';
     image.alt=svg.getAttribute('aria-label')||'Nákres komolého kužele';
     image.src=png;
+    image.width=560;
+    image.height=248;
+    image.style='display:block;width:560px;max-width:100%;height:auto;margin:8px auto 16px';
     svg.replaceWith(image);
   }
-  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>${title}</title><style>@page{size:A4;margin:18mm 17mm}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#17212e}.variant{padding:10px 0 24px;margin:0 0 20px;border-bottom:1px solid #dce4ee;page-break-after:always;break-after:page}.variant h3,.variant h2{margin:0 0 12px}.identity{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10pt;margin:10px 0 16px}.prompt{margin:12px 0}.diagram{display:block;width:100%;max-width:148mm;height:auto;margin:8px auto 16px}.answer{border:1px solid #cbd6e2;padding:12px 14px;margin:12px 0;line-height:1.7}.solutions{margin-top:24px;padding-top:20px;border-top:2px solid #7d8da0;page-break-before:always;break-before:page}.solutions h2{margin:0 0 16px}</style></head><body>${preview.innerHTML}</body></html>`;
+  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>${title}</title><style>@page{size:A4;margin:18mm 17mm}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#17212e}.variant{padding:10px 0 24px;margin:0 0 20px;border-bottom:1px solid #dce4ee;page-break-after:always;break-after:page}.variant h3,.variant h2{margin:0 0 12px}.identity{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10pt;margin:10px 0 16px}.prompt{margin:12px 0}.diagram{display:block;width:560px;max-width:100%;height:auto;margin:8px auto 16px}.answer{border:1px solid #cbd6e2;padding:12px 14px;margin:12px 0;line-height:1.7}.solutions{margin-top:24px;padding-top:20px;border-top:2px solid #7d8da0;page-break-before:always;break-before:page}.solutions h2{margin:0 0 16px}</style></head><body>${preview.innerHTML}</body></html>`;
 }
 $('generate').addEventListener('click',make);
 $('solutions').addEventListener('change',render);
