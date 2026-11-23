@@ -1,0 +1,577 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Model přímého dělení</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: ovládání nahoře, pod ním dvě stejně velké kresby (kotouč a obrobek), pod nimi tlačítka kroků. */
+:root {
+  --bg: #edeff2;
+  --panel: #ffffff;
+  --stage: #f1f3f6;
+  --disc: #ffffff;
+  --ink: #17202b;
+  --muted: #566474;
+  --line: #cfd5dc;
+  --steel: #7d8998;
+  --accent: #c2410c;
+  --accent-soft: rgba(194, 65, 12, 0.16);
+  --on-accent: #ffffff;
+  --bad: #b3261e;
+  --font-head: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e141a;
+    --panel: #17202a;
+    --stage: #0f161d;
+    --disc: #212d3a;
+    --ink: #e8edf2;
+    --muted: #9ba8b6;
+    --line: #2a3644;
+    --steel: #70808f;
+    --accent: #ff7a3d;
+    --accent-soft: rgba(255, 122, 61, 0.24);
+    --on-accent: #1a1006;
+    --bad: #ff8a80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e141a;
+  --panel: #17202a;
+  --stage: #0f161d;
+  --disc: #212d3a;
+  --ink: #e8edf2;
+  --muted: #9ba8b6;
+  --line: #2a3644;
+  --steel: #70808f;
+  --accent: #ff7a3d;
+  --accent-soft: rgba(255, 122, 61, 0.24);
+  --on-accent: #1a1006;
+  --bad: #ff8a80;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font-body);
+  padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 20px; }
+h1 {
+  margin: 0;
+  font: 700 clamp(1.7rem, 4vw, 2.3rem)/1.15 var(--font-head);
+  text-wrap: balance;
+}
+.lead { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 0;
+}
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 24px;
+}
+.controls > div { min-width: 0; }
+.label {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+button, input { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.discs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.disc {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  padding: 10px 2px 8px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.disc .p { font: 700 1.3rem/1.1 var(--font-head); font-variant-numeric: tabular-nums; }
+.disc .n { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.disc.off { opacity: 0.55; }
+.disc[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--accent-soft);
+  opacity: 1;
+}
+
+.zrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+#z-input {
+  width: 92px;
+  padding: 8px 10px;
+  font: 700 1.3rem/1.2 var(--font-head);
+  font-variant-numeric: tabular-nums;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip {
+  min-width: 40px;
+  height: 34px;
+  padding: 0 8px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+
+.result { display: grid; gap: 6px; border-top: 1px solid var(--line); margin-top: 20px; padding-top: 18px; }
+.formula { font: 500 clamp(1.3rem, 3.4vw, 1.8rem)/1.25 var(--font-head); font-variant-numeric: tabular-nums; }
+.formula b { color: var(--accent); font-weight: 700; }
+.formula.bad, .formula.bad b { color: var(--bad); }
+.result p { margin: 0; max-width: 72ch; }
+.result .sub { color: var(--muted); font-size: 14px; }
+
+.stage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.fig { margin: 0; display: grid; gap: 8px; min-width: 0; }
+.fig h2 { margin: 0; font: 700 1.05rem/1.3 var(--font-head); }
+.fig .board { background: var(--stage); border-radius: 10px; padding: 4px; }
+.fig svg { display: block; width: 100%; height: auto; max-width: 440px; margin: 0 auto; }
+.fig figcaption { color: var(--muted); font-size: 13px; }
+.sync { margin: 14px 0 0; color: var(--muted); font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 18px; }
+.btn {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.status { margin: 12px 0 0; font-weight: 500; }
+
+.d-rim { fill: var(--disc); stroke: var(--ink); stroke-width: 2; }
+.d-line { fill: none; stroke: var(--steel); stroke-width: 1.5; }
+.slot-fill { fill: var(--stage); }
+.slot-line { fill: none; stroke: var(--steel); stroke-width: 1.5; }
+.cur .slot-fill { fill: var(--accent); }
+.tgt .slot-fill { fill: var(--accent-soft); }
+.tgt .slot-line { stroke: var(--accent); stroke-width: 2.5; }
+.fixed { fill: var(--ink); }
+.tick { stroke: var(--steel); stroke-width: 1.2; }
+.cutnotch { fill: var(--accent); }
+.svg-text { font-family: var(--font-body); fill: var(--ink); font-size: 13px; }
+.svg-muted { fill: var(--muted); }
+.lab { font-family: var(--font-head); font-weight: 700; fill: var(--accent); text-anchor: middle; }
+
+@media (max-width: 640px) {
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  .panel { padding: 16px; }
+}
+</style>
+
+<main class="wrap">
+  <header>
+    <h1>Model přímého dělení</h1>
+    <p class="lead">Zvol kotouč a počet drážek na obrobku. Pak klikej na Další dělení a sleduj, jak se kotouč s obrobkem otáčejí společně a zástrčka stojí na místě.</p>
+  </header>
+
+  <section class="panel" aria-label="Nastavení">
+    <div class="controls">
+      <div>
+        <span class="label" id="disc-label">Dělicí kotouč (p drážek)</span>
+        <div class="discs" id="discs" role="group" aria-labelledby="disc-label"></div>
+      </div>
+      <div>
+        <label class="label" for="z-input">Počet drážek na obrobku (z)</label>
+        <div class="zrow">
+          <input id="z-input" type="number" inputmode="numeric" min="2" max="60" value="12">
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Rychlá volba z"></div>
+      </div>
+    </div>
+    <div class="result" aria-live="polite">
+      <div class="formula" id="formula"></div>
+      <p id="instr"></p>
+      <p class="sub" id="angle"></p>
+      <p class="sub" id="rec"></p>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Model">
+    <div class="stage">
+      <figure class="fig">
+        <h2 id="disc-title">Dělicí kotouč, p = 24</h2>
+        <div class="board">
+          <svg id="disc-svg" viewBox="0 0 400 400" role="img" aria-label="Dělicí kotouč s drážkami po obvodu a pevnou zástrčkou nahoře">
+            <defs>
+              <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker>
+            </defs>
+            <g id="disc-rot">
+              <circle class="d-rim" cx="200" cy="215" r="150"/>
+              <g id="slots"></g>
+              <circle cx="200" cy="215" r="12" fill="none" stroke="var(--steel)" stroke-width="1.5"/>
+              <line x1="200" y1="203" x2="200" y2="123" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+            </g>
+            <g id="disc-labels"></g>
+            <polygon id="pin" class="fixed" points="191,30 209,30 203,76 197,76"/>
+            <text class="svg-text" x="200" y="20" text-anchor="middle">zástrčka (stojí)</text>
+            <path d="M286 66A172 172 0 0 0 230 45.6" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah1)"/>
+          </svg>
+        </div>
+        <figcaption>Plná oranžová drážka: tady je zástrčka. Orámovaná: sem zapadne po otočení. Čísla: zářezy, které se napočítají.</figcaption>
+      </figure>
+
+      <figure class="fig">
+        <h2 id="wp-title">Obrobek, z = 12</h2>
+        <div class="board">
+          <svg id="wp-svg" viewBox="0 0 400 400" role="img" aria-label="Obrobek s vyfrézovanými drážkami a pevným nástrojem nahoře">
+            <defs>
+              <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker>
+            </defs>
+            <g id="wp-rot">
+              <circle class="d-rim" cx="200" cy="215" r="105"/>
+              <g id="wp-ticks"></g>
+              <g id="wp-notches"></g>
+              <line x1="200" y1="167" x2="200" y2="127" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+            </g>
+            <text id="wp-count" class="svg-text" x="200" y="224" text-anchor="middle" style="font-family: var(--font-head); font-weight: 700; font-size: 24px;">0 / 12</text>
+            <polygon class="fixed" points="191,70 209,70 200,108"/>
+            <text class="svg-text" x="200" y="60" text-anchor="middle">nástroj (řez)</text>
+            <path d="M261 100.2A130 130 0 0 0 218.1 86.3" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah2)"/>
+          </svg>
+        </div>
+        <figcaption>Čárky: místa, kde budou drážky. Oranžové zářezy: už vyfrézováno. Řez vždy vzniká pod nástrojem.</figcaption>
+      </figure>
+    </div>
+    <p class="sync">Kotouč a obrobek jsou spojené, proto se pootočí o stejný úhel.</p>
+    <div class="actions">
+      <button class="btn primary" id="next" type="button">Další dělení</button>
+      <button class="btn" id="prev" type="button">Zpět</button>
+      <button class="btn" id="play" type="button">Přehrát vše</button>
+      <button class="btn" id="reset" type="button">Od začátku</button>
+    </div>
+    <p class="status" id="status" aria-live="polite"></p>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const DISCS = [24, 30, 36, 48, 60];
+  const Z_CHIPS = [2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 16, 18, 20, 24, 30, 36, 48, 60];
+  const CX = 200, CY = 215, DR = 150, WR = 105, LR = 120;
+  const NS = 'http://www.w3.org/2000/svg';
+  const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  const S = { p: 24, z: 12, k: 0, theta: 0, cut: 0, busy: false, playing: false, gen: 0, slots: [], labels: [] };
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (x) => x.toLocaleString('cs-CZ', { maximumFractionDigits: 2 });
+  const plural = (n) => (n === 1 ? 'zářez' : (n >= 2 && n <= 4 ? 'zářezy' : 'zářezů'));
+  const validDiscs = (z) => DISCS.filter((p) => p % z === 0);
+  const isValid = () => S.p % S.z === 0;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function svgEl(tag, attrs, parent) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  /* ---------- statické části ovládání ---------- */
+  const discsBox = $('discs');
+  const discBtns = DISCS.map((p) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'disc';
+    b.dataset.p = String(p);
+    b.innerHTML = '<span class="p">' + p + '</span><span class="n"></span>';
+    b.addEventListener('click', () => setConfig(p, S.z));
+    discsBox.appendChild(b);
+    return b;
+  });
+  const chipsBox = $('chips');
+  const chipBtns = Z_CHIPS.map((z) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.textContent = String(z);
+    b.addEventListener('click', () => setZ(z, 'chip'));
+    chipsBox.appendChild(b);
+    return b;
+  });
+  const zInput = $('z-input');
+  zInput.addEventListener('input', () => {
+    const v = parseInt(zInput.value, 10);
+    if (v >= 2 && v <= 60) setZ(v, 'input');
+  });
+  zInput.addEventListener('change', () => { zInput.value = String(S.z); });
+
+  /* ---------- stavba kreseb ---------- */
+  function buildDisc() {
+    const g = $('slots');
+    g.textContent = '';
+    S.slots = [];
+    const a = 360 / S.p;
+    const w = Math.min(7, Math.PI * DR / S.p * 0.35);
+    for (let i = 0; i < S.p; i++) {
+      const sg = svgEl('g', { transform: 'rotate(' + (i * a) + ' ' + CX + ' ' + CY + ')' }, g);
+      svgEl('path', { d: 'M' + (CX - w) + ' 63V80H' + (CX + w) + 'V63Z', 'class': 'slot-fill' }, sg);
+      svgEl('path', { d: 'M' + (CX - w) + ' 65V80H' + (CX + w) + 'V65', 'class': 'slot-line' }, sg);
+      S.slots.push(sg);
+    }
+    const tw = (w * 0.8).toFixed(1);
+    $('pin').setAttribute('points', '191,30 209,30 ' + (CX + Number(tw)) + ',76 ' + (CX - Number(tw)) + ',76');
+  }
+
+  function buildWorkpiece() {
+    const t = $('wp-ticks');
+    t.textContent = '';
+    const a = 360 / S.z;
+    for (let j = 0; j < S.z; j++) {
+      svgEl('line', { x1: CX, y1: 110, x2: CX, y2: 101, 'class': 'tick', transform: 'rotate(' + (j * a) + ' ' + CX + ' ' + CY + ')' }, t);
+    }
+    drawNotches();
+  }
+
+  function drawNotches() {
+    const g = $('wp-notches');
+    g.textContent = '';
+    const a = 360 / S.z;
+    const hw = Math.min(6, Math.PI * WR / S.z * 0.3);
+    const depth = Math.max(8, hw * 2.3);
+    for (let j = 0; j < S.cut; j++) {
+      svgEl('polygon', {
+        points: (CX - hw) + ',108 ' + (CX + hw) + ',108 ' + CX + ',' + (110 + depth),
+        'class': 'cutnotch',
+        transform: 'rotate(' + (j * a) + ' ' + CX + ' ' + CY + ')'
+      }, g);
+    }
+  }
+
+  /* ---------- kreslení stavu ---------- */
+  function draw() {
+    const rot = 'rotate(' + S.theta + ' ' + CX + ' ' + CY + ')';
+    $('disc-rot').setAttribute('transform', rot);
+    $('wp-rot').setAttribute('transform', rot);
+    const a = 360 / S.p;
+    S.labels.forEach((l) => {
+      const ang = (l.i * a + S.theta) * Math.PI / 180;
+      l.el.setAttribute('x', (CX + LR * Math.sin(ang)).toFixed(1));
+      l.el.setAttribute('y', (CY - LR * Math.cos(ang) + 4).toFixed(1));
+    });
+  }
+
+  function idlePaint() {
+    S.slots.forEach((s) => { s.classList.remove('cur'); s.classList.remove('tgt'); });
+    const lg = $('disc-labels');
+    lg.textContent = '';
+    S.labels = [];
+    if (isValid()) {
+      const n = S.p / S.z;
+      const cur = (S.k * n) % S.p;
+      S.slots[cur].classList.add('cur');
+      if (S.k < S.z) {
+        S.slots[(cur + n) % S.p].classList.add('tgt');
+        const fs = S.p >= 48 ? 10 : 12;
+        for (let t = 1; t <= n; t++) {
+          if (n > 12 && !(t === n || t % 5 === 0)) continue;
+          const el = svgEl('text', { 'class': 'lab', 'font-size': fs }, lg);
+          el.textContent = String(t);
+          S.labels.push({ el: el, i: (cur + t) % S.p });
+        }
+      }
+    }
+    draw();
+  }
+
+  /* ---------- texty a stav tlačítek ---------- */
+  function updateUI() {
+    const p = S.p, z = S.z, k = S.k;
+    const valid = isValid();
+    const list = validDiscs(z);
+
+    discBtns.forEach((b) => {
+      const dp = Number(b.dataset.p);
+      const ok = dp % z === 0;
+      b.setAttribute('aria-pressed', dp === p ? 'true' : 'false');
+      b.classList.toggle('off', !ok);
+      b.querySelector('.n').textContent = ok ? 'n = ' + (dp / z) : '—';
+      b.title = ok ? dp + ' : ' + z + ' = ' + (dp / z) : dp + ' : ' + z + ' = ' + fmt(dp / z) + ' (není celé číslo)';
+    });
+    chipBtns.forEach((b) => b.setAttribute('aria-pressed', Number(b.textContent) === z ? 'true' : 'false'));
+
+    const formula = $('formula');
+    const instr = $('instr');
+    const angle = $('angle');
+    const rec = $('rec');
+    $('disc-title').textContent = 'Dělicí kotouč, p = ' + p;
+    $('wp-title').textContent = 'Obrobek, z = ' + z;
+    $('wp-count').textContent = S.k + ' / ' + z;
+
+    if (valid) {
+      const n = p / z;
+      formula.className = 'formula';
+      formula.innerHTML = 'n = p ÷ z = ' + p + ' ÷ ' + z + ' = <b>' + n + '</b>';
+      instr.innerHTML = 'Po každém řezu vytáhni zástrčku, otoč kotouč o <b>' + n + ' ' + plural(n) + '</b> a zástrčku zasuň zpět.';
+      angle.textContent = 'Jedna drážka obrobku: 360° ÷ ' + z + ' = ' + fmt(360 / z) + '°. Jeden zářez kotouče: 360° ÷ ' + p + ' = ' + fmt(360 / p) + '°. Proto ' + n + ' × ' + fmt(360 / p) + '° = ' + fmt(360 / z) + '°.';
+      if (list.length > 1) {
+        const b = list[0];
+        rec.textContent = p === b
+          ? 'Tohle je nejkratší cesta: na tomto kotouči se počítá nejméně zářezů.'
+          : 'Doporučení: kotouč ' + b + ' (n = ' + (b / z) + '), počítá se méně zářezů.';
+      } else {
+        rec.textContent = 'Pro z = ' + z + ' vychází celé číslo jen na kotouči ' + p + '.';
+      }
+    } else {
+      formula.className = 'formula bad';
+      formula.innerHTML = p + ' ÷ ' + z + ' = ' + fmt(p / z);
+      if (list.length) {
+        instr.textContent = 'Výsledek není celé číslo, zástrčka by nezapadla do drážky. Pro z = ' + z + ' použij kotouč ' +
+          list.map((x) => x + ' (n = ' + (x / z) + ')').join(' nebo ') + '.';
+      } else {
+        instr.textContent = 'Výsledek není celé číslo a na žádném z kotoučů 24, 30, 36, 48 a 60 nevychází. Pro z = ' + z + ' se přímé dělení nedá použít, je potřeba nepřímé dělení.';
+      }
+      angle.textContent = '';
+      rec.textContent = '';
+    }
+
+    $('next').disabled = !valid || S.busy || S.playing || k >= z;
+    $('prev').disabled = !valid || S.busy || S.playing || k <= 0;
+    $('play').disabled = !valid;
+    $('play').textContent = S.playing ? 'Zastavit' : 'Přehrát vše';
+    $('reset').disabled = false;
+
+    let st;
+    if (!valid) st = 'Vyber kotouč, na kterém vychází celé číslo, jinak se nedá dělit.';
+    else if (k >= z) st = 'Hotovo: všech ' + z + ' drážek je vyfrézováno a obvod je celý rozdělený.';
+    else st = 'Hotovo ' + k + ' z ' + z + ' drážek. Další řez: č. ' + (k + 1) + '.';
+    $('status').textContent = st;
+  }
+
+  /* ---------- změna nastavení ---------- */
+  function setConfig(p, z) {
+    S.gen++;
+    S.playing = false;
+    S.busy = false;
+    S.p = p;
+    S.z = z;
+    S.k = 0;
+    S.cut = 0;
+    S.theta = 0;
+    buildDisc();
+    buildWorkpiece();
+    idlePaint();
+    updateUI();
+  }
+
+  function setZ(z, source) {
+    z = Math.max(2, Math.min(60, z));
+    if (source !== 'input') zInput.value = String(z);
+    let p = S.p;
+    if (p % z !== 0) {
+      const list = validDiscs(z);
+      if (list.length) p = list[0];
+    }
+    setConfig(p, z);
+  }
+
+  /* ---------- animace ---------- */
+  function tween(from, to, dur, gen) {
+    return new Promise((resolve) => {
+      if (reduce || dur <= 0) { S.theta = to; draw(); resolve(); return; }
+      const t0 = performance.now();
+      function frame(t) {
+        if (gen !== S.gen) { resolve(); return; }
+        const u = Math.min(1, (t - t0) / dur);
+        const e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+        S.theta = from + (to - from) * e;
+        draw();
+        if (u < 1) requestAnimationFrame(frame); else resolve();
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  const duration = () => Math.min(1500, 500 + 60 * (S.p / S.z));
+
+  async function forward() {
+    if (S.busy || !isValid() || S.k >= S.z) return;
+    const g = S.gen;
+    S.busy = true;
+    S.cut = S.k + 1;
+    drawNotches();
+    updateUI();
+    const to = -(S.k + 1) * 360 / S.z;
+    await tween(S.theta, to, duration(), g);
+    if (g !== S.gen) return;
+    S.k += 1;
+    S.theta = to;
+    S.busy = false;
+    idlePaint();
+    updateUI();
+  }
+
+  async function back() {
+    if (S.busy || !isValid() || S.k <= 0) return;
+    const g = S.gen;
+    S.busy = true;
+    updateUI();
+    const to = -(S.k - 1) * 360 / S.z;
+    await tween(S.theta, to, duration(), g);
+    if (g !== S.gen) return;
+    S.k -= 1;
+    S.cut = S.k;
+    drawNotches();
+    S.theta = to;
+    S.busy = false;
+    idlePaint();
+    updateUI();
+  }
+
+  async function play() {
+    if (S.playing) { S.playing = false; updateUI(); return; }
+    if (!isValid()) return;
+    if (S.k >= S.z) setConfig(S.p, S.z);
+    const g = S.gen;
+    S.playing = true;
+    updateUI();
+    while (S.playing && g === S.gen && S.k < S.z) {
+      await forward();
+      if (g !== S.gen || !S.playing) break;
+      await sleep(reduce ? 200 : 450);
+    }
+    if (g === S.gen) { S.playing = false; updateUI(); }
+  }
+
+  $('next').addEventListener('click', forward);
+  $('prev').addEventListener('click', back);
+  $('play').addEventListener('click', play);
+  $('reset').addEventListener('click', () => setConfig(S.p, S.z));
+
+  setConfig(24, 12);
+})();
+</script>
+
+</body></html>
