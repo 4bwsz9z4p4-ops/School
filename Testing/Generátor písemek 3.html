@@ -22,7 +22,7 @@
       <div class="field"><label for="lengthMin">Délka kužele L (mm), od–do</label><div class="row"><input id="lengthMin" type="number" min="1" value="100" aria-label="L od"><input id="lengthMax" type="number" min="1" value="300" aria-label="L do"></div></div>
       <div class="field"><label><input id="solutions" type="checkbox" checked> Přidat řešení na samostatnou stránku</label></div>
       <div class="actions"><button class="primary" id="generate" type="button">Vygenerovat varianty</button><button id="download" type="button">Stáhnout .doc</button><button id="print" type="button">Tisknout</button></div>
-      <p class="notice">Kuželovitost K = (D − d) / L. Sklon kuželové plochy S = K / 2. V nákresu jsou kóty oddělené od obrysu a osa vyznačená čerchovanou čarou.</p>
+      <p class="notice">Kuželovitost K = (D − d) / L. Sklon komolého kužele S = K / 2. V nákresu jsou kóty oddělené od obrysu a osa vyznačená čerchovanou čarou.</p>
     </section>
     <section class="card preview"><h2>Náhled</h2><div id="output" aria-live="polite"></div></section>
   </div>
@@ -47,21 +47,23 @@ function make(){
   }
   render();
 }
-function formatRatio(value){return (Math.round(value*1000)/1000).toFixed(3).replace(/\.?(?:0+)$/,'')}
-function diagram(v,i){
+function formatRatio(value){const g=gcd(Math.round(value*1000),1000);const n=Math.round(value*1000)/g,d=1000/g;return d===1?String(n):`${n}:${d}`}
+function diagram(v,i,mode='html'){
   const centerY=101,leftX=104,rightX=400,maxRadius=61;
   const radiusBig=maxRadius,radiusSmall=Math.max(16,maxRadius*v.d/v.D);
   const topL=centerY-radiusBig,bottomL=centerY+radiusBig,topR=centerY-radiusSmall,bottomR=centerY+radiusSmall;
-  const marker=`arrow-${i}`;
-  return `<svg class="diagram" viewBox="0 0 520 230" role="img" aria-label="Nákres komolého kužele, D ${v.D} mm, d ${v.d} mm, L ${v.L} mm"><defs><marker id="${marker}" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse"><path d="M8 1 1 4l7 3" fill="none" stroke="#222" stroke-width="1.2"/></marker></defs><g fill="none" stroke="#222" stroke-width="1.4"><path d="M${leftX} ${topL}V${bottomL} M${rightX} ${topR}V${bottomR}" stroke-width="2.6"/><path d="M${leftX} ${topL}L${rightX} ${topR} M${leftX} ${bottomL}L${rightX} ${bottomR}" stroke-width="2.6"/><path d="M58 ${centerY}H452" stroke="#666" stroke-dasharray="9 4 2 4"/><path d="M${leftX} ${topL}H35 M${leftX} ${bottomL}H35 M35 ${topL}V${bottomL}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${rightX} ${topR}H485 M${rightX} ${bottomR}H485 M485 ${topR}V${bottomR}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${leftX} ${bottomL}V207 M${rightX} ${bottomR}V207 M${leftX} 207H${rightX}" marker-start="url(#${marker})" marker-end="url(#${marker})"/></g><g fill="#111" font-family="Arial,sans-serif" font-size="17"><text x="19" y="${centerY}" text-anchor="middle" transform="rotate(-90 19 ${centerY})">D = ${v.D}</text><text x="505" y="${centerY}" text-anchor="middle" transform="rotate(-90 505 ${centerY})">d = ${v.d}</text><text x="252" y="197" text-anchor="middle">L = ${v.L}</text></g></svg>`;
+  const marker=`arrow-${i}-${mode}`;
+  return `<svg class="diagram" xmlns="http://www.w3.org/2000/svg" width="520" height="230" viewBox="0 0 520 230" role="img" aria-label="Nákres komolého kužele"><defs><marker id="${marker}" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse"><path d="M8 1 1 4l7 3" fill="none" stroke="#222" stroke-width="1.2"/></marker></defs><g fill="none" stroke="#222" stroke-width="1.4"><path d="M${leftX} ${topL}V${bottomL} M${rightX} ${topR}V${bottomR}" stroke-width="2.6"/><path d="M${leftX} ${topL}L${rightX} ${topR} M${leftX} ${bottomL}L${rightX} ${bottomR}" stroke-width="2.6"/><path d="M58 ${centerY}H452" stroke="#666" stroke-dasharray="9 4 2 4"/><path d="M${leftX} ${topL}H35 M${leftX} ${bottomL}H35 M35 ${topL}V${bottomL}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${rightX} ${topR}H485 M${rightX} ${bottomR}H485 M485 ${topR}V${bottomR}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${leftX} ${bottomL}V207 M${rightX} ${bottomR}V207 M${leftX} 207H${rightX}" marker-start="url(#${marker})" marker-end="url(#${marker})"/></g><g fill="#111" font-family="Arial,sans-serif" font-size="17"><text x="19" y="${centerY}" text-anchor="middle" transform="rotate(-90 19 ${centerY})">D = ${v.D}</text><text x="505" y="${centerY}" text-anchor="middle" transform="rotate(-90 505 ${centerY})">d = ${v.d}</text><text x="252" y="197" text-anchor="middle">L = ${v.L}</text></g></svg>`;
 }
 function identity(){return '<div class="identity"><span>Jméno a příjmení: _________________________</span><span>Třída: __________</span><span>Datum: __________</span></div>'}
-function solution(v,i){const delta=v.D-v.d;const kDen=v.L/delta;const sDen=2*v.L/delta;return `<div class="answer"><strong>Varianta ${i+1} – řešení</strong><br>Kuželovitost: K = (D − d) / L ≈ 1:${formatRatio(kDen)}<br>Sklon: S = K / 2 ≈ 1:${formatRatio(sDen)}</div>`}
-function question(v,i){return `<article class="variant"><h3>Varianta ${i+1}</h3>${identity()}<p class="prompt">Vypočítejte kuželovitost K a sklon kuželové plochy S.</p>${diagram(v,i)}<p>Výsledek kuželovitosti a sklonu uveďte ve tvaru 1:x.</p></article>`}
-function render(){const show=$('solutions').checked;$('output').innerHTML=variants.map(question).join('')+(show&&variants.length?`<section class="solutions"><h2>Řešení</h2>${variants.map(solution).join('')}</section>`:'')}
+function solution(v,i){const delta=v.D-v.d;const kDen=v.L/delta;const sDen=2*v.L/delta;return `<div class="answer"><strong>Varianta ${i+1} – řešení</strong><br>K = (D − d) / L = (${v.D} − ${v.d}) / ${v.L} = ${delta}/${v.L} = 1:${formatRatio(kDen)}<br>S = K / 2 = 1:${formatRatio(sDen)}</div>`}
+function question(v,i,mode='html'){
+  return `<article class="variant"><h3>Varianta ${i+1}</h3>${identity()}<p class="prompt">Na obrázku je zobrazený komolý kužel s danými rozměry. Vypočítejte kuželovitost a sklon komolého kužele.</p>${diagram(v,i,mode)}<p>Výsledky zapište ve tvaru 1:x.</p></article>`;
+}
+function render(){const show=$('solutions').checked;$('output').innerHTML=variants.map((v,i)=>question(v,i,'preview')).join('')+(show&&variants.length?`<section class="solutions"><h2>Řešení</h2>${variants.map(solution).join('')}</section>`:'')}
 function docContent(){
   const title=esc($('title').value||'Písemka – kuželovitost');
-  const questions=variants.map(question).join('');
+  const questions=variants.map((v,i)=>question(v,i,'doc')).join('');
   const answers=$('solutions').checked?`<section class="solutions"><h1>Řešení – ${title}</h1>${variants.map(solution).join('')}</section>`:'';
   return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>${title}</title><style>@page{size:A4;margin:18mm 17mm}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#17212e}.variant{min-height:245mm;page-break-after:always;break-after:page}.variant:last-child{page-break-after:auto;break-after:auto}.identity{display:flex;justify-content:space-between;gap:10px;margin:14px 0}.prompt{margin:20px 0}.diagram{display:block;width:100%;max-width:150mm;height:auto;margin:20px auto}.solutions{page-break-before:always;break-before:page}.answer{border:1px solid #cbd6e2;padding:12px 14px;margin:12px 0;line-height:1.7}</style></head><body>${questions}${answers}</body></html>`;
 }
