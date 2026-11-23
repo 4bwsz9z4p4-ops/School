@@ -65,7 +65,7 @@ function svgToPng(svg){
   return new Promise((resolve,reject)=>{
     const image=new Image();
     const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
-    image.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=1040;canvas.height=460;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);resolve(canvas.toDataURL('image/png'))}catch(error){URL.revokeObjectURL(url);reject(error)}};
+    image.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=920;canvas.height=407;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);resolve(canvas.toDataURL('image/png'))}catch(error){URL.revokeObjectURL(url);reject(error)}};
     image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Nákres se nepodařilo připravit pro dokument.'))};
     image.src=url;
   });
@@ -79,12 +79,12 @@ async function docContent(){
     image.className=svg.getAttribute('class')||'diagram';
     image.alt=svg.getAttribute('aria-label')||'Nákres komolého kužele';
     image.src=png;
-    image.width=560;
-    image.height=248;
-    image.style='display:block;width:560px;max-width:100%;height:auto;margin:8px auto 16px';
+    image.width=460;
+    image.height=204;
+    image.style='display:block;width:460px;max-width:100%;height:auto;margin:8px auto 16px';
     svg.replaceWith(image);
   }
-  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>${title}</title><style>@page{size:A4;margin:18mm 17mm}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#17212e}.variant{padding:10px 0 24px;margin:0 0 20px;border-bottom:1px solid #dce4ee;page-break-after:always;break-after:page}.variant h3,.variant h2{margin:0 0 12px}.identity{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10pt;margin:10px 0 16px}.prompt{margin:12px 0}.diagram{display:block;width:560px;max-width:100%;height:auto;margin:8px auto 16px}.answer{border:1px solid #cbd6e2;padding:12px 14px;margin:12px 0;line-height:1.7}.solutions{margin-top:24px;padding-top:20px;border-top:2px solid #7d8da0;page-break-before:always;break-before:page}.solutions h2{margin:0 0 16px}</style></head><body>${preview.innerHTML}</body></html>`;
+  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>${title}</title><style>@page{size:A4;margin:18mm 17mm}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#17212e}.variant{padding:10px 0 24px;margin:0 0 20px;border-bottom:1px solid #dce4ee;page-break-after:always;break-after:page}.variant h3,.variant h2{margin:0 0 12px}.identity{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10pt;margin:10px 0 16px}.prompt{margin:12px 0}.diagram{display:block;width:460px;max-width:100%;height:auto;margin:8px auto 16px}.answer{border:1px solid #cbd6e2;padding:12px 14px;margin:12px 0;line-height:1.7}.solutions{margin-top:24px;padding-top:20px;border-top:2px solid #7d8da0;page-break-before:always;break-before:page}.solutions h2{margin:0 0 16px}</style></head><body>${preview.innerHTML}</body></html>`;
 }
 $('generate').addEventListener('click',make);
 $('solutions').addEventListener('change',render);
