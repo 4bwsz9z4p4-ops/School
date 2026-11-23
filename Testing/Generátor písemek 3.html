@@ -61,16 +61,35 @@ function question(v,i,mode='html'){
   return `<article class="variant"><h3>Varianta ${i+1}</h3>${identity()}<p class="prompt">Na obrázku je zobrazený komolý kužel s danými rozměry. Vypočítejte kuželovitost a sklon komolého kužele.</p>${diagram(v,i,mode)}<p>Výsledky zapište ve tvaru 1:x.</p></article>`;
 }
 function render(){const show=$('solutions').checked;$('output').innerHTML=variants.map((v,i)=>question(v,i,'preview')).join('')+(show&&variants.length?`<section class="solutions"><h2>Řešení</h2>${variants.map(solution).join('')}</section>`:'')}
-function docContent(){
+function svgToPng(svg){
+  return new Promise((resolve,reject)=>{
+    const image=new Image();
+    const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
+    image.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=1040;canvas.height=460;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);resolve(canvas.toDataURL('image/png'))}catch(error){URL.revokeObjectURL(url);reject(error)}};
+    image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Nákres se nepodařilo připravit pro dokument.'))};
+    image.src=url;
+  });
+}
+function docContent(images){
   const title=esc($('title').value||'Písemka – kuželovitost');
-  const questions=variants.map((v,i)=>question(v,i,'doc')).join('');
+  const questions=images.map(src=>`<article class="variant"><img class="diagram" src="${src}" alt="Nákres komolého kužele s kótami"></article>`).join('');
   const answers=$('solutions').checked?`<section class="solutions"><h1>Řešení – ${title}</h1>${variants.map(solution).join('')}</section>`:'';
-  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>${title}</title><style>@page{size:A4;margin:18mm 17mm}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#17212e}.variant{min-height:245mm;page-break-after:always;break-after:page}.variant:last-child{page-break-after:auto;break-after:auto}.identity{display:flex;justify-content:space-between;gap:10px;margin:14px 0}.prompt{margin:20px 0}.diagram{display:block;width:100%;max-width:150mm;height:auto;margin:20px auto}.solutions{page-break-before:always;break-before:page}.answer{border:1px solid #cbd6e2;padding:12px 14px;margin:12px 0;line-height:1.7}</style></head><body>${questions}${answers}</body></html>`;
+  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>${title}</title><style>@page{size:A4;margin:18mm 17mm}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#17212e}.variant{height:245mm;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page}.variant:last-child{page-break-after:auto;break-after:auto}.diagram{display:block;width:100%;max-width:150mm;height:auto}.solutions{page-break-before:always;break-before:page}.answer{border:1px solid #cbd6e2;padding:12px 14px;margin:12px 0;line-height:1.7}</style></head><body>${questions}${answers}</body></html>`;
 }
 $('generate').addEventListener('click',make);
 $('solutions').addEventListener('change',render);
 $('print').addEventListener('click',()=>window.print());
-$('download').addEventListener('click',()=>{if(!variants.length)make();if(!variants.length)return;const blob=new Blob(['\ufeff',docContent()],{type:'application/msword'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=($('title').value||'pisemka').replace(/[^\p{L}\p{N}-]+/gu,'_')+'.doc';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)});
+$('download').addEventListener('click',async()=>{
+  if(!variants.length)make();
+  if(!variants.length)return;
+  const button=$('download');button.disabled=true;
+  try{
+    const images=await Promise.all(variants.map((v,i)=>svgToPng(diagram(v,i,'word'))));
+    const blob=new Blob(['\ufeff',docContent(images)],{type:'application/msword'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=($('title').value||'pisemka').replace(/[^\p{L}\p{N}-]+/gu,'_')+'.doc';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(error){alert(error.message||'Dokument se nepodařilo vytvořit.');}
+  finally{button.disabled=false;}
+});
 make();
 </script>
 </body>
