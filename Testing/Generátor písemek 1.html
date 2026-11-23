@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generátor mechanických písemek</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#17212e;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}main{max-width:980px;margin:38px auto;padding:0 20px 50px}h1{margin:0 0 6px;font-size:28px} .lead{margin:0 0 18px;color:#5a6675}.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card{background:white;border:1px solid #dfe6ef;border-radius:14px;padding:20px}.settings{position:sticky;top:18px;height:max-content}.preview{min-height:240px}.field{margin:10px 0}.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}.field input,.field textarea{width:100%;border:1px solid #bfcbd8;border-radius:8px;padding:9px;font:inherit}.field textarea{min-height:82px;resize:vertical}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}button{border:1px solid #bcc8d4;border-radius:8px;padding:9px 12px;background:white;cursor:pointer;font-weight:700}button.primary{background:#2d6cdf;color:white;border-color:#2d6cdf}.notice{font-size:12px;color:#667085}.variant{page-break-inside:avoid;border:1px solid #dde5ef;border-radius:10px;padding:14px;margin:12px 0}.variant h3{margin:0 0 10px}.identity{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;margin:8px 0 12px}.work-area{border:1px solid #ccd6e2;border-radius:8px;min-height:82px;padding:10px;margin-top:12px}.solutions-page{page-break-before:always;margin-top:28px}.answer{margin:8px 0;padding:8px;border-bottom:1px solid #dfe6ef}@media(max-width:800px){.layout{grid-template-columns:1fr}.settings{position:static}}@media print{*{print-color-adjust:exact;-webkit-print-color-adjust:exact}:root{background:white}body{margin:0}main{max-width:none;margin:0;padding:0}.settings{display:none}.layout{display:block}.card{border:0;padding:0}.preview{display:block}.variant{page-break-inside:avoid}.solutions-page{page-break-before:always}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Generátor mechanických písemek</h1>
+  <p class="lead">Vytvoří varianty podobného mechanického příkladu a řešení ve formátu vhodném pro tisk nebo Word.</p>
+  <div class="layout">
+    <section class="card settings">
+      <h2>Nastavení</h2>
+      <div class="field"><label for="count">Počet variant</label><input id="count" type="number" min="1" max="30" value="6"></div>
+      <div class="field"><label for="title">Název písemky</label><input id="title" value="Písemka – řezná rychlost"></div>
+      <div class="field"><label for="question">Zadání pro každou variantu</label><textarea id="question">Jaké otáčky nástroje soustruhu je třeba nastavit, je-li průměr obrobku D = {D} mm a řezná rychlost v = {v} m/min?</textarea></div>
+      <div class="field-row">
+        <div class="field"><label for="d0">Průměr od (mm)</label><input id="d0" type="number" value="40"></div>
+        <div class="field"><label for="d1">Průměr do (mm)</label><input id="d1" type="number" value="180"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="v0">Řezná rychlost od</label><input id="v0" type="number" value="80"></div>
+        <div class="field"><label for="v1">Řezná rychlost do</label><input id="v1" type="number" value="220"></div>
+      </div>
+      <div class="field"><label><input id="solutions" type="checkbox" checked style="width:auto"> Vygenerovat řešení na samostatné poslední straně</label></div>
+      <div class="actions">
+        <button class="primary" id="generate">Vygenerovat varianty</button>
+        <button id="download">Stáhnout .doc</button>
+        <button id="print">Tisk</button>
+      </div>
+      <p class="notice">Výstup je připraven pro A4. Zadání variant se při tisku neláme mezi stránkami; řešení začíná na nové, samostatné stránce. Vzorec: n = 1000 · v / (π · D).</p>
+    </section>
+    <section class="card preview">
+      <h2>Náhled</h2>
+      <div id="output"></div>
+    </section>
+  </div>
+</main>
+<script>
+let variants=[];
+function randomInt(min,max,step=1){
+  const a=Math.ceil(min/step)*step;
+  const b=Math.floor(max/step)*step;
+  return a+Math.floor(Math.random()*((b-a)/step+1))*step;
+}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function makeVariants(){
+  const count=Math.min(30,Math.max(1,+document.getElementById('count').value||6));
+  const d0=+document.getElementById('d0').value,d1=+document.getElementById('d1').value;
+  const v0=+document.getElementById('v0').value,v1=+document.getElementById('v1').value;
+  if(d0<=0||d1<d0||v0<=0||v1<v0){alert('Zkontrolujte intervaly průměru a řezné rychlosti.');return}
+  variants=[];
+  for(let i=0;i<count;i++){
+    const D=randomInt(d0,d1,5),v=randomInt(v0,v1,5);
+    const n=Math.round(1000*v/(Math.PI*D));
+    variants.push({D,v,n});
+  }
+  render();
+}
+function questionText(v){return document.getElementById('question').value.replaceAll('{D}',v.D).replaceAll('{v}',v.v)}
+function identityHtml(){return '<div class="identity"><span>Jméno a příjmení: _________________________</span><span>Třída: __________</span><span>Datum: __________</span></div>'}
+function answersHtml(){
+  return `<section class="solutions-page"><h2>Řešení – ${escapeHtml(document.getElementById('title').value)}</h2>${variants.map((v,i)=>`<div class="answer"><strong>Varianta ${i+1}:</strong> n = 1000 · ${v.v} / (π · ${v.D}) = ${v.n} ot./min</div>`).join('')}</section>`;
+}
+function render(){
+  const out=document.getElementById('output');
+  const show=document.getElementById('solutions').checked;
+  out.innerHTML=variants.map((v,i)=>`<article class="variant"><h3>Varianta ${i+1}</h3>${identityHtml()}<p>${escapeHtml(questionText(v))}</p><div class="work-area"><strong>Postup výpočtu:</strong><br><br>n = 1000 · v / (π · D)</div></article>`).join('');
+  if(show&&variants.length)out.insertAdjacentHTML('beforeend',answersHtml());
+}
+function docContent(){
+  const title=escapeHtml(document.getElementById('title').value);
+  const show=document.getElementById('solutions').checked;
+  let body=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${title}</title><style>@page{size:A4;margin:18mm}body{font-family:Calibri,Arial,sans-serif}.variant{page-break-inside:avoid;border:1px solid #ccc;padding:12px;margin:12px 0}.identity{margin:10px 0}.identity span{margin-right:20px}.work-area{border:1px solid #ccc;min-height:80px;padding:10px;margin-top:10px}.solutions{page-break-before:always}.answer{margin:8px 0}</style></head><body>`;
+  body+=`<h1>${title}</h1>`;
+  variants.forEach((v,i)=>{body+=`<div class="variant"><h2>Varianta ${i+1}</h2><div class="identity"><span>Jméno a příjmení: _________________________</span><span>Třída: __________</span><span>Datum: __________</span></div><p>${escapeHtml(questionText(v))}</p><div class="work-area"><b>Postup výpočtu:</b><br><br>n = 1000 · v / (π · D)</div></div>`});
+  if(show)body+=`<div class="solutions"><h1>Řešení – ${title}</h1>${variants.map((v,i)=>`<div class="answer"><b>Varianta ${i+1}:</b> n = 1000 · v / (π · D) = 1000 · ${v.v} / (π · ${v.D}) = ${v.n} ot./min</div>`).join('')}</div>`;
+  return body+'</body></html>';
+}
+document.getElementById('generate').addEventListener('click',makeVariants);
+document.getElementById('print').addEventListener('click',()=>window.print());
+document.getElementById('download').addEventListener('click',()=>{
+  if(!variants.length)makeVariants();
+  if(!variants.length)return;
+  const blob=new Blob(['\ufeff',docContent()],{type:'application/msword'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=(document.getElementById('title').value||'Pisemka').replace(/[\\/:*?"<>|]/g,'')+'.doc';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+makeVariants();
+</script>
+</body>
+</html>
