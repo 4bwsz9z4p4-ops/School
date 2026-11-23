@@ -1,0 +1,666 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Model nepřímého dělení</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: ovládání nahoře, pod ním kotouč s klikou a obrobek vedle sebe, pod nimi tlačítka kroků. */
+:root {
+  --bg: #edeff2;
+  --panel: #ffffff;
+  --stage: #f1f3f6;
+  --disc: #ffffff;
+  --ink: #17202b;
+  --muted: #566474;
+  --line: #cfd5dc;
+  --steel: #7d8998;
+  --accent: #c2410c;
+  --accent-soft: rgba(194, 65, 12, 0.16);
+  --on-accent: #ffffff;
+  --bad: #b3261e;
+  --font-head: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e141a;
+    --panel: #17202a;
+    --stage: #0f161d;
+    --disc: #212d3a;
+    --ink: #e8edf2;
+    --muted: #9ba8b6;
+    --line: #2a3644;
+    --steel: #70808f;
+    --accent: #ff7a3d;
+    --accent-soft: rgba(255, 122, 61, 0.24);
+    --on-accent: #1a1006;
+    --bad: #ff8a80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e141a;
+  --panel: #17202a;
+  --stage: #0f161d;
+  --disc: #212d3a;
+  --ink: #e8edf2;
+  --muted: #9ba8b6;
+  --line: #2a3644;
+  --steel: #70808f;
+  --accent: #ff7a3d;
+  --accent-soft: rgba(255, 122, 61, 0.24);
+  --on-accent: #1a1006;
+  --bad: #ff8a80;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font-body);
+  padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 20px; }
+h1 {
+  margin: 0;
+  font: 700 clamp(1.7rem, 4vw, 2.3rem)/1.15 var(--font-head);
+  text-wrap: balance;
+}
+.lead { margin: 6px 0 0; color: var(--muted); max-width: 64ch; }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 0;
+}
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 24px;
+}
+.controls > div { min-width: 0; }
+.label {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+button, input { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.discs { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 8px; }
+.disc {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  padding: 8px 2px 6px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.disc .p { font: 700 1.15rem/1.1 var(--font-head); font-variant-numeric: tabular-nums; }
+.disc .n { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.disc.off { opacity: 0.5; }
+.disc[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--accent-soft);
+  opacity: 1;
+}
+
+.zrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+#z-input {
+  width: 92px;
+  padding: 8px 10px;
+  font: 700 1.3rem/1.2 var(--font-head);
+  font-variant-numeric: tabular-nums;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+#circles-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.hint { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip {
+  min-width: 40px;
+  height: 34px;
+  padding: 0 8px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+
+.result { display: grid; gap: 6px; border-top: 1px solid var(--line); margin-top: 20px; padding-top: 18px; }
+.formula { font: 500 clamp(1.1rem, 3vw, 1.6rem)/1.3 var(--font-head); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.formula b { color: var(--accent); font-weight: 700; }
+.formula.bad, .formula.bad b { color: var(--bad); }
+.result p { margin: 0; max-width: 74ch; }
+.result .sub { color: var(--muted); font-size: 14px; }
+
+.stage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.fig { margin: 0; display: grid; gap: 8px; min-width: 0; align-content: start; }
+.fig h2 { margin: 0; font: 700 1.05rem/1.3 var(--font-head); }
+.fig .board { background: var(--stage); border-radius: 10px; padding: 4px; }
+.fig svg { display: block; width: 100%; height: auto; max-width: 440px; margin: 0 auto; }
+.fig figcaption { color: var(--muted); font-size: 13px; }
+.sync { margin: 14px 0 0; color: var(--muted); font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 18px; }
+.btn {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.status { margin: 12px 0 0; font-weight: 500; }
+
+.d-rim { fill: var(--disc); stroke: var(--ink); stroke-width: 2; }
+.hole { fill: var(--stage); stroke: var(--steel); stroke-width: 1.2; }
+.hole.cur { fill: var(--accent); stroke: var(--accent); }
+.hole.tgt { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.2; }
+.wedge { fill: var(--accent-soft); stroke: var(--steel); stroke-width: 1.5; }
+.fixed { fill: var(--ink); }
+.tick { stroke: var(--steel); stroke-width: 1.2; }
+.cutnotch { fill: var(--accent); }
+.svg-text { font-family: var(--font-body); fill: var(--ink); font-size: 13px; }
+.lab { font-family: var(--font-head); font-weight: 700; fill: var(--accent); text-anchor: middle; }
+
+.speed { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; }
+.speed .label { margin: 0 8px 0 0; }
+.speed .chip { padding: 0 12px; }
+
+@media (max-width: 640px) {
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  .panel { padding: 16px; }
+}
+</style>
+
+<main class="wrap">
+  <header>
+    <h1>Model nepřímého dělení</h1>
+    <p class="lead">Zadej počet drážek na obrobku a vyber kruh děr. Pak klikej na Další dělení: klika se otočí o celé otáčky a o potřebný počet děr a šnekový převod 40 : 1 otočí obrobkem.</p>
+  </header>
+
+  <section class="panel" aria-label="Nastavení">
+    <div class="controls">
+      <div>
+        <label class="label" for="z-input">Počet drážek na obrobku (z)</label>
+        <div class="zrow">
+          <input id="z-input" type="number" inputmode="numeric" min="2" max="100" value="14">
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Rychlá volba z"></div>
+      </div>
+      <div>
+        <span class="label" id="circle-label">Kruh děr na kotouči (h děr)</span>
+        <div class="discs" id="circles" role="group" aria-labelledby="circle-label"></div>
+        <label class="label" for="circles-input" style="margin-top:14px">Sada kruhů ve vaší dílně</label>
+        <input id="circles-input" type="text" inputmode="numeric" value="24, 25, 28, 30, 34, 37, 38, 39, 41, 42, 43, 46, 47, 49, 51, 53, 54, 57, 58, 59, 62, 66">
+        <p class="hint">Čísla oddělená čárkou. Předvyplněná je sada kruhů, které jsou k dispozici ve vaší dílně. Můžeš ji upravit.</p>
+      </div>
+    </div>
+    <div class="result" aria-live="polite">
+      <div class="formula" id="formula"></div>
+      <p id="instr"></p>
+      <p class="sub" id="angle"></p>
+      <p class="sub" id="rec"></p>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Model">
+    <div class="stage">
+      <figure class="fig">
+        <h2 id="plate-title">Děrový kotouč, kruh 21 děr</h2>
+        <div class="board">
+          <svg id="plate-svg" viewBox="0 0 400 400" role="img" aria-label="Stojící děrový kotouč s kruhem děr, otáčející se klika a sektor nůžek">
+            <text class="svg-text" x="200" y="30" text-anchor="middle">kotouč stojí, klika se otáčí</text>
+            <circle class="d-rim" cx="200" cy="215" r="150"/>
+            <path id="wedge" class="wedge" d=""/>
+            <g id="holes"></g>
+            <g id="plate-labels"></g>
+            <g id="crank">
+              <line x1="200" y1="215" x2="200" y2="77" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="200" cy="77" r="9" fill="var(--ink)"/>
+              <circle cx="200" cy="95" r="6.5" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.5"/>
+            </g>
+            <circle cx="200" cy="215" r="12" fill="var(--disc)" stroke="var(--steel)" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <figcaption>Plná oranžová díra: čep kliky. Orámovaná: sem klika dojde. Šedý sektor: nůžky, vymezují počet děr.</figcaption>
+      </figure>
+
+      <figure class="fig">
+        <h2 id="wp-title">Obrobek, z = 14</h2>
+        <div class="board">
+          <svg id="wp-svg" viewBox="0 0 400 400" role="img" aria-label="Obrobek s vyfrézovanými drážkami a pevným nástrojem nahoře">
+            <defs>
+              <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker>
+            </defs>
+            <g id="wp-rot">
+              <circle class="d-rim" cx="200" cy="215" r="105"/>
+              <g id="wp-ticks"></g>
+              <g id="wp-notches"></g>
+              <line x1="200" y1="167" x2="200" y2="127" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+            </g>
+            <text id="wp-count" class="svg-text" x="200" y="224" text-anchor="middle" style="font-family: var(--font-head); font-weight: 700; font-size: 24px;">0 / 14</text>
+            <polygon class="fixed" points="191,70 209,70 200,108"/>
+            <text class="svg-text" x="200" y="60" text-anchor="middle">nástroj (řez)</text>
+            <path d="M139 100.2A130 130 0 0 1 181.9 86.3" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah2)"/>
+          </svg>
+        </div>
+        <figcaption>Čárky: místa drážek. Oranžové zářezy: už vyfrézováno. Řez vždy vzniká pod nástrojem.</figcaption>
+      </figure>
+    </div>
+    <p class="sync">Šnekový převod 40 : 1: klika se otočí 40krát a obrobek jednou. Jedna otáčka kliky otočí obrobek o 9°.</p>
+    <div class="actions">
+      <button class="btn primary" id="next" type="button">Další dělení</button>
+      <button class="btn" id="prev" type="button">Zpět</button>
+      <button class="btn" id="play" type="button">Přehrát vše</button>
+      <button class="btn" id="reset" type="button">Od začátku</button>
+    </div>
+    <div class="speed" role="group" aria-labelledby="speed-label">
+      <span class="label" id="speed-label">Rychlost otáčení kliky</span>
+      <button class="chip speed-btn" data-ms="3000" type="button" aria-pressed="false">Velmi pomalu</button>
+      <button class="chip speed-btn" data-ms="1500" type="button" aria-pressed="true">Pomalu</button>
+      <button class="chip speed-btn" data-ms="700" type="button" aria-pressed="false">Normálně</button>
+      <button class="chip speed-btn" data-ms="300" type="button" aria-pressed="false">Rychle</button>
+    </div>
+    <p class="status" id="status" aria-live="polite"></p>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const RATIO = 40;
+  const Z_CHIPS = [2, 3, 5, 6, 7, 9, 11, 12, 13, 14, 17, 24, 36, 40, 60, 100];
+  const CX = 200, CY = 215, RR = 120, LR = 94, WR = 105, WEDGE_R = 134;
+  const NS = 'http://www.w3.org/2000/svg';
+  const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  const S = {
+    z: 14, h: 28, perTurn: 1500, k: 0, s: 0, cut: 0,
+    busy: false, playing: false, gen: 0,
+    circles: [24, 25, 28, 30, 34, 37, 38, 39, 41, 42, 43, 46, 47, 49, 51, 53, 54, 57, 58, 59, 62, 66],
+    holes: [], labels: [], calc: null
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const fmt = (x) => x.toLocaleString('cs-CZ', { maximumFractionDigits: 2 });
+  const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
+  const plTurn = (n) => (n === 1 ? 'otáčku' : (n >= 2 && n <= 4 ? 'otáčky' : 'otáček'));
+  const plHole = (n) => (n === 1 ? 'díru' : (n >= 2 && n <= 4 ? 'díry' : 'děr'));
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function svgEl(tag, attrs, parent) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  /* ---------- výpočet: n = 40 / z = celé otáčky + zlomek ---------- */
+  function calcFor(z) {
+    const whole = Math.floor(RATIO / z);
+    const rem = RATIO % z;
+    let b = 0, c = 1;
+    if (rem !== 0) { const g = gcd(rem, z); b = rem / g; c = z / g; }
+    return { whole: whole, rem: rem, b: b, c: c };
+  }
+  function holesFor(h) {
+    const c = S.calc;
+    if (c.rem === 0) return 0;
+    return h % c.c === 0 ? c.b * h / c.c : null;
+  }
+  const validCircles = () => S.circles.filter((h) => holesFor(h) !== null);
+  const isValid = () => holesFor(S.h) !== null;
+  const advance = () => holesFor(S.h) || 0;
+  const cumAngle = (k) => k * 360 * RATIO / S.z;
+
+  /* ---------- ovládací prvky ---------- */
+  const chipsBox = $('chips');
+  const chipBtns = Z_CHIPS.map((z) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.textContent = String(z);
+    b.addEventListener('click', () => setZ(z, 'chip'));
+    chipsBox.appendChild(b);
+    return b;
+  });
+  const zInput = $('z-input');
+  zInput.addEventListener('input', () => {
+    const v = parseInt(zInput.value, 10);
+    if (v >= 2 && v <= 100) setZ(v, 'input');
+  });
+  zInput.addEventListener('change', () => { zInput.value = String(S.z); });
+
+  const circlesBox = $('circles');
+  let circleBtns = [];
+  function buildCircleButtons() {
+    circlesBox.textContent = '';
+    circleBtns = S.circles.map((h) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'disc';
+      b.dataset.h = String(h);
+      b.innerHTML = '<span class="p">' + h + '</span><span class="n"></span>';
+      b.addEventListener('click', () => setConfig(S.z, h));
+      circlesBox.appendChild(b);
+      return b;
+    });
+  }
+  const cInput = $('circles-input');
+  function parseCircles(text) {
+    const nums = text.split(/[^0-9]+/).filter(Boolean).map(Number).filter((n) => n >= 6 && n <= 100);
+    return Array.from(new Set(nums)).sort((a, b) => a - b);
+  }
+  cInput.addEventListener('input', () => {
+    const list = parseCircles(cInput.value);
+    if (!list.length) return;
+    S.circles = list;
+    buildCircleButtons();
+    let h = S.h;
+    if (list.indexOf(h) < 0) {
+      const ok = list.filter((x) => { const c = calcFor(S.z); return c.rem === 0 || x % c.c === 0; });
+      h = ok.length ? ok[0] : list[0];
+    }
+    setConfig(S.z, h);
+  });
+  cInput.addEventListener('change', () => { cInput.value = S.circles.join(', '); });
+
+  /* ---------- stavba kreseb ---------- */
+  function ang(i) { return i * 360 / S.h; }
+  function pt(r, deg) {
+    const a = deg * Math.PI / 180;
+    return [CX + r * Math.sin(a), CY - r * Math.cos(a)];
+  }
+
+  function buildPlate() {
+    const g = $('holes');
+    g.textContent = '';
+    S.holes = [];
+    const rad = Math.max(2.4, Math.min(5.5, Math.PI * RR / S.h * 0.3));
+    for (let i = 0; i < S.h; i++) {
+      const p = pt(RR, ang(i));
+      S.holes.push(svgEl('circle', { cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: rad.toFixed(1), 'class': 'hole' }, g));
+    }
+  }
+
+  function buildWorkpiece() {
+    const t = $('wp-ticks');
+    t.textContent = '';
+    const a = 360 / S.z;
+    for (let j = 0; j < S.z; j++) {
+      svgEl('line', { x1: CX, y1: 110, x2: CX, y2: 101, 'class': 'tick', transform: 'rotate(' + (j * a) + ' ' + CX + ' ' + CY + ')' }, t);
+    }
+    drawNotches();
+  }
+
+  function drawNotches() {
+    const g = $('wp-notches');
+    g.textContent = '';
+    const a = 360 / S.z;
+    const hw = Math.min(6, Math.PI * WR / S.z * 0.3);
+    const depth = Math.max(8, hw * 2.3);
+    for (let j = 0; j < S.cut; j++) {
+      svgEl('polygon', {
+        points: (CX - hw) + ',108 ' + (CX + hw) + ',108 ' + CX + ',' + (110 + depth),
+        'class': 'cutnotch',
+        transform: 'rotate(' + (j * a) + ' ' + CX + ' ' + CY + ')'
+      }, g);
+    }
+  }
+
+  /* ---------- kreslení stavu ---------- */
+  function draw() {
+    $('crank').setAttribute('transform', 'rotate(' + S.s + ' ' + CX + ' ' + CY + ')');
+    $('wp-rot').setAttribute('transform', 'rotate(' + (S.s / RATIO) + ' ' + CX + ' ' + CY + ')');
+  }
+
+  function idlePaint() {
+    S.holes.forEach((e) => e.setAttribute('class', 'hole'));
+    const lg = $('plate-labels');
+    lg.textContent = '';
+    const wedge = $('wedge');
+    wedge.setAttribute('d', '');
+    if (isValid()) {
+      const adv = advance();
+      const cur = (S.k * adv) % S.h;
+      S.holes[cur].setAttribute('class', 'hole cur');
+      if (S.k < S.z && adv > 0) {
+        const tgt = (cur + adv) % S.h;
+        S.holes[tgt].setAttribute('class', 'hole tgt');
+        const a0 = ang(cur), a1 = a0 + adv * 360 / S.h;
+        const p0 = pt(WEDGE_R, a0), p1 = pt(WEDGE_R, a1);
+        const large = (a1 - a0) > 180 ? 1 : 0;
+        wedge.setAttribute('d', 'M' + CX + ' ' + CY + 'L' + p0[0].toFixed(1) + ' ' + p0[1].toFixed(1) +
+          'A' + WEDGE_R + ' ' + WEDGE_R + ' 0 ' + large + ' 1 ' + p1[0].toFixed(1) + ' ' + p1[1].toFixed(1) + 'Z');
+        const fs = S.h >= 40 ? 10 : 12;
+        for (let t = 1; t <= adv; t++) {
+          if (adv > 12 && !(t === adv || t % 5 === 0)) continue;
+          const p = pt(LR, ang(cur + t));
+          const el = svgEl('text', { 'class': 'lab', 'font-size': fs, x: p[0].toFixed(1), y: (p[1] + 4).toFixed(1) }, lg);
+          el.textContent = String(t);
+        }
+      }
+    }
+    draw();
+  }
+
+  /* ---------- texty a stav tlačítek ---------- */
+  function updateUI() {
+    const z = S.z, k = S.k, c = S.calc;
+    const valid = isValid();
+    const list = validCircles();
+    const h = S.h;
+
+    circleBtns.forEach((b) => {
+      const bh = Number(b.dataset.h);
+      const hs = holesFor(bh);
+      b.setAttribute('aria-pressed', bh === h ? 'true' : 'false');
+      b.classList.toggle('off', hs === null);
+      b.querySelector('.n').textContent = hs === null ? '—' : (c.rem === 0 ? 'nepočítat' : hs + ' děr');
+      b.title = hs === null ? 'Na kruhu ' + bh + ' děr zlomek ' + c.b + '/' + c.c + ' nevychází' : (c.rem === 0 ? 'Díry se nepočítají' : 'Napočítat ' + hs + ' děr');
+    });
+    chipBtns.forEach((b) => b.setAttribute('aria-pressed', Number(b.textContent) === z ? 'true' : 'false'));
+
+    $('plate-title').textContent = 'Děrový kotouč, kruh ' + h + ' děr';
+    $('wp-title').textContent = 'Obrobek, z = ' + z;
+    $('wp-count').textContent = k + ' / ' + z;
+
+    const formula = $('formula'), instr = $('instr'), angle = $('angle'), rec = $('rec');
+    const lead = c.whole > 0 ? c.whole + ' + ' : '';
+
+    if (c.rem === 0) {
+      formula.className = 'formula';
+      formula.innerHTML = 'n = 40 ÷ ' + z + ' = <b>' + c.whole + '</b>';
+      instr.innerHTML = 'Otoč klikou o <b>' + c.whole + ' ' + plTurn(c.whole) + '</b>. Samotné celé otáčky stačí, díry se nepočítají.';
+      rec.textContent = '';
+    } else if (valid) {
+      const hs = holesFor(h);
+      let chain = 'n = 40 ÷ ' + z + ' = ' + lead + c.rem + '/' + z;
+      if (c.rem !== c.b || z !== c.c) chain += ' = ' + lead + c.b + '/' + c.c;
+      if (h !== c.c) chain += ' = ' + lead + hs + '/' + h;
+      formula.className = 'formula';
+      formula.innerHTML = chain.replace(/(\d+\/\d+)$/, '<b>$1</b>');
+      const parts = [];
+      if (c.whole > 0) parts.push('<b>' + c.whole + ' ' + plTurn(c.whole) + '</b>');
+      parts.push('<b>' + hs + ' ' + plHole(hs) + '</b> na kruhu s ' + h + ' otvory');
+      instr.innerHTML = 'Otoč klikou o ' + parts.join(' a ještě o ') + '. Nůžky nastav na ' + hs + ' děr.';
+      if (list.length > 1) {
+        const best = list[0];
+        rec.textContent = h === best
+          ? 'Tohle je nejkratší cesta: na tomto kruhu se počítá nejméně děr.'
+          : 'Doporučení: kruh ' + best + ' děr, napočítá se jen ' + holesFor(best) + '.';
+      } else {
+        rec.textContent = 'Pro z = ' + z + ' vychází zlomek jen na kruhu ' + h + '.';
+      }
+    } else {
+      formula.className = 'formula bad';
+      formula.textContent = 'n = 40 ÷ ' + z + ' = ' + lead + c.b + '/' + c.c;
+      if (list.length) {
+        instr.textContent = 'Kruh ' + h + ' není násobek ' + c.c + ', zlomek ' + c.b + '/' + c.c + ' se na něj nedá převést. Použij kruh ' +
+          list.map((x) => x + ' (' + holesFor(x) + ' děr)').join(' nebo ') + '.';
+        rec.textContent = '';
+      } else {
+        instr.textContent = 'Žádný kruh ze sady není násobek ' + c.c + ', takže zlomek ' + c.b + '/' + c.c + ' nejde použít. Zkus doplnit kruh s násobkem ' + c.c + ' děr, jinak je potřeba diferenciální dělení.';
+        rec.textContent = '';
+      }
+    }
+    angle.textContent = 'Jedno dělení obrobku: 360° ÷ ' + z + ' = ' + fmt(360 / z) + '°. To odpovídá ' + fmt(RATIO / z) + ' otáčky kliky (40 ÷ ' + z + ').';
+
+    $('next').disabled = !valid || S.busy || S.playing || k >= z;
+    $('prev').disabled = !valid || S.busy || S.playing || k <= 0;
+    $('play').disabled = !valid;
+    $('play').textContent = S.playing ? 'Zastavit' : 'Přehrát vše';
+
+    let st;
+    if (!valid) st = 'Vyber kruh děr, na kterém zlomek vychází, jinak se nedá dělit.';
+    else if (k >= z) st = 'Hotovo: všech ' + z + ' drážek je vyfrézováno a obvod je celý rozdělený.';
+    else st = 'Hotovo ' + k + ' z ' + z + ' drážek. Další řez: č. ' + (k + 1) + '.';
+    $('status').textContent = st;
+  }
+
+  /* ---------- změna nastavení ---------- */
+  function setConfig(z, h) {
+    S.gen++;
+    S.playing = false;
+    S.busy = false;
+    S.z = z;
+    S.h = h;
+    S.calc = calcFor(z);
+    S.k = 0;
+    S.cut = 0;
+    S.s = 0;
+    buildPlate();
+    buildWorkpiece();
+    idlePaint();
+    updateUI();
+  }
+
+  function setZ(z, source) {
+    z = Math.max(2, Math.min(100, z));
+    if (source !== 'input') zInput.value = String(z);
+    const c = calcFor(z);
+    let h = S.h;
+    const ok = (x) => c.rem === 0 || x % c.c === 0;
+    if (!ok(h)) {
+      const list = S.circles.filter(ok);
+      if (list.length) h = list[0];
+    }
+    setConfig(z, h);
+  }
+
+  /* ---------- animace ---------- */
+  function tween(from, to, dur, gen) {
+    return new Promise((resolve) => {
+      if (reduce || dur <= 0) { S.s = to; draw(); resolve(); return; }
+      const t0 = performance.now();
+      function frame(t) {
+        if (gen !== S.gen) { resolve(); return; }
+        const u = Math.min(1, (t - t0) / dur);
+        const e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+        S.s = from + (to - from) * e;
+        draw();
+        if (u < 1) requestAnimationFrame(frame); else resolve();
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  const duration = () => Math.min(20000, 600 + (RATIO / S.z) * S.perTurn);
+
+  async function forward() {
+    if (S.busy || !isValid() || S.k >= S.z) return;
+    const g = S.gen;
+    S.busy = true;
+    S.cut = S.k + 1;
+    drawNotches();
+    updateUI();
+    const to = cumAngle(S.k + 1);
+    await tween(S.s, to, duration(), g);
+    if (g !== S.gen) return;
+    S.k += 1;
+    S.s = to;
+    S.busy = false;
+    idlePaint();
+    updateUI();
+  }
+
+  async function back() {
+    if (S.busy || !isValid() || S.k <= 0) return;
+    const g = S.gen;
+    S.busy = true;
+    updateUI();
+    const to = cumAngle(S.k - 1);
+    await tween(S.s, to, duration(), g);
+    if (g !== S.gen) return;
+    S.k -= 1;
+    S.cut = S.k;
+    drawNotches();
+    S.s = to;
+    S.busy = false;
+    idlePaint();
+    updateUI();
+  }
+
+  async function play() {
+    if (S.playing) { S.playing = false; updateUI(); return; }
+    if (!isValid()) return;
+    if (S.k >= S.z) setConfig(S.z, S.h);
+    const g = S.gen;
+    S.playing = true;
+    updateUI();
+    while (S.playing && g === S.gen && S.k < S.z) {
+      await forward();
+      if (g !== S.gen || !S.playing) break;
+      await sleep(reduce ? 200 : 450);
+    }
+    if (g === S.gen) { S.playing = false; updateUI(); }
+  }
+
+  $('next').addEventListener('click', forward);
+  $('prev').addEventListener('click', back);
+  $('play').addEventListener('click', play);
+  $('reset').addEventListener('click', () => setConfig(S.z, S.h));
+
+  const speedBtns = Array.prototype.slice.call(document.querySelectorAll('.speed-btn'));
+  function paintSpeed() {
+    speedBtns.forEach((b) => b.setAttribute('aria-pressed', Number(b.dataset.ms) === S.perTurn ? 'true' : 'false'));
+  }
+  speedBtns.forEach((b) => b.addEventListener('click', () => {
+    S.perTurn = Number(b.dataset.ms);
+    paintSpeed();
+  }));
+  paintSpeed();
+
+  buildCircleButtons();
+  setConfig(14, 28);
+})();
+</script>
+
+</body></html>
