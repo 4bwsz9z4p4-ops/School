@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Generátor písemek 3 – kuželovitost</title>
   <style>
-    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#17212e;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}main{max-width:1000px;margin:36px auto;padding:0 20px 50px}h1{margin:0 0 8px}.lead{color:#526174;margin:0 0 24px}.layout{display:grid;grid-template-columns:minmax(260px,330px) 1fr;gap:20px;align-items:start}.card{background:#fff;border:1px solid #dce4ee;border-radius:12px;padding:20px;box-shadow:0 4px 16px #2030400a}.settings{position:sticky;top:16px}.field{margin:0 0 14px}.field>label{display:block;font-weight:600;margin-bottom:6px}.field input:not([type=checkbox]){width:100%;padding:9px 10px;border:1px solid #bdc9d8;border-radius:6px;font:inherit}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.field label:has(input[type=checkbox]){display:flex;align-items:center;gap:8px;font-weight:400}.actions{display:grid;gap:8px;margin:18px 0}.actions button{font:inherit;padding:10px 12px;border:1px solid #aebaca;border-radius:7px;background:#fff;cursor:pointer}.actions .primary{background:#1769aa;border-color:#1769aa;color:#fff;font-weight:650}.actions button:hover{filter:brightness(.96)}.notice{font-size:.9rem;line-height:1.5;color:#526174}.preview h2{margin:0 0 16px}.variant{padding:10px 0 24px;margin:0 0 20px;border-bottom:1px solid #dce4ee;break-after:page;page-break-after:always}.variant:last-child{border-bottom:0}.variant h3,.variant h2{margin:0 0 12px}.identity{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:.92rem;margin:10px 0 16px}.prompt{margin:12px 0}.diagram{display:block;width:min(100%,560px);height:auto;margin:8px auto 16px}.answer{border:1px solid #cbd6e2;border-radius:7px;padding:12px 14px;margin:12px 0;line-height:1.7}.solutions{margin-top:24px;padding-top:20px;border-top:2px solid #7d8da0}.solutions h2{margin:0 0 16px}.answer strong{font-weight:700}@media(max-width:760px){.layout{grid-template-columns:1fr}.settings{position:static}main{margin-top:20px}}@media print{ :root{background:#fff}body{background:#fff}main{max-width:none;margin:0;padding:0}.layout{display:block}.settings,.preview>h2{display:none}.card{border:0;box-shadow:none;padding:0}.variant{min-height:240mm;padding:0 0 12mm;margin:0;border:0;break-after:page;page-break-after:always}.variant:last-child{break-after:auto;page-break-after:auto}.solutions{break-before:page;page-break-before:always}.diagram{max-width:145mm} }
+    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#17212e;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}main{max-width:1000px;margin:36px auto;padding:0 20px 50px}h1{margin:0 0 8px}.lead{color:#526174;margin:0 0 24px}.layout{display:grid;grid-template-columns:minmax(260px,330px) 1fr;gap:20px;align-items:start}.card{background:#fff;border:1px solid #dce4ee;border-radius:12px;padding:20px;box-shadow:0 4px 16px #2030400a}.settings{position:sticky;top:16px}.field{margin:0 0 14px}.field label{display:block;font-weight:600;margin-bottom:6px}.field input:not([type=checkbox]){width:100%;padding:9px 10px;border:1px solid #bdc9d8;border-radius:6px;font:inherit}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.field label:has(input[type=checkbox]){display:flex;align-items:center;gap:8px;font-weight:400}.actions{display:grid;gap:8px;margin:18px 0}.actions button{font:inherit;padding:10px 12px;border:1px solid #aebaca;border-radius:7px;background:#fff;cursor:pointer}.actions .primary{background:#1769aa;border-color:#1769aa;color:#fff;font-weight:650}.actions button:hover{filter:brightness(.96)}.notice{font-size:.9rem;line-height:1.5;color:#526174}.preview h2{margin:0 0 16px}.variant{padding:10px 0 24px;margin:0 0 20px;border-bottom:1px solid #dce4ee;break-after:page;page-break-after:always}.variant:last-child{border-bottom:0}.variant h3,.variant h2{margin:0 0 12px}.identity{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:.92rem;margin:10px 0 16px}.prompt{margin:12px 0}.diagram{display:block;width:min(100%,560px);height:auto;margin:8px auto 16px}.answer{border:1px solid #cbd6e2;border-radius:7px;padding:12px 14px;margin:12px 0;line-height:1.7}.solutions{margin-top:24px;padding-top:20px;border-top:2px solid #7d8da0}.solutions h2{margin:0 0 16px}.answer strong{font-weight:700}@media(max-width:760px){.layout{grid-template-columns:1fr}.settings{position:static}main{margin-top:20px}}@media print{:root{background:#fff}body{background:#fff}main{max-width:none;margin:0;padding:0}.layout{display:block}.settings,.preview>h2{display:none}.card{border:0;box-shadow:none;padding:0}.variant{min-height:240mm;padding:0 0 12mm;margin:0;border:0;break-after:page;page-break-after:always}.variant:last-child{break-after:auto;page-break-after:auto}.solutions{break-before:page;page-break-before:always}.diagram{max-width:145mm}}
   </style>
 </head>
 <body>
@@ -37,7 +37,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function getSettings(){return {count:Math.min(30,Math.max(1,Number($('count').value)||6)),D0:Number($('bigMin').value),D1:Number($('bigMax').value),d0:Number($('smallMin').value),d1:Number($('smallMax').value),L0:Number($('lengthMin').value),L1:Number($('lengthMax').value)}}
 function make(){
   const s=getSettings();
-  if(![s.D0,s.D1,s.d0,s.d1,s.L0,s.L1].every(Number.isFinite)||s.D0<2||s.d0<1||s.L0<1||s.D1<s.D0||s.d1<s.d0||s.L1<s.L0||s.D1<=s.d0){alert('Zkontrolujte rozsahy. Průměry musí být kladné, D musí být vždy větší než d a dolní meze nesmí být vyšší než horní.');return}
+  if(![s.D0,s.D1,s.d0,s.d1,s.L0,s.L1].every(Number.isFinite)||s.D0<2||s.d0<1||s.L0<1||s.D1<s.D0||s.d1<s.d0||s.L1<s.L0||s.D1<=s.d0){alert('Zkontrolujte rozsahy. Průměry musí být kladné, D musí být větší než d a dolní meze nesmějí být větší než horní.');return}
   variants=[];
   for(let i=0;i<s.count;i++){
     let D,d;
@@ -48,6 +48,13 @@ function make(){
   render();
 }
 function reducedFraction(n,d){const g=gcd(n,d);return `${n/g}/${d/g}`}
+function reciprocalFraction(n,d){
+  const g=gcd(n,d);
+  n/=g;
+  d/=g;
+  if(n===1)return `1/${d}`;
+  return `1/${d/n}`;
+}
 function diagram(v,i,mode='html'){
   const centerY=101,leftX=104,rightX=400,maxRadius=61;
   const radiusBig=maxRadius,radiusSmall=Math.max(16,maxRadius*v.d/v.D);
@@ -56,7 +63,12 @@ function diagram(v,i,mode='html'){
   return `<svg class="diagram" xmlns="http://www.w3.org/2000/svg" width="520" height="230" viewBox="0 0 520 230" role="img" aria-label="Nákres komolého kužele"><defs><marker id="${marker}" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse"><path d="M8 1 1 4l7 3" fill="none" stroke="#222" stroke-width="1.2"/></marker></defs><g fill="none" stroke="#222" stroke-width="1.4"><path d="M${leftX} ${topL}V${bottomL} M${rightX} ${topR}V${bottomR}" stroke-width="2.6"/><path d="M${leftX} ${topL}L${rightX} ${topR} M${leftX} ${bottomL}L${rightX} ${bottomR}" stroke-width="2.6"/><path d="M58 ${centerY}H452" stroke="#666" stroke-dasharray="9 4 2 4"/><path d="M${leftX} ${topL}H35 M${leftX} ${bottomL}H35 M35 ${topL}V${bottomL}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${rightX} ${topR}H485 M${rightX} ${bottomR}H485 M485 ${topR}V${bottomR}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${leftX} ${bottomL}V207 M${rightX} ${bottomR}V207 M${leftX} 207H${rightX}" marker-start="url(#${marker})" marker-end="url(#${marker})"/></g><g fill="#111" font-family="Arial,sans-serif" font-size="17"><text x="19" y="${centerY}" text-anchor="middle" transform="rotate(-90 19 ${centerY})">D = ${v.D}</text><text x="505" y="${centerY}" text-anchor="middle" transform="rotate(-90 505 ${centerY})">d = ${v.d}</text><text x="252" y="197" text-anchor="middle">L = ${v.L}</text></g></svg>`;
 }
 function identity(){return '<div class="identity"><span>Jméno a příjmení: _________________________</span><span>Třída: __________</span><span>Datum: __________</span></div>'}
-function solution(v,i){const delta=v.D-v.d;const kReduced=reducedFraction(delta,v.L);const sReduced=reducedFraction(delta,2*v.L);return `<div class="answer"><strong>Varianta ${i+1} – řešení</strong><br>K = (D − d) / L = (${v.D} − ${v.d}) / ${v.L} = ${delta}/${v.L} = ${kReduced}<br>S = K / 2 = ${delta}/${2*v.L} = ${sReduced}</div>`}
+function solution(v,i){
+  const delta=v.D-v.d;
+  const kReciprocal=reciprocalFraction(delta,v.L);
+  const sReciprocal=reciprocalFraction(delta,2*v.L);
+  return `<div class="answer"><strong>Varianta ${i+1} – řešení</strong><br>K = (D − d) / L = (${v.D} − ${v.d}) / ${v.L} = ${delta}/${v.L} = ${kReciprocal}<br>S = K / 2 = ${delta}/${2*v.L} = ${sReciprocal}</div>`;
+}
 function question(v,i,mode='html'){
   return `<article class="variant"><h3>Varianta ${i+1}</h3>${identity()}<p class="prompt">Na obrázku je zobrazený komolý kužel s danými rozměry. Vypočítejte kuželovitost a sklon komolého kužele.</p>${diagram(v,i,mode)}<p>Výsledky zapište ve tvaru 1:x.</p></article>`;
 }
@@ -67,7 +79,7 @@ async function docContent(){
   preview.querySelectorAll('svg.diagram').forEach(svg=>svg.remove());
   preview.querySelectorAll('p.prompt').forEach(p=>{p.textContent='Vypočítejte kuželovitost a sklon komolého kužele.'});
   preview.querySelectorAll('p').forEach(p=>{if(p.textContent==='Výsledky zapište ve tvaru 1:x.')p.remove()});
-  preview.querySelectorAll('article.variant').forEach((article,index)=>{
+  preview.querySelectorAll('article.variant').forEach(article=>{
     article.insertAdjacentHTML('beforeend','<div class="calculation-space" aria-label="Místo pro výpočet"></div>');
   });
   return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>${title}</title><style>@page{size:A4;margin:18mm 17mm}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#17212e}.variant{padding:10px 0 24px;margin:0 0 20px;page-break-after:always;break-after:page}.variant h3,.variant h2{margin:0 0 12px}.identity{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10pt;margin:10px 0 16px}.prompt{margin:12px 0}.calculation-space{height:155mm}.answer{border:1px solid #cbd6e2;padding:12px 14px;margin:12px 0;line-height:1.7}.solutions{margin-top:24px;padding-top:20px;border-top:2px solid #7d8da0;page-break-before:always;break-before:page}.solutions h2{margin:0 0 16px}</style></head><body>${preview.innerHTML}</body></html>`;
@@ -81,7 +93,7 @@ $('download').addEventListener('click',async()=>{
   const button=$('download');button.disabled=true;
   try{
     const blob=new Blob(['\ufeff',await docContent()],{type:'application/msword'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-    a.href=url;a.download=($('title').value||'pisemka').replace(/[^\p{L}\p{N}-]+/gu,'_')+'.doc';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    a.href=url;a.download=($('title').value||'pisemka').replace([^\p{L}\p{N}-]+/gu,'_')+'.doc';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }catch(error){alert(error.message||'Dokument se nepodařilo vytvořit.');}
   finally{button.disabled=false;}
 });
