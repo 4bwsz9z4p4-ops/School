@@ -21,7 +21,7 @@
       <div class="field"><label for="smallMin">Menší průměr d (mm), od–do</label><div class="row"><input id="smallMin" type="number" min="1" value="60" aria-label="d od"><input id="smallMax" type="number" min="1" value="85" aria-label="d do"></div></div>
       <div class="field"><label for="lengthMin">Délka kužele L (mm), od–do</label><div class="row"><input id="lengthMin" type="number" min="1" value="100" aria-label="L od"><input id="lengthMax" type="number" min="1" value="300" aria-label="L do"></div></div>
       <div class="field"><label><input id="solutions" type="checkbox" checked> Přidat řešení na samostatnou stránku</label></div>
-      <div class="actions"><button class="primary" id="generate" type="button">Vygenerovat varianty</button><button id="download" type="button">Stáhnout .doc</button><button id="print" type="button">Tisknout</button></div>
+      <div class="actions"><button class="primary" id="generate" type="button">Vygenerovat varianty</button><button id="print" type="button">Tisknout</button></div>
       <p class="notice">Kuželovitost K = (D − d) / L. Sklon komolého kužele S = K / 2. Kótovací šipky jsou pouze na kótovacích čarách.</p>
     </section>
     <section class="card preview"><h2>Náhled</h2><div id="output" aria-live="polite"></div></section>
@@ -61,7 +61,7 @@ function diagram(v,i,mode='html'){
   const topL=centerY-radiusBig,bottomL=centerY+radiusBig,topR=centerY-radiusSmall,bottomR=centerY+radiusSmall;
   const marker=`arrow-${i}-${mode}`;
   const dimLeft=65,dimRight=485,dimBottom=205;
-  return `<svg class="diagram" xmlns="http://www.w3.org/2000/svg" width="520" height="230" viewBox="0 0 520 230" role="img" aria-label="Nákres komolého kužele"><defs><marker id="${marker}" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0 0L8 4.5L0 9" fill="none" stroke="#222" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><g fill="none" stroke="#222" stroke-width="1.5"><!-- obrys kužele: bez kótovacích šipek --><path d="M${leftX} ${topL}V${bottomL} M${rightX} ${topR}V${bottomR}" stroke-width="2.6"/><path d="M${leftX} ${topL}L${rightX} ${topR} M${leftX} ${bottomL}L${rightX} ${bottomR}" stroke-width="2.6"/><!-- pomocné vynášecí čáry kót --><path d="M${leftX} ${topL}H${dimLeft} M${leftX} ${bottomL}H${dimLeft} M${rightX} ${topR}H${dimRight} M${rightX} ${bottomR}H${dimRight} M${leftX} ${bottomL}V${dimBottom} M${rightX} ${bottomR}V${dimBottom}" stroke="#666" stroke-width="1"/><!-- kótovací čáry: šipky jsou pouze zde --><path d="M${dimLeft} ${topL}V${bottomL}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${dimRight} ${topR}V${bottomR}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${leftX} ${dimBottom}H${rightX}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M58 ${centerY}H452" stroke="#888" stroke-dasharray="9 4 2 4" stroke-width="1"/></g><g fill="#111" font-family="Arial,sans-serif" font-size="15"><text x="${dimLeft}" y="${centerY}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${dimLeft} ${centerY})">D = ${v.D}</text><text x="${dimRight}" y="${centerY}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${dimRight} ${centerY})">d = ${v.d}</text><text x="252" y="${dimBottom-7}" text-anchor="middle">L = ${v.L}</text></g></svg>`;
+  return `<svg class="diagram" xmlns="http://www.w3.org/2000/svg" width="520" height="230" viewBox="0 0 520 230" role="img" aria-label="Nákres komolého kužele"><defs><marker id="${marker}" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0 0L8 4.5L0 9" fill="none" stroke="#222" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><g fill="none" stroke="#222" stroke-width="1.5"><!-- obrys kužele: bez kótovacích šipek --><path d="M${leftX} ${topL}V${bottomL} M${rightX} ${topR}V${bottomR}" stroke-width="2.6"/><path d="M${leftX} ${topL}L${rightX} ${topR} M${leftX} ${bottomL}L${rightX} ${bottomR}" stroke-width="2.6"/><!-- pomocné vynášecí čáry kót --><path d="M${leftX} ${topL}H${dimLeft} M${leftX} ${bottomL}H${dimLeft} M${rightX} ${topR}H${dimRight} M${rightX} ${bottomR}H${dimRight} M${leftX} ${bottomL}V${dimBottom} M${rightX} ${bottomR}V${dimBottom}" stroke="#666" stroke-width="1"/><!-- kótovací čáry: šipky jsou pouze zde --><path d="M${dimLeft} ${topL}V${bottomL}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${dimRight} ${topR}V${bottomR}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${leftX} ${dimBottom}H${rightX}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M58 ${centerY}H452" stroke="#888" stroke-dasharray="9 4 2 4" stroke-width="1"/></g><g fill="#111" font-family="Arial,sans-serif" font-size="15"><text x="${dimLeft}" y="${centerY}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${dimLeft} ${centerY})" stroke="#fff" stroke-width="4" paint-order="stroke fill">D = ${v.D}</text><text x="${dimRight}" y="${centerY}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${dimRight} ${centerY})" stroke="#fff" stroke-width="4" paint-order="stroke fill">d = ${v.d}</text><text x="252" y="${dimBottom-7}" text-anchor="middle">L = ${v.L}</text></g></svg>`;
 }
 function identity(){return '<div class="identity"><span>Jméno a příjmení: _________________________</span><span>Třída: __________</span><span>Datum: __________</span></div>'}
 function solution(v,i){
@@ -74,30 +74,9 @@ function question(v,i,mode='html'){
   return `<article class="variant"><h3>Varianta ${i+1}</h3>${identity()}<p class="prompt">Na obrázku je zobrazený komolý kužel s danými rozměry. Vypočítejte kuželovitost a sklon komolého kužele.</p>${diagram(v,i,mode)}<p>Výsledky zapište ve tvaru 1:x.</p></article>`;
 }
 function render(){const show=$('solutions').checked;$('output').innerHTML=variants.map((v,i)=>question(v,i,'preview')).join('')+(show&&variants.length?`<section class="solutions"><h2>Řešení</h2>${variants.map(solution).join('')}</section>`:'')}
-async function docContent(){
-  const title=esc($('title').value||'Písemka – kuželovitost');
-  const preview=$('output').cloneNode(true);
-  preview.querySelectorAll('svg.diagram').forEach(svg=>svg.remove());
-  preview.querySelectorAll('p.prompt').forEach(p=>{p.textContent='Vypočítejte kuželovitost a sklon komolého kužele.'});
-  preview.querySelectorAll('p').forEach(p=>{if(p.textContent==='Výsledky zapište ve tvaru 1:x.')p.remove()});
-  preview.querySelectorAll('article.variant').forEach(article=>{
-    article.insertAdjacentHTML('beforeend','<div class="calculation-space" aria-label="Místo pro výpočet"></div>');
-  });
-  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>${title}</title><style>@page{size:A4;margin:18mm 17mm}body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#17212e}.variant{padding:10px 0 24px;margin:0 0 20px;page-break-after:always;break-after:page}.variant h3,.variant h2{margin:0 0 12px}.identity{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10pt;margin:10px 0 16px}.prompt{margin:12px 0}.calculation-space{height:155mm}.answer{border:1px solid #cbd6e2;padding:12px 14px;margin:12px 0;line-height:1.7}.solutions{margin-top:24px;padding-top:20px;border-top:2px solid #7d8da0;page-break-before:always;break-before:page}.solutions h2{margin:0 0 16px}</style></head><body>${preview.innerHTML}</body></html>`;
-}
 $('generate').addEventListener('click',make);
 $('solutions').addEventListener('change',render);
 $('print').addEventListener('click',()=>window.print());
-$('download').addEventListener('click',async()=>{
-  if(!variants.length)make();
-  if(!variants.length)return;
-  const button=$('download');button.disabled=true;
-  try{
-    const blob=new Blob(['\ufeff',await docContent()],{type:'application/msword'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-    a.href=url;a.download=($('title').value||'pisemka').replace(/[^\p{L}\p{N}-]+/gu,'_')+'.doc';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-  }catch(error){alert(error.message||'Dokument se nepodařilo vytvořit.');}
-  finally{button.disabled=false;}
-});
 make();
 </script>
 </body>
