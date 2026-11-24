@@ -22,7 +22,7 @@
       <div class="field"><label for="lengthMin">Délka kužele L (mm), od–do</label><div class="row"><input id="lengthMin" type="number" min="1" value="100" aria-label="L od"><input id="lengthMax" type="number" min="1" value="300" aria-label="L do"></div></div>
       <div class="field"><label><input id="solutions" type="checkbox" checked> Přidat řešení na samostatnou stránku</label></div>
       <div class="actions"><button class="primary" id="generate" type="button">Vygenerovat varianty</button><button id="download" type="button">Stáhnout .doc</button><button id="print" type="button">Tisknout</button></div>
-      <p class="notice">Kuželovitost K = (D − d) / L. Sklon komolého kužele S = K / 2. V nákresu jsou kóty oddělené od obrysu a osa vyznačená čerchovanou čarou.</p>
+      <p class="notice">Kuželovitost K = (D − d) / L. Sklon komolého kužele S = K / 2. Kótovací šipky jsou pouze na kótovacích čarách.</p>
     </section>
     <section class="card preview"><h2>Náhled</h2><div id="output" aria-live="polite"></div></section>
   </div>
@@ -47,7 +47,6 @@ function make(){
   }
   render();
 }
-function reducedFraction(n,d){const g=gcd(n,d);return `${n/g}/${d/g}`}
 function reciprocalFraction(n,d){
   const g=gcd(n,d);
   n/=g;
@@ -60,7 +59,8 @@ function diagram(v,i,mode='html'){
   const radiusBig=maxRadius,radiusSmall=Math.max(16,maxRadius*v.d/v.D);
   const topL=centerY-radiusBig,bottomL=centerY+radiusBig,topR=centerY-radiusSmall,bottomR=centerY+radiusSmall;
   const marker=`arrow-${i}-${mode}`;
-  return `<svg class="diagram" xmlns="http://www.w3.org/2000/svg" width="520" height="230" viewBox="0 0 520 230" role="img" aria-label="Nákres komolého kužele"><defs><marker id="${marker}" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse"><path d="M8 1 1 4l7 3" fill="none" stroke="#222" stroke-width="1.2"/></marker></defs><g fill="none" stroke="#222" stroke-width="1.4"><path d="M${leftX} ${topL}V${bottomL} M${rightX} ${topR}V${bottomR}" stroke-width="2.6"/><path d="M${leftX} ${topL}L${rightX} ${topR} M${leftX} ${bottomL}L${rightX} ${bottomR}" stroke-width="2.6"/><path d="M58 ${centerY}H452" stroke="#666" stroke-dasharray="9 4 2 4"/><path d="M${leftX} ${topL}H35 M${leftX} ${bottomL}H35 M35 ${topL}V${bottomL}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${rightX} ${topR}H485 M${rightX} ${bottomR}H485 M485 ${topR}V${bottomR}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${leftX} ${bottomL}V207 M${rightX} ${bottomR}V207 M${leftX} 207H${rightX}" marker-start="url(#${marker})" marker-end="url(#${marker})"/></g><g fill="#111" font-family="Arial,sans-serif" font-size="17"><text x="19" y="${centerY}" text-anchor="middle" transform="rotate(-90 19 ${centerY})">D = ${v.D}</text><text x="505" y="${centerY}" text-anchor="middle" transform="rotate(-90 505 ${centerY})">d = ${v.d}</text><text x="252" y="197" text-anchor="middle">L = ${v.L}</text></g></svg>`;
+  const dimLeft=43,dimRight=461,dimBottom=205;
+  return `<svg class="diagram" xmlns="http://www.w3.org/2000/svg" width="520" height="230" viewBox="0 0 520 230" role="img" aria-label="Nákres komolého kužele"><defs><marker id="${marker}" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0 0L8 4.5L0 9" fill="none" stroke="#222" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><g fill="none" stroke="#222" stroke-width="1.5"><!-- obrys kužele: bez kótovacích šipek --><path d="M${leftX} ${topL}V${bottomL} M${rightX} ${topR}V${bottomR}" stroke-width="2.6"/><path d="M${leftX} ${topL}L${rightX} ${topR} M${leftX} ${bottomL}L${rightX} ${bottomR}" stroke-width="2.6"/><!-- pomocné vynášecí čáry kót --><path d="M${leftX} ${topL}H${dimLeft} M${leftX} ${bottomL}H${dimLeft} M${rightX} ${topR}H${dimRight} M${rightX} ${bottomR}H${dimRight} M${leftX} ${bottomL}V${dimBottom} M${rightX} ${bottomR}V${dimBottom}" stroke="#666" stroke-width="1"/><!-- kótovací čáry: šipky jsou pouze zde --><path d="M${dimLeft} ${topL}V${bottomL}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${dimRight} ${topR}V${bottomR}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M${leftX} ${dimBottom}H${rightX}" marker-start="url(#${marker})" marker-end="url(#${marker})"/><path d="M58 ${centerY}H452" stroke="#888" stroke-dasharray="9 4 2 4" stroke-width="1"/></g><g fill="#111" font-family="Arial,sans-serif" font-size="16"><text x="${dimLeft-8}" y="${centerY}" text-anchor="middle" transform="rotate(-90 ${dimLeft-8} ${centerY})">D = ${v.D}</text><text x="${dimRight+8}" y="${centerY}" text-anchor="middle" transform="rotate(-90 ${dimRight+8} ${centerY})">d = ${v.d}</text><text x="252" y="${dimBottom+19}" text-anchor="middle">L = ${v.L}</text></g></svg>`;
 }
 function identity(){return '<div class="identity"><span>Jméno a příjmení: _________________________</span><span>Třída: __________</span><span>Datum: __________</span></div>'}
 function solution(v,i){
@@ -93,7 +93,7 @@ $('download').addEventListener('click',async()=>{
   const button=$('download');button.disabled=true;
   try{
     const blob=new Blob(['\ufeff',await docContent()],{type:'application/msword'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-    a.href=url;a.download=($('title').value||'pisemka').replace([^\p{L}\p{N}-]+/gu,'_')+'.doc';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    a.href=url;a.download=($('title').value||'pisemka').replace(/[^\p{L}\p{N}-]+/gu,'_')+'.doc';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }catch(error){alert(error.message||'Dokument se nepodařilo vytvořit.');}
   finally{button.disabled=false;}
 });
