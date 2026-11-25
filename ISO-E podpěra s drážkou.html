@@ -1,0 +1,650 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ISO-E podpěra s drážkou</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: step bar and model stage on the left, controls and rules on the right; stage sticks on phones.
+   Palette: drafting paper neutrals. Each view keeps its own colour everywhere: nárys blue, půdorys green, bokorys orange. */
+:root{
+  --bg:#EEF1F5; --panel:#FFFFFF; --stage:#F8FAFC; --ink:#18202B; --muted:#566273;
+  --rule:#D5DCE5; --rule-strong:#9FACBD; --obj:#3A4658;
+  --v1:#2B59C9; --v2:#12795C; --v3:#C2570F; --hi:#B4237A; --on-accent:#FFFFFF; --focus:#2B59C9;
+  --font-display:'Archivo','Arial Narrow',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F141B; --panel:#171E28; --stage:#121921; --ink:#E7ECF2; --muted:#9AA7B8;
+    --rule:#2A3441; --rule-strong:#4A5A72; --obj:#C8D2E0;
+    --v1:#7DA2FF; --v2:#5ED6B0; --v3:#FF9B5E; --hi:#FF7AC6; --on-accent:#0F141B; --focus:#7DA2FF;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --panel:#171E28; --stage:#121921; --ink:#E7ECF2; --muted:#9AA7B8;
+  --rule:#2A3441; --rule-strong:#4A5A72; --obj:#C8D2E0;
+  --v1:#7DA2FF; --v2:#5ED6B0; --v3:#FF9B5E; --hi:#FF7AC6; --on-accent:#0F141B; --focus:#7DA2FF;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:15px; line-height:1.5;
+  padding-block:20px 28px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1180px;margin-inline:auto}
+header{margin-bottom:16px}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(26px,4.2vw,38px);line-height:1.1;letter-spacing:-.01em;margin:0 0 8px;text-wrap:balance}
+.lead{margin:0;color:var(--muted);max-width:68ch}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 348px;gap:16px;align-items:start}
+.stage{background:var(--panel);border:1px solid var(--rule);border-radius:10px;overflow:hidden;min-width:0}
+.steps{display:flex;gap:0;margin:0;padding:0;list-style:none;border-bottom:1px solid var(--rule);overflow-x:auto}
+.steps li{flex:1 0 auto}
+.steps button{
+  width:100%;display:flex;align-items:center;gap:8px;white-space:nowrap;
+  font:inherit;font-size:14px;color:var(--muted);background:transparent;border:0;border-right:1px solid var(--rule);
+  padding:10px 14px;min-height:44px;cursor:pointer;
+}
+.steps li:last-child button{border-right:0}
+.steps .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--rule-strong);font-size:12px;font-weight:600}
+.steps button[aria-current="step"]{color:var(--ink);font-weight:600;box-shadow:inset 0 -3px 0 var(--ink)}
+.steps button[aria-current="step"] .n{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.steps button.done .n{border-color:var(--ink);color:var(--ink)}
+.steps button:focus-visible,.btn:focus-visible,.chip input:focus-visible+span,.chk input:focus-visible,#tr:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.canvas-box{position:relative;width:100%;aspect-ratio:4/3;max-height:min(76vh,760px);background:var(--stage)}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:10px 14px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.legend b{font-weight:600}
+.dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+.panel{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;font-family:var(--font-display);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.card h3{margin:0;font-size:17px;font-weight:600;line-height:1.25}
+.card p{margin:0}
+.cap{min-height:7.6em}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-size:14px;padding:8px 12px;min-height:40px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--ink);color:var(--panel);border-color:var(--ink);font-weight:600}
+.ctl{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:baseline}
+.ctl output{font-family:var(--font-mono);font-size:13px}
+.ctl input[type=range]{grid-column:1/-1;width:100%;margin:4px 0 0;accent-color:var(--ink);min-height:24px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;width:1px;height:1px}
+.chip span{display:inline-block;padding:7px 12px;min-height:38px;line-height:22px;border:1px solid var(--rule-strong);border-radius:999px;font-size:14px;cursor:pointer;background:var(--panel)}
+.chip input:checked+span{background:var(--hi);border-color:var(--hi);color:var(--on-accent);font-weight:600}
+.chip input[value=""]:checked+span{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.chk{display:flex;align-items:center;gap:10px;font-size:14px;min-height:32px;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--ink);margin:0}
+.hint{font-size:13px;color:var(--muted)}
+.rule{display:grid;grid-template-columns:12px 1fr;gap:10px;font-size:14px}
+.rule i{width:12px;height:12px;border-radius:3px;margin-top:5px}
+.rule strong{font-weight:600}
+.tip{border-left:3px solid var(--ink);padding:2px 0 2px 12px;font-size:14px}
+@media (max-width:900px){
+  .layout{display:block}
+  .stage{position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+  .panel{margin-top:16px}
+  .canvas-box{aspect-ratio:5/4;max-height:42vh}
+  .legend{display:none}
+  .cap{min-height:0}
+}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>ISO-E: podpěra s drážkou</h1>
+    <p class="lead">Evropské promítání do prvního kvadrantu. Těleso stojí mezi vámi a průmětnami. Projděte pět kroků od tělesa až po hotový výkres a zjistěte, proč je pohled zleva vpravo a pohled shora dole.</p>
+  </header>
+
+  <div class="layout">
+    <section class="stage" aria-label="Model promítání">
+      <ol class="steps" id="steps">
+        <li><button type="button" data-step="1"><span class="n">1</span>Těleso a průmětny</button></li>
+        <li><button type="button" data-step="2"><span class="n">2</span>Odkud se díváme</button></li>
+        <li><button type="button" data-step="3"><span class="n">3</span>Promítnutí</button></li>
+        <li><button type="button" data-step="4"><span class="n">4</span>Rozklopení</button></li>
+        <li><button type="button" data-step="5"><span class="n">5</span>Výkres</button></li>
+      </ol>
+      <div class="canvas-box" id="box">
+        <canvas id="cv" role="img" aria-label="Prostorový model podpěry s půlkruhovou drážkou a čtyřmi otvory, třemi průmětnami a jejich rozklopením do výkresu"></canvas>
+      </div>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--v1)"></i><b>Nárys</b> zepředu</span>
+        <span><i class="dot" style="background:var(--v2)"></i><b>Půdorys</b> shora</span>
+        <span><i class="dot" style="background:var(--v3)"></i><b>Bokorys</b> zleva</span>
+        <span>Tažením otočíte pohled, kolečkem přiblížíte.</span>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Ovládání a vysvětlení">
+      <div class="card cap" aria-live="polite">
+        <h2 id="capStep">Krok 1 z 5</h2>
+        <h3 id="capTitle"></h3>
+        <p id="capText"></p>
+        <div class="btnrow">
+          <button class="btn" id="prev" type="button">Zpět</button>
+          <button class="btn primary" id="next" type="button">Další krok</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Rozklopení průměten</h2>
+        <div class="ctl">
+          <label for="tr">Úhel rozklopení</label>
+          <output id="trOut" for="tr"></output>
+          <input type="range" id="tr" min="0" max="90" step="1" value="0">
+        </div>
+        <div class="btnrow"><button class="btn" id="play" type="button">Rozklopit</button></div>
+      </div>
+
+      <div class="card">
+        <h2>Rozměry tělesa</h2>
+        <div class="ctl"><label for="hb">Výška základny</label><output id="hbOut" for="hb"></output>
+          <input type="range" id="hb" min="0.8" max="1.4" step="0.1" value="1.0"></div>
+        <div class="ctl"><label for="hc">Výška střední části</label><output id="hcOut" for="hc"></output>
+          <input type="range" id="hc" min="2.2" max="3.4" step="0.1" value="2.6"></div>
+        <div class="ctl"><label for="dg">Průměr drážky Ø</label><output id="dgOut" for="dg"></output>
+          <input type="range" id="dg" min="1.6" max="2.6" step="0.1" value="2.4"></div>
+        <div class="ctl"><label for="hsz">Průměr otvorů v základně Ø</label><output id="hszOut" for="hsz"></output>
+          <input type="range" id="hsz" min="0.5" max="1.0" step="0.1" value="0.7"></div>
+        <div class="ctl"><label for="htw">Průměr otvorů ve stojkách Ø</label><output id="htwOut" for="htw"></output>
+          <input type="range" id="htw" min="0.3" max="0.6" step="0.1" value="0.5"></div>
+        <div class="btnrow"><button class="btn" id="dimReset" type="button">Výchozí rozměry</button></div>
+        <p class="hint">Zahloubení má Ø 1,75× větší a hloubku 0,4. Výkres se přepočítá hned.</p>
+      </div>
+
+      <div class="card">
+        <h2>Najděte na výkrese</h2>
+        <div class="chips" role="radiogroup" aria-label="Zvýraznit část tělesa">
+          <label class="chip"><input type="radio" name="feat" value="" checked><span>Nic</span></label>
+          <label class="chip"><input type="radio" name="feat" value="gr"><span>Drážka</span></label>
+          <label class="chip"><input type="radio" name="feat" value="tw"><span>Otvory ve stojkách</span></label>
+          <label class="chip"><input type="radio" name="feat" value="cb"><span>Zahloubené otvory</span></label>
+        </div>
+        <p class="hint">Vybraná část se zvýrazní na tělese i ve všech třech pohledech.</p>
+      </div>
+
+      <div class="card">
+        <h2>Zobrazení</h2>
+        <label class="chk"><input type="checkbox" id="b3d" checked>3D těleso, paprsky a šipky pohledů</label>
+        <label class="chk"><input type="checkbox" id="hid" checked>Skryté hrany čárkovaně</label>
+        <label class="chk"><input type="checkbox" id="axs" checked>Osy otvorů čerchovaně</label>
+        <label class="chk"><input type="checkbox" id="lbl" checked>Popisky</label>
+        <label class="chk"><input type="checkbox" id="fol" checked>Kamera sleduje rozklopení</label>
+        <div class="btnrow">
+          <button class="btn" id="camAxo" type="button">Prostorový pohled</button>
+          <button class="btn" id="camFront" type="button">Zepředu</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Tři pravidla výkresu</h2>
+        <div class="rule"><i style="background:var(--v1)"></i><span><strong>Šířka:</strong> půdorys leží přímo pod nárysem, svislé čáry jdou přes oba.</span></div>
+        <div class="rule"><i style="background:var(--v3)"></i><span><strong>Výška:</strong> bokorys leží vpravo od nárysu, vodorovné čáry jdou přes oba.</span></div>
+        <div class="rule"><i style="background:var(--v2)"></i><span><strong>Hloubka:</strong> je v půdorysu svisle a v bokorysu vodorovně. Přední strana tělesa je v půdorysu dole a v bokorysu vpravo.</span></div>
+        <p class="tip">Pomůcka pro ISO-E: co vidíte zleva, kreslíte vpravo. Co vidíte shora, kreslíte dole. Těleso je totiž mezi vámi a průmětnou a průmětna se rozklápí od tělesa pryč.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+<script>
+(function(){
+"use strict";
+var G={W:8,D:3,B:1,H:2.6,x1:2,x2:6,Rg:1.2,ce:1,Rh:0.35,Rt:0.25,tcb:0.4,cq:1.5};
+var O={x:1.2,q:1.6,z:1.2};
+var PL={Xr:10.8,Q:6,Zt:5.8};
+var R=Math.PI/180;
+var AXO={yaw:30,pitch:26};
+var S={body:true,stage:1,t:0,proj:0,arrows:0,guides:0,feat:"",hidden:true,axes:true,labels:true,follow:true,yaw:30,pitch:26,zoom:1};
+var $=function(id){return document.getElementById(id);};
+var cv=$("cv"), ctx=cv.getContext("2d"), box=$("box");
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var W=0,H=0,DPR=1,raf=0,anims={};
+var view={scale:30,bx:0,by:0,init:false};
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function lerp3(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+
+/* World: x right, Y away from the viewer (back plane at Y = 0, body at negative Y), z up. */
+function loc(x,qq,z){return [O.x+x,-(O.q+qq),O.z+z];}
+function pos(v,a,b,t){
+  var th=(t===undefined?S.t:t)*Math.PI/2, cs=Math.cos(th), sn=Math.sin(th);
+  if(v==="N") return [a,0,b];
+  if(v==="P") return [a,-b*cs,-b*sn];
+  return [PL.Xr+a*sn,-a*cs,b];
+}
+function camAng(){
+  if(S.follow) return {yaw:AXO.yaw*(1-S.t),pitch:AXO.pitch*(1-S.t)};
+  return {yaw:S.yaw,pitch:S.pitch};
+}
+var CA={yaw:0,pitch:0};
+function cam(p){
+  var cy=Math.cos(CA.yaw*R), sy=Math.sin(CA.yaw*R), cp=Math.cos(CA.pitch*R), sp=Math.sin(CA.pitch*R);
+  var xr=p[0]*cy-p[1]*sy, yr=p[0]*sy+p[1]*cy;
+  return [xr,p[2]*cp+yr*sp];
+}
+function scr(p){var c=cam(p);return [W/2+(c[0]-view.bx)*view.scale,H/2-(c[1]-view.by)*view.scale];}
+
+/* ---------- the body ---------- */
+var g=G, NR=36, NG=24, FACES=[], EDGES=[], VW, RAYS;
+function ring(cx,r,z){var a=[],i;for(i=0;i<NR;i++){var t=i/NR*2*Math.PI;a.push([cx+r*Math.cos(t),g.cq+r*Math.sin(t),z]);}return a;}
+function addF(p,holes,tag,wall){FACES.push({p:p,holes:holes||[],tag:tag||"",wall:!!wall});}
+function addE(p,tag,thin){EDGES.push({p:p,tag:tag||"",thin:!!thin});}
+function wallRing(a,b,tag){
+  var i,j;
+  for(i=0;i<NR;i++){j=(i+1)%NR;addF([a[i],a[j],b[j],b[i]],null,tag,true);}
+  addE(a.concat([a[0]]),tag);addE(b.concat([b[0]]),tag);
+  [0,9,18,27].forEach(function(k){addE([a[k],b[k]],tag,true);});
+}
+function holeLines(hs){ /* hidden lines of vertical holes seen from the side; c = hole axis, zl = top of the narrow bore, cb = counterbore radius or 0 */
+  var L=[];
+  hs.forEach(function(h){
+    var c=h.c;
+    L.push(["hidden",h.tag,[[c-h.r,0],[c-h.r,h.zl]]],["hidden",h.tag,[[c+h.r,0],[c+h.r,h.zl]]]);
+    if(h.rc){
+      L.push(["hidden","cb",[[c-h.rc,h.zl],[c-h.rc,h.zt]]],["hidden","cb",[[c+h.rc,h.zl],[c+h.rc,h.zt]]]);
+      L.push(["hidden","cb",[[c-h.rc,h.zl],[c-h.r,h.zl]]],["hidden","cb",[[c+h.r,h.zl],[c+h.rc,h.zl]]]);
+    }
+  });
+  return L;
+}
+function build(){
+  var L=g.W,D=g.D,B=g.B,H=g.H,x1=g.x1,x2=g.x2,xc=L/2,Rg=g.Rg,i,j;
+  g.xc=xc;g.Rc=g.Rh*1.75;
+  g.xtl=(x1+xc-Rg)/2;g.xtr=(x2+xc+Rg)/2;
+  g.rt=Math.min(g.Rt,((x2-x1)/2-Rg)/2-0.08);
+  var rt=g.rt,Rh=g.Rh,Rc=g.Rc,tcb=g.tcb,ce=g.ce;
+  FACES=[];EDGES=[];
+  /* end holes: counterbored from the base top */
+  var endTops=[],bots=[];
+  [ce,L-ce].forEach(function(cx){
+    var top=ring(cx,Rc,B),led=ring(cx,Rc,B-tcb),ledIn=ring(cx,Rh,B-tcb),bot=ring(cx,Rh,0);
+    wallRing(top,led,"cb");wallRing(ledIn,bot,"cb");addF(led,[ledIn],"cb");endTops.push(top);bots.push(bot);
+  });
+  /* tower holes: plain, through the whole height */
+  var twTops=[];
+  [g.xtl,g.xtr].forEach(function(cx){
+    var top=ring(cx,rt,H),bot=ring(cx,rt,0);wallRing(top,bot,"tw");twTops.push(top);bots.push(bot);
+  });
+  /* groove profile (half circle, centre at the tower-top level) */
+  var arc=[];
+  for(i=0;i<=NG;i++){var t=i/NG*Math.PI;arc.push([xc+Rg*Math.cos(t),H-Rg*Math.sin(t)]);}
+  for(i=0;i<NG;i++) addF([[arc[i][0],0,arc[i][1]],[arc[i+1][0],0,arc[i+1][1]],[arc[i+1][0],D,arc[i+1][1]],[arc[i][0],D,arc[i][1]]],null,"gr",true);
+  var prof=[[0,0],[L,0],[L,B],[x2,B],[x2,H]].concat(arc).concat([[x1,H],[x1,B],[0,B]]);
+  [0,D].forEach(function(q){
+    addF(prof.map(function(p){return [p[0],q,p[1]];}));
+    var pl=prof.map(function(p){return [p[0],q,p[1]];});pl.push(pl[0]);addE(pl);
+  });
+  addF([[0,0,0],[L,0,0],[L,D,0],[0,D,0]],bots);
+  addF([[0,0,B],[x1,0,B],[x1,D,B],[0,D,B]],[endTops[0]],"");
+  addF([[x2,0,B],[L,0,B],[L,D,B],[x2,D,B]],[endTops[1]],"");
+  addF([[x1,0,H],[xc-Rg,0,H],[xc-Rg,D,H],[x1,D,H]],[twTops[0]]);
+  addF([[xc+Rg,0,H],[x2,0,H],[x2,D,H],[xc+Rg,D,H]],[twTops[1]]);
+  addF([[x1,0,B],[x1,D,B],[x1,D,H],[x1,0,H]]);
+  addF([[x2,0,B],[x2,D,B],[x2,D,H],[x2,0,H]]);
+  addF([[0,0,0],[0,D,0],[0,D,B],[0,0,B]]);
+  addF([[L,0,0],[L,D,0],[L,D,B],[L,0,B]]);
+  /* edges running along the depth */
+  [[0,0],[L,0],[0,B],[L,B],[x1,B],[x2,B],[x1,H],[x2,H]].forEach(function(p){addE([[p[0],0,p[1]],[p[0],D,p[1]]]);});
+  addE([[xc-Rg,0,H],[xc-Rg,D,H]],"gr");addE([[xc+Rg,0,H],[xc+Rg,D,H]],"gr");addE([[xc,0,H-Rg],[xc,D,H-Rg]],"gr",true);
+  var gp0=arc.map(function(p){return [p[0],0,p[1]];}),gp1=arc.map(function(p){return [p[0],D,p[1]];});
+  addE(gp0,"gr");addE(gp1,"gr");
+
+  var hN=[{c:g.ce,r:Rh,rc:Rc,zl:B-tcb,zt:B,tag:"cb"},{c:L-g.ce,r:Rh,rc:Rc,zl:B-tcb,zt:B,tag:"cb"},{c:g.xtl,r:rt,rc:0,zl:H,zt:H,tag:"tw"},{c:g.xtr,r:rt,rc:0,zl:H,zt:H,tag:"tw"}];
+  var cq=g.cq;
+  VW={
+    N:{off:[O.x,O.z],col:"v1",name:"NÁRYS",plane:"nárysna",
+       poly:prof,cut:[],
+       items:[["solid","",prof.concat([prof[0]])]].concat(holeLines(hN)).concat(hN.map(function(h){return ["axis","cb",[[h.c,-.4],[h.c,(h.tag==="tw"?H:B)+.4]]];}))},
+    P:{off:[O.x,O.q],col:"v2",name:"PŮDORYS",plane:"půdorysna",
+       poly:[[0,0],[L,0],[L,D],[0,D]],cut:[[ce,cq,Rh],[L-ce,cq,Rh],[g.xtl,cq,rt],[g.xtr,cq,rt]],
+       items:[["solid","",[[0,0],[L,0],[L,D],[0,D],[0,0]]],
+         ["solid","",[[x1,0],[x1,D]]],["solid","",[[x2,0],[x2,D]]],
+         ["solid","gr",[[xc-Rg,0],[xc-Rg,D]]],["solid","gr",[[xc+Rg,0],[xc+Rg,D]]],
+         ["circle","cb",[ce,cq,Rc]],["circle","cb",[ce,cq,Rh]],["circle","cb",[L-ce,cq,Rc]],["circle","cb",[L-ce,cq,Rh]],
+         ["circle","tw",[g.xtl,cq,rt]],["circle","tw",[g.xtr,cq,rt]]]
+        .concat([ce,L-ce].map(function(c){return ["axis","cb",[[c-Rc-.4,cq],[c+Rc+.4,cq]]];}))
+        .concat([ce,L-ce].map(function(c){return ["axis","cb",[[c,cq-Rc-.4],[c,cq+Rc+.4]]];}))
+        .concat([g.xtl,g.xtr].map(function(c){return ["axis","tw",[[c-rt-.4,cq],[c+rt+.4,cq]]];}))
+        .concat([g.xtl,g.xtr].map(function(c){return ["axis","tw",[[c,cq-rt-.4],[c,cq+rt+.4]]];}))},
+    B:{off:[O.q,O.z],col:"v3",name:"BOKORYS",plane:"bokorysna",
+       poly:[[0,0],[D,0],[D,H],[0,H]],cut:[],
+       items:[["solid","",[[0,0],[D,0],[D,H],[0,H],[0,0]]],["solid","",[[0,B],[D,B]]],["hidden","gr",[[0,H-Rg],[D,H-Rg]]]]
+         .concat(holeLines([hN[0],hN[2]].map(function(h){var o={};for(var k in h)o[k]=h[k];o.c=cq;return o;})))
+         .concat([["axis","cb",[[cq,-.4],[cq,H+.4]]]])}
+  };
+  RAYS={
+    N:[[0,D,0],[L,D,0],[L,D,B],[x2,D,B],[x2,D,H],[x1,D,H],[x1,D,B],[0,D,B],[xc,D,H-Rg]],
+    P:[[0,0,B],[0,D,B],[x1,D,H],[x1,0,H],[x2,0,H],[x2,D,H],[L,D,B],[L,0,B]],
+    B:[[L,0,0],[L,D,0],[L,D,B],[L,0,B],[x2,0,H],[x2,D,H]]
+  };
+}
+build();
+function toView(v,p){ /* local body point -> view coordinates */
+  if(v==="N") return [O.x+p[0],O.z+p[2]];
+  if(v==="P") return [O.x+p[0],O.q+p[1]];
+  return [O.q+p[1],O.z+p[2]];
+}
+function vpos(v,a,b){var o=VW[v].off;return pos(v,o[0]+a,o[1]+b);}
+
+function rgba(hex,a){
+  hex=hex.trim();
+  if(hex.charAt(0)!=="#"||hex.length<7) return hex;
+  var n=parseInt(hex.slice(1,7),16);
+  return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")";
+}
+function normalOf(w){
+  var a=w[0],b=w[1],c=w[2],u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];
+  var n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],l=Math.hypot(n[0],n[1],n[2])||1;
+  return Math.abs((n[0]*-0.45+n[1]*-0.55+n[2]*0.7)/l/1.0);
+}
+
+/* ---------- drawing ---------- */
+function frame(){
+  if(!W||!H) return false;
+  var cs=getComputedStyle(document.documentElement), C={};
+  ["ink","muted","stage","rule-strong","obj","v1","v2","v3","hi"].forEach(function(k){C[k]=cs.getPropertyValue("--"+k).trim();});
+  CA=camAng();
+  var t=S.t, hi=C.hi;
+  var planes={
+    N:[[0,0],[PL.Xr,0],[PL.Xr,PL.Zt],[0,PL.Zt]],
+    P:[[0,0],[PL.Xr,0],[PL.Xr,PL.Q],[0,PL.Q]],
+    B:[[0,0],[PL.Q,0],[PL.Q,PL.Zt],[0,PL.Zt]]
+  };
+  var arrows=[
+    {v:"N",a:loc(4,g.D+4.6,1.6),b:loc(4,g.D+2.2,1.6),txt:"pohled zepředu"},
+    {v:"P",a:loc(4,1.5,g.H+3.2),b:loc(4,1.5,g.H+0.7),txt:"pohled shora"},
+    {v:"B",a:loc(-4.2,1.5,1.6),b:loc(-1.2,1.5,1.6),txt:"pohled zleva"}
+  ];
+  var al=S.arrows*(1-t)*(S.body?1:0);
+
+  /* fit the view to everything, with easing */
+  var pts=[],k;
+  for(k in planes) planes[k].forEach(function(q){pts.push(pos(k,q[0],q[1]));});
+  [[0,0,0],[g.W,g.D,g.H]].forEach(function(q){pts.push(loc(q[0],q[1],q[2]));});
+  if(al>0.01) arrows.forEach(function(a){pts.push(a.a,a.b);});
+  var x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  pts.forEach(function(p){var c=cam(p);x0=Math.min(x0,c[0]);x1=Math.max(x1,c[0]);y0=Math.min(y0,c[1]);y1=Math.max(y1,c[1]);});
+  var tS=clamp(Math.min(W*0.92/Math.max(x1-x0,1),H*0.88/Math.max(y1-y0,1))*S.zoom,6,140);
+  var tbx=(x0+x1)/2, tby=(y0+y1)/2, moving=false;
+  if(!view.init||reduce){view.scale=tS;view.bx=tbx;view.by=tby;view.init=true;}
+  else{
+    view.scale+=(tS-view.scale)*0.22;view.bx+=(tbx-view.bx)*0.22;view.by+=(tby-view.by)*0.22;
+    if(Math.abs(tS-view.scale)>0.05||Math.abs(tbx-view.bx)>0.002||Math.abs(tby-view.by)>0.002) moving=true;
+    else{view.scale=tS;view.bx=tbx;view.by=tby;}
+  }
+
+  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,H);
+  ctx.lineJoin="round";ctx.lineCap="round";
+  var fontB='600 13px "IBM Plex Sans",system-ui,sans-serif', fontS='500 12px "IBM Plex Sans",system-ui,sans-serif';
+  function path(pl,close){ctx.moveTo(pl[0][0],pl[0][1]);for(var i=1;i<pl.length;i++)ctx.lineTo(pl[i][0],pl[i][1]);if(close)ctx.closePath();}
+  function halo(txt,x,y,col,font,al2){
+    ctx.font=font;ctx.textAlign="left";ctx.textBaseline="middle";
+    ctx.globalAlpha=al2===undefined?1:al2;ctx.lineWidth=4;ctx.strokeStyle=C.stage;ctx.strokeText(txt,x,y);
+    ctx.fillStyle=col;ctx.fillText(txt,x,y);ctx.globalAlpha=1;
+  }
+  function head(a,b,size,col){
+    var an=Math.atan2(b[1]-a[1],b[0]-a[0]);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(b[0],b[1]);
+    ctx.lineTo(b[0]-size*Math.cos(an-0.42),b[1]-size*Math.sin(an-0.42));
+    ctx.lineTo(b[0]-size*Math.cos(an+0.42),b[1]-size*Math.sin(an+0.42));ctx.closePath();ctx.fill();
+  }
+  function vs(v,q){var o=VW[v].off;return scr(pos(v,o[0]+q[0],o[1]+q[1]));}
+  var img=S.body?(S.proj<0.6?0:(S.proj-0.6)/0.4):1;
+
+  /* 1. planes */
+  ["N","P","B"].forEach(function(v){
+    var col=C[VW[v].col], c4=planes[v].map(function(q){return scr(pos(v,q[0],q[1]));});
+    ctx.beginPath();path(c4,true);ctx.fillStyle=rgba(col,0.08);ctx.fill();
+    ctx.strokeStyle=rgba(col,0.85);ctx.lineWidth=1.4;ctx.stroke();
+    if(S.labels){
+      var an=v==="N"?pos(v,0.25,PL.Zt-0.5):v==="P"?pos(v,0.25,PL.Q-0.5):pos(v,0.25,PL.Zt-0.5), p=scr(an);
+      halo(VW[v].plane,p[0],p[1],col,fontS);
+    }
+  });
+
+  /* 2. images on the planes */
+  if(img>0){
+    ctx.globalAlpha=img;
+    ["N","P","B"].forEach(function(v){
+      var V=VW[v], col=C[V.col];
+      ctx.beginPath();path(V.poly.map(function(q){return vs(v,q);}),true);
+      V.cut.forEach(function(cc){
+        var cp=[],i;for(i=0;i<=36;i++){var a=i/36*2*Math.PI;cp.push(vs(v,[cc[0]+cc[2]*Math.cos(a),cc[1]+cc[2]*Math.sin(a)]));}
+        path(cp,true);
+      });
+      ctx.fillStyle=rgba(col,0.14);ctx.fill("evenodd");
+      V.items.forEach(function(it){
+        var kind=it[0],on=S.feat&&it[1]===S.feat;
+        if(kind==="hidden"&&!S.hidden) return;
+        if(kind==="axis"&&!S.axes) return;
+        ctx.beginPath();
+        if(kind==="circle"){
+          var d=it[2],j,pl=[];for(j=0;j<=48;j++){var b=j/48*2*Math.PI;pl.push(vs(v,[d[0]+d[2]*Math.cos(b),d[1]+d[2]*Math.sin(b)]));}
+          path(pl,false);
+        }else path(it[2].map(function(q){return vs(v,q);}),false);
+        ctx.strokeStyle=on?hi:col;
+        ctx.lineWidth=on?4:(kind==="solid"?2.2:1.4);
+        ctx.setLineDash(kind==="hidden"?[6,4]:kind==="axis"?[12,3,2,3]:[]);
+        if(kind==="axis"&&!on) ctx.lineWidth=1.1;
+        ctx.stroke();ctx.setLineDash([]);
+      });
+    });
+    ctx.globalAlpha=1;
+  }
+
+  /* 3. guide lines of the finished drawing */
+  if(S.guides>0.01){
+    ctx.globalAlpha=S.guides*0.75;ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.beginPath();
+    [0,g.ce-g.Rh,g.ce+g.Rh,g.x1,g.xtl-g.rt,g.xtl+g.rt,g.xc-g.Rg,g.xc+g.Rg,g.xtr-g.rt,g.xtr+g.rt,g.x2,g.W-g.ce-g.Rh,g.W-g.ce+g.Rh,g.W].forEach(function(x){
+      var a=scr(pos("N",O.x+x,O.z-0.35)),b=scr(pos("P",O.x+x,O.q+g.D+0.5));ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);
+    });
+    [0,g.B-g.tcb,g.B,g.H-g.Rg,g.H].forEach(function(z){
+      var a=scr(pos("N",O.x+g.W+0.35,O.z+z)),b=scr(pos("B",O.q+g.D+0.6,O.z+z));ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);
+    });
+    ctx.stroke();ctx.setLineDash([]);
+    var dc=C.ink;ctx.strokeStyle=dc;ctx.lineWidth=1.4;ctx.beginPath();
+    var pa=scr(pos("P",O.x-0.7,O.q)),pb=scr(pos("P",O.x-0.7,O.q+g.D));ctx.moveTo(pa[0]-5,pa[1]);ctx.lineTo(pa[0]+5,pa[1]);ctx.moveTo(pa[0],pa[1]);ctx.lineTo(pb[0],pb[1]);ctx.moveTo(pb[0]-5,pb[1]);ctx.lineTo(pb[0]+5,pb[1]);
+    var qa=scr(pos("B",O.q,O.z+g.H+0.7)),qb=scr(pos("B",O.q+g.D,O.z+g.H+0.7));ctx.moveTo(qa[0],qa[1]-5);ctx.lineTo(qa[0],qa[1]+5);ctx.moveTo(qa[0],qa[1]);ctx.lineTo(qb[0],qb[1]);ctx.moveTo(qb[0],qb[1]-5);ctx.lineTo(qb[0],qb[1]+5);
+    ctx.stroke();ctx.globalAlpha=1;
+    if(S.labels&&S.guides>0.9){
+      ctx.font=fontS;ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillStyle=C.ink;
+      ctx.fillText("hloubka",pa[0]-9,(pa[1]+pb[1])/2);
+      ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText("hloubka",(qa[0]+qb[0])/2,qa[1]-7);
+    }
+  }
+
+  /* 4. projecting rays */
+  var rf=clamp(1-t*4,0,1)*S.proj*(S.body?1:0);
+  if(rf>0.01){
+    ctx.lineWidth=1.2;ctx.setLineDash([5,4]);
+    ["N","P","B"].forEach(function(v){
+      ctx.strokeStyle=rgba(C[VW[v].col],0.85*rf);ctx.beginPath();
+      RAYS[v].forEach(function(p){
+        var a=loc(p[0],p[1],p[2]),vp=toView(v,p),b=pos(v,vp[0],vp[1]),e=lerp3(a,b,S.proj),s0=scr(a),s1=scr(e);
+        if(Math.hypot(s1[0]-s0[0],s1[1]-s0[1])>2){ctx.moveTo(s0[0],s0[1]);ctx.lineTo(s1[0],s1[1]);}
+      });
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+  }
+
+  /* 5. the body */
+  if(S.body) FACES.forEach(function(f){
+    var w=f.p.map(function(p){return loc(p[0],p[1],p[2]);}),sh=normalOf(w);
+    ctx.beginPath();path(w.map(scr),true);
+    f.holes.forEach(function(hh){path(hh.map(function(p){return scr(loc(p[0],p[1],p[2]));}),true);});
+    ctx.fillStyle=rgba(C.obj,(0.05+0.15*sh).toFixed(3));ctx.fill("evenodd");
+    if(S.feat&&f.tag===S.feat){ctx.fillStyle=rgba(hi,0.55);ctx.fill("evenodd");}
+  });
+  if(S.body) EDGES.forEach(function(e){
+    var on=S.feat&&e.tag===S.feat;
+    ctx.beginPath();path(e.p.map(function(p){return scr(loc(p[0],p[1],p[2]));}),false);
+    ctx.strokeStyle=on?hi:C.obj;ctx.lineWidth=on?3.4:(e.thin?1:1.8);ctx.stroke();
+  });
+
+  /* 6. observers */
+  if(al>0.01){
+    arrows.forEach(function(a){
+      var col=C[VW[a.v].col],p=scr(a.a),q=scr(a.b);
+      ctx.globalAlpha=al;ctx.strokeStyle=col;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();
+      head(p,q,12,col);ctx.globalAlpha=1;
+      if(S.labels) halo(a.txt,p[0]+6,p[1]-9,col,fontB,al);
+    });
+  }
+
+  /* 7. names of the views */
+  if(S.labels&&img>0.9){
+    var an=[["N",pos("N",O.x,O.z+g.H+0.45)],["P",pos("P",O.x,O.q+g.D+0.55)],["B",pos("B",O.q,O.z+g.H+0.45)]];
+    an.forEach(function(a){var p=scr(a[1]);halo(VW[a[0]].name,p[0],p[1],C[VW[a[0]].col],'700 14px "Archivo","Arial Narrow",system-ui,sans-serif',img);});
+  }
+  return moving;
+}
+
+/* ---------- animation ---------- */
+function go(key,target,dur){
+  if(reduce||!dur){S[key]=target;delete anims[key];invalidate();return;}
+  anims[key]={from:S[key],to:target,t0:performance.now(),dur:dur};invalidate();
+}
+function stepAnims(now){
+  var any=false,k;
+  for(k in anims){
+    var a=anims[k],u=clamp((now-a.t0)/a.dur,0,1),e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    S[k]=a.from+(a.to-a.from)*e;
+    if(u>=1){S[k]=a.to;delete anims[k];}else any=true;
+  }
+  return any;
+}
+function tick(now){
+  raf=0;var more=stepAnims(now),moving=frame();
+  if(more) syncT();
+  if(more||moving) invalidate();
+}
+function invalidate(){if(!raf) raf=requestAnimationFrame(tick);}
+function resize(){
+  W=box.clientWidth;H=box.clientHeight;DPR=window.devicePixelRatio||1;
+  cv.width=Math.max(1,Math.round(W*DPR));cv.height=Math.max(1,Math.round(H*DPR));invalidate();
+}
+
+/* ---------- steps and controls ---------- */
+var TEXTS=[
+  ["Těleso a průmětny","Těleso stojí mezi vámi a třemi průmětnami. Za ním je nárysna, pod ním půdorysna a vpravo od něj bokorysna. V systému ISO-E je těleso vždy mezi pozorovatelem a průmětnou (první kvadrant)."],
+  ["Odkud se díváme","Zepředu vidíte nárys, shora půdorys a zleva bokorys, tedy levý pohled. Barva šipky je barva průmětny, na kterou se daný pohled zobrazí."],
+  ["Promítnutí","Rovnoběžné paprsky jdou kolmo na průmětnu a vytvoří obraz tělesa. Skrytá hrana se kreslí čárkovaně a osa otvoru čerchovaně. Svislé otvory uvidíte jako kružnice jen v půdorysu, v nárysu a bokorysu jsou čárkované. Půlkruhová drážka je v nárysu kruhový oblouk, v půdorysu dvě čáry a v bokorysu je její dno čárkované, protože je zakryté stojkou."],
+  ["Rozklopení","Průmětny se otočí do roviny nárysny. Půdorysna se sklopí dolů a bokorysna doprava. Obrazy se přitom posunou s nimi, proto je přední strana tělesa v půdorysu dole a v bokorysu vpravo."],
+  ["Hotový výkres","Nárys je uprostřed, půdorys pod ním a bokorys vpravo. Tečkované čáry ukazují, že šířka platí pro nárys i půdorys a výška pro nárys i bokorys. Hloubka je v půdorysu svisle a v bokorysu vodorovně."]
+];
+var stepBtns=Array.prototype.slice.call(document.querySelectorAll("#steps button"));
+function setStage(n,keepT){
+  S.stage=clamp(n,1,5);
+  go("arrows",S.stage===2||S.stage===3?1:0,reduce?0:500);
+  go("proj",S.stage>=3?1:0,S.stage>=3?1500:500);
+  go("guides",S.stage===5?1:0,700);
+  if(!keepT) go("t",S.stage>=4?1:0,S.stage===4?3400:S.stage===5?900:1000);
+  syncUi();
+}
+function syncUi(){
+  stepBtns.forEach(function(b,i){
+    b.classList.toggle("done",i+1<S.stage);
+    if(i+1===S.stage) b.setAttribute("aria-current","step"); else b.removeAttribute("aria-current");
+  });
+  $("capStep").textContent="Krok "+S.stage+" z 5";
+  $("capTitle").textContent=TEXTS[S.stage-1][0];
+  $("capText").textContent=TEXTS[S.stage-1][1];
+  $("prev").disabled=S.stage===1;
+  $("next").disabled=S.stage===5;
+  $("play").textContent=S.stage>=4?"Složit":"Rozklopit";
+  syncT();
+}
+function syncT(){
+  var d=Math.round(S.t*90);
+  $("tr").value=d;$("trOut").textContent=d+"°";
+}
+stepBtns.forEach(function(b){b.addEventListener("click",function(){setStage(Number(this.getAttribute("data-step")));});});
+$("prev").addEventListener("click",function(){setStage(S.stage-1);});
+$("next").addEventListener("click",function(){setStage(S.stage+1);});
+$("play").addEventListener("click",function(){setStage(S.stage>=4?3:4);});
+$("tr").addEventListener("input",function(){
+  delete anims.t;S.t=Number(this.value)/90;
+  if(S.stage<4){setStage(4,true);}
+  else if(S.t>=0.999&&S.stage!==5){setStage(5,true);}
+  $("trOut").textContent=this.value+"°";invalidate();
+});
+document.querySelectorAll('input[name="feat"]').forEach(function(r){
+  r.addEventListener("change",function(){S.feat=this.value;invalidate();});
+});
+[["b3d","body"],["hid","hidden"],["axs","axes"],["lbl","labels"]].forEach(function(p){
+  $(p[0]).addEventListener("change",function(){S[p[1]]=this.checked;invalidate();});
+});
+$("fol").addEventListener("change",function(){
+  if(this.checked){S.follow=true;}
+  else{var c=camAng();S.yaw=c.yaw;S.pitch=c.pitch;S.follow=false;}
+  invalidate();
+});
+function manualCam(yaw,pitch){S.follow=false;$("fol").checked=false;S.yaw=yaw;S.pitch=pitch;invalidate();}
+$("camAxo").addEventListener("click",function(){manualCam(AXO.yaw,AXO.pitch);});
+$("camFront").addEventListener("click",function(){manualCam(0,0);});
+
+/* drag to orbit, wheel or two fingers to zoom */
+var ptrs=new Map(),lastD=0;
+function pd(){var v=Array.from(ptrs.values());return Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y);}
+cv.addEventListener("pointerdown",function(e){
+  try{cv.setPointerCapture(e.pointerId);}catch(err){}
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===2) lastD=pd();
+  cv.style.cursor="grabbing";
+});
+cv.addEventListener("pointermove",function(e){
+  var p=ptrs.get(e.pointerId);if(!p) return;
+  if(ptrs.size===1){
+    if(S.follow){var c=camAng();S.yaw=c.yaw;S.pitch=c.pitch;S.follow=false;$("fol").checked=false;}
+    S.yaw+=(e.clientX-p.x)*0.5;S.pitch=clamp(S.pitch+(e.clientY-p.y)*0.5,0,90);
+  }
+  p.x=e.clientX;p.y=e.clientY;
+  if(ptrs.size===2){var d=pd();if(lastD) S.zoom=clamp(S.zoom*d/lastD,0.5,2.5);lastD=d;}
+  invalidate();
+});
+function endPtr(e){ptrs.delete(e.pointerId);lastD=0;cv.style.cursor="grab";}
+cv.addEventListener("pointerup",endPtr);
+cv.addEventListener("pointercancel",endPtr);
+cv.addEventListener("wheel",function(e){e.preventDefault();S.zoom=clamp(S.zoom*Math.exp(-e.deltaY*0.0012),0.5,2.5);invalidate();},{passive:false});
+
+var DIM0={B:G.B,H:G.H,Rg:G.Rg,Rh:G.Rh,Rt:G.Rt};
+function f1(x){return x.toFixed(1).replace(".",",");}
+function fix(){
+  var need=Math.ceil((G.B+G.Rg+0.3)*10-1e-9)/10;
+  if(G.H<need) G.H=Math.min(3.4,need);
+}
+function syncDim(){
+  $("hb").value=G.B;$("hbOut").textContent=f1(G.B);
+  $("hc").value=G.H;$("hcOut").textContent=f1(G.H);
+  $("dg").value=G.Rg*2;$("dgOut").textContent=f1(G.Rg*2);
+  var d=Math.round(G.Rh*20)/10;$("hsz").value=d;$("hszOut").textContent=f1(d)+"  (zahl. "+f1(d*1.75)+")";
+  $("htw").value=G.Rt*2;$("htwOut").textContent=f1(Math.min(G.Rt,G.rt)*2);
+}
+function dimChanged(){fix();build();syncDim();invalidate();}
+$("hb").addEventListener("input",function(){G.B=parseFloat(this.value);dimChanged();});
+$("hc").addEventListener("input",function(){G.H=parseFloat(this.value);if(G.H<G.B+G.Rg+0.3){G.Rg=Math.max(0.8,Math.round((G.H-G.B-0.3)*10)/10);}dimChanged();});
+$("dg").addEventListener("input",function(){G.Rg=parseFloat(this.value)/2;dimChanged();});
+$("hsz").addEventListener("input",function(){G.Rh=parseFloat(this.value)/2;dimChanged();});
+$("htw").addEventListener("input",function(){G.Rt=parseFloat(this.value)/2;dimChanged();});
+$("dimReset").addEventListener("click",function(){Object.assign(G,DIM0);dimChanged();});
+syncDim();
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",invalidate);
+new MutationObserver(invalidate).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(invalidate);
+if(window.ResizeObserver) new ResizeObserver(resize).observe(box); else window.addEventListener("resize",resize);
+
+/* start on the finished drawing's neighbour: step 3 shows body, rays and images at once */
+S.stage=3;S.proj=1;S.arrows=1;
+syncUi();resize();
+})();
+</script>
+
+</body></html>
